@@ -8,10 +8,17 @@ class UserRole(StrEnum):
 
 
 class CaseStatus(StrEnum):
+    PENDING = "pending"
     OPEN = "open"
     IN_REVIEW = "in_review"
     CLOSED = "closed"
     TRANSFERRED = "transferred"
+
+
+class AppointmentStatus(StrEnum):
+    SCHEDULED = "scheduled"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
 
 
 class ReportStatus(StrEnum):

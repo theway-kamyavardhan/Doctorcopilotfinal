@@ -49,3 +49,13 @@ app.websocket("/ws/{case_id}")(case_chat)
 @app.exception_handler(AppException)
 async def app_exception_handler(_: Request, exc: AppException) -> JSONResponse:
     return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+    import traceback
+    traceback.print_exc()
+    return JSONResponse(
+        status_code=500, 
+        content={"detail": "A synchronization error occurred in the neural baseline. Please check system logs."}
+    )

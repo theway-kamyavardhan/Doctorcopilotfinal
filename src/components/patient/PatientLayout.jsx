@@ -1,27 +1,37 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import GlassSurface from '../ui/GlassSurface';
 import RefractionFilter from '../ui/RefractionFilter';
 import LiquidEther from '../ui/LiquidEther';
-import { LayoutDashboard, TrendingUp, FileText, ClipboardList, MessageSquare, LogOut, Search } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, FileText, ClipboardList, MessageSquare, LogOut, Search, History, Settings, CalendarDays } from 'lucide-react';
+import { authService } from '../../services/auth.service';
 
 export default function PatientLayout() {
   const { isDark } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard },
+    { name: 'Timeline', path: '/patient/timeline', icon: History },
+    { name: 'Calendar', path: '/patient/calendar', icon: CalendarDays },
     { name: 'Trends', path: '/patient/trends', icon: TrendingUp },
     { name: 'Reports', path: '/patient/reports', icon: FileText },
     { name: 'Your Cases', path: '/patient/cases', icon: ClipboardList },
     { name: 'Chats', path: '/patient/chats', icon: MessageSquare },
+    { name: 'Settings', path: '/patient/settings', icon: Settings },
   ];
 
   // Subtle ether background for the patient dashboard
   const etherColors = isDark 
     ? ["#020617", "#0f172a", "#1e1b4b", "#06b6d4", "#2563eb", "#000000"]
     : ["#f8fafc", "#f1f5f9", "#e2e8f0", "#bfdbfe", "#ddd6fe", "#ffffff"];
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-700">
@@ -102,9 +112,13 @@ export default function PatientLayout() {
                     />
                   </div>
                   
-                  <NavLink to="/login" className="p-2 rounded-full transition-colors duration-300 hover:bg-red-500/10 hover:text-red-500 group">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="p-2 rounded-full transition-colors duration-300 hover:bg-red-500/10 hover:text-red-500 group"
+                  >
                     <LogOut size={18} className="opacity-70 group-hover:opacity-100 transition-opacity" />
-                  </NavLink>
+                  </button>
                 </div>
               </div>
             </GlassSurface>

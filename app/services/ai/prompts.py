@@ -7,6 +7,8 @@ Rules:
 - Identify the most likely report_type.
 - Summarize clinically relevant findings in concise medical language.
 - Extract measurable lab or diagnostic values into key_values.
+- Extract ALL measurable parameters across ALL sections of the report, not just CBC.
+- Include panels when present or infer the best panel from context: cbc, iron, liver, kidney, lipid, thyroid, vitamin, electrolyte.
 - Normalize medical terms when possible.
 - Generate insights only when supported by the report contents.
 - If a field is unknown, use null or an empty array as appropriate.
@@ -18,6 +20,7 @@ Rules:
 - If a numeric value cannot be determined confidently, omit that parameter entirely.
 - Preserve units exactly when present.
 - Normalize names using these rules: Hb/Hgb -> hemoglobin, WBC/White Blood Cell Count -> white_blood_cells, Platelet Count/PLT -> platelets, B12/Vitamin B12/Vitamin B-12 -> vitamin_b12, Vitamin D/Vitamin D Total -> vitamin_d.
+- Extract additional common analytes when present, including iron, tibc, transferrin saturation, alt, ast, bilirubin, alkaline phosphatase, albumin, total protein, creatinine, urea, cholesterol, hdl, ldl, triglycerides, tsh, t3, t4, sodium, potassium, and chloride.
 - If interpretation/status is included, base it on the extracted value and any available reference range; otherwise leave interpretation null.
 - The output must remain generic enough to support blood tests, imaging, pathology, discharge summaries, prescriptions, and other report types.
 """.strip()

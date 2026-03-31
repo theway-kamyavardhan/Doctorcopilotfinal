@@ -1,308 +1,452 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '../../context/ThemeContext';
-import GlassSurface from '../../components/ui/GlassSurface';
-import { authService } from '../../services/auth.service';
-import { Calendar, Clock, MapPin, TrendingUp, TrendingDown, Minus, Activity, Droplet, HeartPulse, BrainCircuit, ChevronRight, User, AlertCircle, Info } from 'lucide-react';
-import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  Download,
+  LoaderCircle,
+  Microscope,
+  TrendingUp,
+} from "lucide-react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { useTheme } from "../../context/ThemeContext";
+import { authService } from "../../services/auth.service";
+import caseService from "../../services/case.service";
+import reportService from "../../services/report.service";
+import HealthCore from "../../components/patient/HealthCore";
+import HealthSignals from "../../components/patient/HealthSignals";
+import ProfilePanel from "../../components/patient/ProfilePanel";
+import {
+  buildAlertItems,
+  calculateHealthScore,
+  formatParameterLabel,
+  getLatestParameter,
+  getLatestReport,
+  getRecentReports,
+  getReportPreviewInsight,
+} from "../../utils/patientIntelligence";
+import ExportService from "../../services/ExportService";
+
+function formatDate(value) {
+  if (!value) return "Date pending";
+  return new Date(value).toLocaleDateString();
+}
+
+function formatShortDate(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+}
+
+function DashboardCard({ title, subtitle, children, isDark }) {
+  return (
+    <section
+      className={`rounded-2xl border p-6 ${
+        isDark ? "bg-slate-950 border-white/10" : "bg-white border-slate-100 shadow-lg shadow-slate-100/50"
+      }`}
+    >
+      <div className="mb-5">
+        <h2 className={`text-xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h2>
+        {subtitle ? (
+          <p className={`mt-1 text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>{subtitle}</p>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function MiniTrendTooltip({ active, payload, label, isDark }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className={`rounded-2xl border px-4 py-3 text-sm ${isDark ? "bg-slate-950 border-white/10 text-slate-200" : "bg-white border-slate-200 text-slate-700 shadow-lg"}`}>
+      <div className="font-bold mb-2">{formatDate(label)}</div>
+      {payload.map((item) => (
+        <div key={item.dataKey} className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+          <span>{item.name}: {item.value ?? "-"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function PatientDashboard() {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [trends, setTrends] = useState(null);
+  const [insights, setInsights] = useState(null);
+  const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadDashboard = async () => {
       try {
-        const data = await authService.getPatientProfile();
-        setProfile(data);
-      } catch (err) {
-        console.error('Failed to fetch patient profile:', err);
+        const [profileData, reportData, trendData, insightData, caseData] = await Promise.all([
+          authService.getPatientProfile(),
+          reportService.getReports(),
+          reportService.getTrends(),
+          reportService.getInsights(),
+          caseService.getCases(),
+        ]);
+
+        setProfile(profileData);
+        setReports(reportData || []);
+        setTrends(trendData);
+        setInsights(insightData);
+        setCases(caseData || []);
+      } catch (error) {
+        console.error("Failed to load patient dashboard:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+
+    loadDashboard();
   }, []);
 
-  // ── INLINE DATA ──
-  const upcomingAppointment = {
-    doctor: "Dr. Elena Thorne",
-    specialty: "Systems Biologist",
-    date: "April 15, 2026",
-    time: "10:30 AM",
-    location: "Stellar Integrated Health, Room 402"
-  };
+  const latestReport = useMemo(() => getLatestReport(reports), [reports]);
+  const recentReports = useMemo(() => getRecentReports(reports, 3), [reports]);
+  const healthScore = useMemo(() => calculateHealthScore(reports, trends, insights), [reports, trends, insights]);
+  const alerts = useMemo(() => buildAlertItems(reports, trends, insights), [reports, trends, insights]);
+  const anomalies = (trends?.anomalies || []).slice(0, 6);
+  const activeCase = useMemo(
+    () => cases.find((item) => item.status === "pending" || item.status === "open" || item.status === "in_review") || null,
+    [cases]
+  );
 
-  const healthSignals = [
-    { name: "Hemoglobin", value: "14.2", unit: "g/dL", status: "Optimal", trend: "up", icon: Droplet, color: "text-rose-500", bg: "bg-rose-500/10" },
-    { name: "Vitamin D", value: "24", unit: "ng/mL", status: "Low", trend: "down", icon: Activity, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { name: "Heart Rate", value: "68", unit: "bpm", status: "Stable", trend: "flat", icon: HeartPulse, color: "text-emerald-500", bg: "bg-emerald-500/10" }
-  ];
+  const quickStats = useMemo(
+    () =>
+      [
+        getLatestParameter(reports, "hemoglobin"),
+        getLatestParameter(reports, "platelets"),
+        getLatestParameter(reports, "vitamin_b12"),
+      ].filter(Boolean),
+    [reports]
+  );
 
-  const timelineData = [
-    { date: "Oct", value: 12.8 },
-    { date: "Nov", value: 13.5 },
-    { date: "Dec", value: 13.8 },
-    { date: "Jan", value: 14.0 },
-    { date: "Feb", value: 14.1 },
-    { date: "Mar", value: 14.2 }
-  ];
+  const trendSummary = (trends?.summary || []).slice(0, 3);
+  const keyFindings = (insights?.key_findings || []).slice(0, 3);
+  const healthSummaryItems = [...trendSummary, ...keyFindings].slice(0, 5);
+  const isNewUser = reports.length === 0;
 
-  // Micro-interaction variants
-  const cardHover = {
-    rest: { y: 0, scale: 1, boxShadow: "0px 4px 20px rgba(0,0,0,0)" },
-    hover: { y: -4, scale: 1.01, boxShadow: isDark ? "0px 10px 30px rgba(6,182,212,0.1)" : "0px 10px 30px rgba(0,0,0,0.05)" }
-  };
+  const miniTrendData = useMemo(
+    () =>
+      (trends?.table || []).slice(-6).map((row) => ({
+        date: row.date,
+        hemoglobin: row.hemoglobin ?? null,
+        platelets: row.platelets ? row.platelets / 1000 : null,
+      })),
+    [trends]
+  );
 
-  const RenderTrendIcon = ({ trend }) => {
-    switch(trend) {
-      case 'up': return <TrendingUp size={14} className="text-emerald-500" />;
-      case 'down': return <TrendingDown size={14} className="text-rose-500" />;
-      default: return <Minus size={14} className="text-slate-400" />;
+  const abnormalParameterCount = useMemo(
+    () =>
+      reports.reduce(
+        (count, report) =>
+          count +
+          (report.parameters || []).filter((parameter) =>
+            ["low", "high", "deficient", "insufficient"].includes(
+              String(parameter.status || parameter.interpretation || "").toLowerCase()
+            )
+          ).length,
+        0
+      ),
+    [reports]
+  );
+
+  const categoryCount = useMemo(
+    () => new Set(reports.map((report) => report.report_category).filter(Boolean)).size,
+    [reports]
+  );
+
+  const activeConditionCount = alerts.length;
+
+  const handleExport = () => {
+    try {
+      setExportError("");
+      ExportService.exportAiHealthSummary({ profile, reports, trends, insights });
+    } catch (error) {
+      setExportError(error.message || "Unable to open export window.");
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <LoaderCircle size={28} className="animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-1000 max-w-6xl mx-auto pt-6 pb-20">
-      
-      {/* ── 1. HEADER & HEALTH CORE ── */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="max-w-6xl mx-auto space-y-6 px-4 md:px-0">
+      <section className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-          <h1 className={`text-4xl md:text-5xl font-black tracking-tight mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Good morning, {profile?.user?.full_name?.split(' ')[0] || 'Subject'}.
+          <h1 className={`text-4xl md:text-5xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+            Your Health. Understood Over Time.
           </h1>
-          <p className={`text-lg font-medium tracking-wide ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Your systems are synchronized.
+          <p className={`mt-2 text-lg ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            {isNewUser ? "Upload your first report to activate your clinical timeline." : "A cleaner view of the patterns, signals, and changes shaping your health story."}
           </p>
         </div>
-        
-        {/* Health Core Indicator */}
-        <div className={`flex items-center gap-4 px-6 py-3 rounded-full border backdrop-blur-md ${isDark ? 'bg-slate-900/50 border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.1)]' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
-          <div className="relative flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-cyan-500 border-2 border-slate-900"></span>
-          </div>
-          <div>
-            <div className={`text-[0.65rem] font-black uppercase tracking-[0.2em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>System Integrity</div>
-            <div className={`text-sm font-bold ${isDark ? 'text-cyan-400' : 'text-blue-600'}`}>92% • Optimal</div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleExport}
+            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
+              isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-white text-slate-700 hover:bg-slate-100 shadow-sm"
+            }`}
+          >
+            <Download size={16} />
+            Export AI Health Summary
+          </button>
+          <div className={`rounded-2xl px-5 py-4 ${isDark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700 shadow-sm"}`}>
+            <div className="text-xs font-black uppercase tracking-[0.25em] opacity-60">Reports</div>
+            <div className="text-3xl font-black mt-1">{reports.length}</div>
           </div>
         </div>
       </section>
 
-      {/* ── 2. MAIN GRID ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* LEFT COLUMN (Appointments & Insights) */}
-        <div className="lg:col-span-5 space-y-6 flex flex-col">
-          
-          {/* Upcoming Appointment */}
-          <div className="space-y-3 flex-1">
-            <h2 className={`text-[0.65rem] font-black uppercase tracking-[0.3em] ${isDark ? 'text-slate-500' : 'text-slate-400'} ml-2`}>
-              Next Scheduled Visit
-            </h2>
-            <motion.div initial="rest" whileHover="hover" variants={cardHover} className="h-full">
-              <GlassSurface
-                width="100%"
-                height="100%"
-                borderRadius={32}
-                backgroundOpacity={isDark ? 0.2 : 0.7}
-                className={`p-8 border h-full flex flex-col justify-between ${isDark ? 'border-white/10' : 'border-white/60 shadow-xl'}`}
-              >
-                <div>
-                  <div className="flex items-start justify-between mb-8">
-                    <div className={`p-4 rounded-2xl ${isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-blue-500/10 text-blue-600'}`}>
-                      <Calendar size={32} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex items-center gap-2">
-                       <span className="relative flex h-2 w-2">
-                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                       </span>
-                       <span className={`text-xs font-bold tracking-widest uppercase ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                         Confirmed
-                       </span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-1 mb-6">
-                    <h3 className={`text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      {upcomingAppointment.doctor}
-                    </h3>
-                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {upcomingAppointment.specialty}
-                    </p>
-                  </div>
-                </div>
+      {isNewUser ? (
+        <DashboardCard isDark={isDark} title="Start Your Medical Timeline" subtitle="Upload a report to generate extraction, trends, and structured history.">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="rounded-2xl bg-blue-500/10 text-blue-500 p-4">
+                <Microscope size={28} />
+              </div>
+              <p className={`${isDark ? "text-slate-300" : "text-slate-700"} font-semibold max-w-2xl`}>
+                Upload your first report and the system will extract medical values, generate timeline context, and begin tracking trends automatically.
+              </p>
+            </div>
 
-                <div className={`space-y-3 pt-6 border-t ${isDark ? 'border-white/10' : 'border-slate-200/50'}`}>
-                  <div className="flex items-center gap-3">
-                    <Clock size={16} className={isDark ? 'text-slate-500' : 'text-slate-400'} />
-                    <span className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                      {upcomingAppointment.date} • {upcomingAppointment.time}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPin size={16} className={isDark ? 'text-slate-500' : 'text-slate-400'} />
-                    <span className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                      {upcomingAppointment.location}
-                    </span>
-                  </div>
-                </div>
-              </GlassSurface>
-            </motion.div>
-          </div>
-
-          {/* AI Insight Panel */}
-          <motion.div initial="rest" whileHover="hover" variants={cardHover}>
-            <GlassSurface
-               width="100%"
-               borderRadius={24}
-               backgroundOpacity={isDark ? 0.3 : 0.6}
-               className={`p-6 border relative overflow-hidden ${isDark ? 'border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-transparent' : 'border-blue-200 bg-blue-50/50 shadow-lg'}`}
+            <button
+              type="button"
+              onClick={() => navigate("/patient/reports")}
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-500 transition-colors"
             >
-               <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500" />
-               <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg ${isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-blue-100 text-blue-600'}`}>
-                     <BrainCircuit size={20} />
-                  </div>
-                  <div>
-                     <h3 className={`text-xs font-black uppercase tracking-[0.2em] mb-1 ${isDark ? 'text-cyan-400' : 'text-blue-600'}`}>System Insight</h3>
-                     <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                       Vitamin D levels remain below optimal thresholds. A minor adjustment to your D3 supplementation protocol is recommended before the winter phase.
-                     </p>
-                  </div>
-               </div>
-            </GlassSurface>
-          </motion.div>
+              Upload First Report
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </DashboardCard>
+      ) : null}
 
-          {/* Genetic Profile & Medical Notes (New) */}
-          {profile?.medical_history && (
-            <motion.div initial="rest" whileHover="hover" variants={cardHover}>
-              <GlassSurface
-                width="100%"
-                borderRadius={24}
-                backgroundOpacity={isDark ? 0.2 : 0.7}
-                className={`p-6 border ${isDark ? 'border-white/10' : 'border-white shadow-lg'}`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-2 rounded-lg ${isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
-                    <AlertCircle size={20} />
+      {exportError ? (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+          {exportError}
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-6">
+        <HealthCore
+          score={healthScore.score}
+          status={healthScore.status}
+          explanation={healthScore.explanation}
+          reasons={healthScore.reasons}
+          isDark={isDark}
+        />
+        <HealthSignals alerts={alerts} anomalies={anomalies} isDark={isDark} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-6">
+        <DashboardCard
+          isDark={isDark}
+          title="Health Summary"
+          subtitle={latestReport ? `${formatDate(latestReport.report_date || latestReport.created_at)}${latestReport.lab_name ? ` • ${latestReport.lab_name}` : ""}` : "No report summary yet"}
+        >
+          <div className="space-y-4">
+            <div className={`rounded-2xl p-4 ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
+              <div className={`text-xs font-black uppercase tracking-[0.24em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                Latest Interpretation
+              </div>
+              <div className={`mt-3 text-lg leading-7 ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+                {latestReport?.summary || insights?.summary?.[0] || "A fuller summary will appear once more reports are processed."}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {healthSummaryItems.length ? (
+                healthSummaryItems.map((item) => (
+                  <div key={item} className={`rounded-2xl p-4 ${isDark ? "bg-cyan-500/10 text-slate-200" : "bg-blue-50 text-slate-700"}`}>
+                    {item}
                   </div>
-                  <h3 className={`text-xs font-black uppercase tracking-[0.2em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Genetic Profile & Medical Notes</h3>
+                ))
+              ) : (
+                <div className={`rounded-2xl p-4 text-sm ${isDark ? "bg-white/5 text-slate-400" : "bg-slate-50 text-slate-500"}`}>
+                  Summary insights will appear as more structured reports are processed.
                 </div>
-                <div className={`p-4 rounded-xl text-sm font-medium leading-relaxed ${isDark ? 'bg-white/5 border border-white/5 text-slate-300' : 'bg-slate-50 border border-slate-100 text-slate-700'}`}>
-                  {profile.medical_history}
-                </div>
-              </GlassSurface>
-            </motion.div>
+              )}
+            </div>
+          </div>
+        </DashboardCard>
+
+        <ProfilePanel profile={profile} reports={reports} trends={trends} isDark={isDark} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[0.95fr_1.05fr] gap-6">
+        <DashboardCard isDark={isDark} title="Quick Stats" subtitle="Latest key markers from your newest structured report">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {quickStats.length ? (
+              quickStats.map((stat) => (
+                <Link
+                  key={stat.name}
+                  to={`/patient/parameter/${stat.name}`}
+                  className={`rounded-2xl p-4 transition-colors ${isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-slate-100"}`}
+                >
+                  <div className={`text-xs font-black uppercase tracking-[0.22em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                    {formatParameterLabel(stat.name)}
+                  </div>
+                  <div className={`mt-2 text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                    {stat.value}
+                  </div>
+                  <div className={`mt-1 text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    {stat.unit || "-"} • {stat.status || stat.interpretation || "unknown"}
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className={`${isDark ? "text-slate-500" : "text-slate-400"} text-sm`}>
+                Quick stats will appear after the first structured report is processed.
+              </div>
+            )}
+          </div>
+        </DashboardCard>
+
+        <DashboardCard isDark={isDark} title="Mini Trends" subtitle="A clean read on recent hemoglobin and platelet movement">
+          {miniTrendData.length ? (
+            <div className="space-y-4">
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={miniTrendData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(148,163,184,0.12)" : "rgba(148,163,184,0.18)"} vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={formatShortDate}
+                      stroke={isDark ? "#94a3b8" : "#64748b"}
+                      tickLine={false}
+                      axisLine={false}
+                      fontSize={12}
+                    />
+                    <YAxis
+                      yAxisId="hemoglobin"
+                      orientation="left"
+                      stroke={isDark ? "#60a5fa" : "#3b82f6"}
+                      tickLine={false}
+                      axisLine={false}
+                      fontSize={12}
+                    />
+                    <YAxis
+                      yAxisId="platelets"
+                      orientation="right"
+                      stroke={isDark ? "#2dd4bf" : "#0f766e"}
+                      tickLine={false}
+                      axisLine={false}
+                      fontSize={12}
+                    />
+                    <Tooltip content={<MiniTrendTooltip isDark={isDark} />} />
+                    <Line yAxisId="hemoglobin" type="monotone" dataKey="hemoglobin" name="Hemoglobin" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+                    <Line yAxisId="platelets" type="monotone" dataKey="platelets" name="Platelets (x10^3/uL)" stroke="#14b8a6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <Link
+                to="/patient/trends"
+                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
+                  isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <TrendingUp size={16} />
+                Open Full Trends
+              </Link>
+            </div>
+          ) : (
+            <div className={`${isDark ? "text-slate-500" : "text-slate-400"} text-sm`}>
+              Mini-trends appear once enough processed reports are available.
+            </div>
           )}
+        </DashboardCard>
+      </div>
 
-        </div>
-
-        {/* RIGHT COLUMN (Health Signals & Timeline) */}
-        <div className="lg:col-span-7 space-y-6">
-          
-          {/* Health Signals */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-6">
+        <DashboardCard isDark={isDark} title="Timeline Preview" subtitle="Your three most recent reports, each with a quick clinical takeaway">
           <div className="space-y-3">
-            <div className="flex items-center justify-between ml-2">
-              <h2 className={`text-[0.65rem] font-black uppercase tracking-[0.3em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                Health Signals
-              </h2>
-              <button className={`text-[0.65rem] uppercase font-black tracking-widest transition-colors flex items-center gap-1 ${isDark ? 'text-cyan-400 hover:text-cyan-300' : 'text-blue-600 hover:text-blue-500'}`}>
-                See All <ChevronRight size={12} />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {healthSignals.map((signal, i) => (
-                <motion.div key={i} initial="rest" whileHover="hover" variants={cardHover}>
-                  <GlassSurface
-                    width="100%"
-                    height="auto"
-                    borderRadius={24}
-                    backgroundOpacity={isDark ? 0.2 : 0.6}
-                    className={`p-5 border ${isDark ? 'border-white/5' : 'border-white/40 shadow-md'}`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-2 rounded-xl ${signal.bg} ${signal.color}`}>
-                        <signal.icon size={18} className="opacity-90" strokeWidth={2} />
+            {recentReports.length ? (
+              recentReports.map((report) => (
+                <Link
+                  key={report.id}
+                  to="/patient/timeline"
+                  className={`block rounded-2xl p-4 transition-colors ${isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-slate-100"}`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className={`text-xs font-black uppercase tracking-[0.22em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                        {report.report_type || "Medical Report"}
                       </div>
-                      {/* Status Dot */}
-                      <div className={`h-2 w-2 rounded-full ${signal.status === 'Low' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]'}`} />
+                      <div className={`mt-2 font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                        {formatDate(report.report_date || report.created_at)}
+                      </div>
+                      <div className={`mt-1 text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                        {report.lab_name || "Unknown lab"}
+                      </div>
                     </div>
-                    
-                    <span className={`block text-[0.65rem] font-black uppercase tracking-widest mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {signal.name}
-                    </span>
-                    
-                    <div className="flex items-end gap-1 mb-3">
-                      <span className={`text-2xl font-black tracking-tighter leading-none ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {signal.value}
-                      </span>
-                      <span className={`text-xs font-bold mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {signal.unit}
-                      </span>
-                    </div>
+                  </div>
 
-                    <div className={`flex items-center gap-1.5 text-xs font-bold pt-3 border-t ${isDark ? 'border-white/5 text-slate-300' : 'border-slate-200 text-slate-600'}`}>
-                      <RenderTrendIcon trend={signal.trend} />
-                      {signal.status}
-                    </div>
-                  </GlassSurface>
-                </motion.div>
-              ))}
+                  <div className={`mt-4 text-sm leading-6 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                    {getReportPreviewInsight(report)}
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className={`rounded-2xl p-4 text-sm ${isDark ? "bg-white/5 text-slate-400" : "bg-slate-50 text-slate-500"}`}>
+                Timeline entries will appear as soon as reports are uploaded.
+              </div>
+            )}
+          </div>
+        </DashboardCard>
+
+        <DashboardCard isDark={isDark} title="System Stats" subtitle="A clean overview of your current report intelligence footprint">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: "Reports", value: reports.length },
+              { label: "Categories", value: categoryCount || 0 },
+              { label: "Abnormal", value: abnormalParameterCount },
+              { label: "Conditions", value: activeConditionCount },
+            ].map((item) => (
+              <div key={item.label} className={`rounded-2xl p-4 ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
+                <div className={`text-xs font-black uppercase tracking-[0.22em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                  {item.label}
+                </div>
+                <div className={`mt-2 text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                  {item.value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={`mt-5 rounded-2xl p-4 ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
+            <div className={`text-xs font-black uppercase tracking-[0.24em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+              Consultation Status
+            </div>
+            <div className={`mt-2 text-lg font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+              {activeCase ? activeCase.status.replaceAll("_", " ") : "No active case"}
+            </div>
+            <div className={`mt-1 text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              {activeCase ? activeCase.title : "Request a consultation when you want doctor-led review."}
             </div>
           </div>
-
-          {/* Timeline Preview */}
-          <div className="space-y-3 pt-2">
-            <h2 className={`text-[0.65rem] font-black uppercase tracking-[0.3em] ${isDark ? 'text-slate-500' : 'text-slate-400'} ml-2`}>
-              Hemoglobin Trajectory (6 Months)
-            </h2>
-            <motion.div initial="rest" whileHover="hover" variants={cardHover}>
-              <GlassSurface
-                 width="100%"
-                 height="240px"
-                 borderRadius={32}
-                 backgroundOpacity={isDark ? 0.2 : 0.6}
-                 className={`p-6 border flex flex-col ${isDark ? 'border-white/10' : 'border-white/60 shadow-xl'}`}
-              >
-                 <div className="flex-1 w-full h-full relative -ml-4 -mr-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                       <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                         <defs>
-                           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                             <stop offset="5%" stopColor={isDark ? "#06b6d4" : "#3b82f6"} stopOpacity={0.4}/>
-                             <stop offset="95%" stopColor={isDark ? "#06b6d4" : "#3b82f6"} stopOpacity={0}/>
-                           </linearGradient>
-                         </defs>
-                         <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} hide />
-                         <Area 
-                           type="monotone" 
-                           dataKey="value" 
-                           stroke={isDark ? "#06b6d4" : "#3b82f6"} 
-                           strokeWidth={3}
-                           fillOpacity={1} 
-                           fill="url(#colorValue)" 
-                         />
-                       </AreaChart>
-                    </ResponsiveContainer>
-                    {/* Fake X-Axis Labels for aesthetic */}
-                    <div className={`absolute bottom-0 left-6 right-2 flex justify-between text-[0.6rem] font-black uppercase tracking-widest opacity-40 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                       <span>Oct</span>
-                       <span>Nov</span>
-                       <span>Dec</span>
-                       <span>Jan</span>
-                       <span>Feb</span>
-                       <span>Mar</span>
-                    </div>
-                 </div>
-              </GlassSurface>
-            </motion.div>
-          </div>
-
-        </div>
+        </DashboardCard>
       </div>
     </div>
   );

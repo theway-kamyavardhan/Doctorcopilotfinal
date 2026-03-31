@@ -7,9 +7,10 @@ from app.schemas.common import TimestampedResponse
 
 
 class CaseCreate(BaseModel):
-    patient_id: UUID
-    title: str
+    patient_id: UUID | None = None
+    title: str | None = None
     description: str | None = None
+    type: str = "consultation_request"
 
 
 class CaseStatusUpdate(BaseModel):

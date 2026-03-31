@@ -22,10 +22,10 @@ router = APIRouter()
 @router.post("", response_model=CaseRead)
 async def create_case(
     payload: CaseCreate,
-    current_user=Depends(get_current_active_role_user("doctor")),
+    current_user=Depends(get_current_active_role_user()),
     db: AsyncSession = Depends(get_db),
 ) -> CaseRead:
-    return await CaseService(db).create_case(current_user.id, payload)
+    return await CaseService(db).create_case(current_user, payload)
 
 
 @router.get("", response_model=list[CaseRead])
@@ -82,6 +82,15 @@ async def create_case_message(
     message = await CaseService(db).create_message(case_id, current_user, payload)
     await connection_manager.broadcast_case_message(case_id, message)
     return message
+
+
+@router.get("/{case_id}/messages", response_model=list[MessageRead])
+async def list_case_messages(
+    case_id: UUID,
+    current_user=Depends(get_current_active_role_user()),
+    db: AsyncSession = Depends(get_db),
+) -> list[MessageRead]:
+    return await CaseService(db).list_messages_for_user(case_id, current_user)
 
 
 @router.websocket("/ws/{case_id}")

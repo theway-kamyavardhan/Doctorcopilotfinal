@@ -14,6 +14,7 @@ from app.services.clinical_normalization.service import ClinicalNormalizer
 from app.services.insights.normalization import clean_numeric_value, extract_numeric_value_from_text, normalize_parameter_name
 from app.services.processing.metadata_extractor import clean_ocr_text, extract_metadata_bundle
 from app.services.processing.ocr import TextExtractionEngine
+from app.services.processing.report_classifier import ReportClassifier
 from app.services.storage.local import LocalFileStorage
 
 
@@ -24,6 +25,7 @@ class ReportProcessingOrchestrator:
         self.text_extractor = TextExtractionEngine()
         self.ai_client = OpenAIExtractionClient()
         self.clinical_normalizer = ClinicalNormalizer()
+        self.report_classifier = ReportClassifier()
 
     async def process_upload(self, patient: Patient, file: UploadFile, case_id: UUID | None) -> Report:
         saved_path, checksum = await self.storage.save_upload(file)
@@ -108,12 +110,28 @@ class ReportProcessingOrchestrator:
             clinical_result = self.clinical_normalizer.normalize(structured.key_values)
             validated_parameters = self._validate_normalized_parameters(clinical_result.parameters)
             validated_key_values = {parameter["name"]: parameter for parameter in validated_parameters}
+            classification = self.report_classifier.classify(
+                raw_text=cleaned_text,
+                structured_report_type=structured.report_type,
+                parameters=validated_parameters,
+                insights=[insight.model_dump() for insight in structured.insights],
+            )
+            report.report_category = classification.report_category
+            report.report_keywords = classification.keywords
+            metadata_result.metadata["classification"] = {
+                "report_type": classification.report_type,
+                "category": classification.report_category,
+                "keywords": classification.keywords,
+            }
             report.parameters = validated_parameters
             metadata_result.metadata = self._validate_metadata(metadata_result.metadata)
             clinical_data = {
                 "report_type": structured.report_type,
+                "report_category": classification.report_category,
+                "report_keywords": classification.keywords,
                 "summary": structured.summary,
                 "parameters": validated_parameters,
+                "panels": clinical_result.panels,
                 "key_values": validated_key_values,
                 "normalized_terms": [term.model_dump() for term in structured.normalized_terms],
                 "insights": [insight.model_dump() for insight in structured.insights],
@@ -124,8 +142,11 @@ class ReportProcessingOrchestrator:
                 "metadata": metadata_result.metadata,
                 "clinical_data": clinical_data,
                 "parameters": validated_parameters,
+                "panels": clinical_result.panels,
                 "cleaned": clinical_result.cleaned,
                 "report_type": structured.report_type,
+                "report_category": classification.report_category,
+                "report_keywords": classification.keywords,
                 "summary": structured.summary,
                 "key_values": validated_key_values,
                 "normalized_terms": clinical_data["normalized_terms"],
@@ -160,6 +181,9 @@ class ReportProcessingOrchestrator:
                 detail="Clinical-grade normalization completed.",
                 payload={
                     "normalized_keys": list(validated_key_values.keys()),
+                    "panels": {key: len(value) for key, value in clinical_result.panels.items()},
+                    "report_category": classification.report_category,
+                    "report_keywords": classification.keywords,
                     "cleaned": clinical_result.cleaned,
                     "confidence": clinical_result.confidence,
                     "interpretation_fixes_applied": all(parameter["status"] for parameter in validated_parameters),
@@ -242,10 +266,24 @@ class ReportProcessingOrchestrator:
             validated_key_values = {parameter["name"]: parameter for parameter in validated_parameters}
             metadata_result.metadata = self._validate_metadata(metadata_result.metadata)
             metadata_result.metadata["report"]["report_type"] = metadata_result.metadata["report"].get("report_type") or structured.report_type
+            classification = self.report_classifier.classify(
+                raw_text=cleaned_text,
+                structured_report_type=structured.report_type,
+                parameters=validated_parameters,
+                insights=[insight.model_dump() for insight in structured.insights],
+            )
+            metadata_result.metadata["classification"] = {
+                "report_type": classification.report_type,
+                "category": classification.report_category,
+                "keywords": classification.keywords,
+            }
             clinical_data = {
                 "report_type": structured.report_type,
+                "report_category": classification.report_category,
+                "report_keywords": classification.keywords,
                 "summary": structured.summary,
                 "parameters": validated_parameters,
+                "panels": clinical_result.panels,
                 "key_values": validated_key_values,
                 "normalized_terms": [term.model_dump() for term in structured.normalized_terms],
                 "insights": [insight.model_dump() for insight in structured.insights],
@@ -256,8 +294,11 @@ class ReportProcessingOrchestrator:
                 "metadata": metadata_result.metadata,
                 "clinical_data": clinical_data,
                 "parameters": validated_parameters,
+                "panels": clinical_result.panels,
                 "cleaned": clinical_result.cleaned,
                 "report_type": structured.report_type,
+                "report_category": classification.report_category,
+                "report_keywords": classification.keywords,
                 "summary": structured.summary,
                 "key_values": validated_key_values,
                 "normalized_terms": clinical_data["normalized_terms"],
@@ -288,6 +329,9 @@ class ReportProcessingOrchestrator:
                 detail="Debug clinical normalization completed.",
                 payload={
                     "normalized_keys": list(clinical_result.key_values.keys()),
+                    "panels": {key: len(value) for key, value in clinical_result.panels.items()},
+                    "report_category": classification.report_category,
+                    "report_keywords": classification.keywords,
                     "cleaned": clinical_result.cleaned,
                     "confidence": clinical_result.confidence,
                 },
@@ -301,6 +345,7 @@ class ReportProcessingOrchestrator:
                 "final_output": final_output,
                 "parsed_data": parsed_data,
                 "parameters": validated_parameters,
+                "panels": clinical_result.panels,
                 "insights": clinical_data["insights"],
                 "confidence": clinical_result.confidence,
                 "cleaned": clinical_result.cleaned,

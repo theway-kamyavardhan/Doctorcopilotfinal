@@ -35,6 +35,8 @@ class ReportRead(TimestampedResponse):
     file_name: str
     mime_type: str
     report_type: str | None
+    report_category: str | None = None
+    report_keywords: list[str] = Field(default_factory=list)
     report_metadata: dict[str, Any] | None = None
     parameters: list[dict[str, Any]] = Field(default_factory=list)
     patient_name: str | None = None
@@ -47,6 +49,7 @@ class ReportRead(TimestampedResponse):
     report_generation_date: date | None = None
     report_time: time | None = None
     date_confidence: str | None = None
+    raw_text: str | None = None
     summary: str | None
     status: ReportStatus
     extracted_data: ExtractedDataRead | None = None
@@ -55,6 +58,11 @@ class ReportRead(TimestampedResponse):
     @field_validator("parameters", mode="before")
     @classmethod
     def default_parameters(cls, value):
+        return value or []
+
+    @field_validator("report_keywords", mode="before")
+    @classmethod
+    def default_keywords(cls, value):
         return value or []
 
 
@@ -76,6 +84,7 @@ class DebugProcessReportResponse(BaseModel):
     raw_text: str
     metadata: dict[str, Any]
     parameters: list[dict[str, Any]] = Field(default_factory=list)
+    panels: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)
     insights: list[dict[str, Any]] = Field(default_factory=list)
     confidence: float | None = None
     cleaned: bool = False

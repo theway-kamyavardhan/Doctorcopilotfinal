@@ -98,6 +98,7 @@ class TrendService:
         )
         metrics = self._build_metrics(sorted_series)
         summary = self.generate_trend_summary(sorted_series, metrics)
+        anomalies = self._build_anomalies(sorted_series, metrics)
         debug = self._build_debug_payload(
             canonical_debug_entries,
             normalization_trace,
@@ -113,6 +114,7 @@ class TrendService:
             series=sorted_series,
             metrics=metrics,
             summary=summary,
+            anomalies=anomalies,
             reports=report_summaries,
             debug=debug,
         )
@@ -123,6 +125,8 @@ class TrendService:
         metrics: dict[str, TrendMetric],
     ) -> list[str]:
         summary: list[str] = []
+        improving = 0
+        declining = 0
         for name, points in series.items():
             if len(points) < 2:
                 continue
@@ -132,6 +136,17 @@ class TrendService:
             transition_summary = self._summarize_status_transition(label, statuses, metric, name)
             if transition_summary:
                 summary.append(transition_summary)
+            condition_summary = self._build_condition_level_insight(name, points, statuses)
+            if condition_summary:
+                summary.append(condition_summary)
+            if metric.direction == "increasing" and statuses[-1] in {"normal", "sufficient"}:
+                improving += 1
+            elif metric.direction == "decreasing" or statuses[-1] in {"low", "high", "deficient", "insufficient"}:
+                declining += 1
+
+        system_summary = self._build_system_level_insight(improving, declining)
+        if system_summary:
+            summary.append(system_summary)
         return list(dict.fromkeys(summary))
 
     async def _fetch_reports(self, patient_id: UUID) -> list[Report]:
@@ -234,10 +249,16 @@ class TrendService:
             percent = None
             if first_value != 0:
                 percent = round((delta / first_value) * 100, 2)
+            direction = self._classify_direction([point.value for point in points])
+            stability_score = self._calculate_stability_score([point.value for point in points])
             metrics[name] = TrendMetric(
                 delta=delta,
                 percentage_change=percent,
-                trend=self._classify_direction([point.value for point in points]),
+                change=self._format_percentage_change(percent),
+                direction=direction,
+                stability_score=stability_score,
+                stability=self._stability_label(stability_score),
+                trend=direction,
                 unit=points[-1].unit,
             )
         return metrics
@@ -260,6 +281,29 @@ class TrendService:
         if delta < -threshold:
             return "decreasing"
         return "stable"
+
+    def _calculate_stability_score(self, values: list[float]) -> float:
+        if len(values) <= 1:
+            return 100.0
+
+        deltas = [abs(values[index] - values[index - 1]) for index in range(1, len(values))]
+        baseline = max(sum(abs(value) for value in values) / len(values), 1.0)
+        volatility_ratio = sum(deltas) / len(deltas) / baseline
+        stability_score = max(0.0, min(100.0, round(100 - (volatility_ratio * 100), 2)))
+        return stability_score
+
+    def _stability_label(self, score: float) -> str:
+        if score >= 85:
+            return "stable"
+        if score >= 60:
+            return "watchful"
+        return "volatile"
+
+    def _format_percentage_change(self, percent: float | None) -> str | None:
+        if percent is None:
+            return None
+        prefix = "+" if percent > 0 else ""
+        return f"{prefix}{percent}%"
 
     def _label(self, name: str) -> str:
         return name.replace("_", " ").capitalize()
@@ -314,6 +358,126 @@ class TrendService:
             return f"{label} shows a downward trend"
         return None
 
+    def _build_condition_level_insight(
+        self,
+        name: str,
+        points: list[TrendValuePoint],
+        statuses: list[str],
+    ) -> str | None:
+        abnormal_statuses = {"low", "high", "deficient", "insufficient"}
+        consecutive_abnormal = sum(1 for status in statuses if status in abnormal_statuses)
+        label = self._label(name)
+
+        if name == "vitamin_b12" and consecutive_abnormal >= 2:
+            return f"Persistent Vitamin B12 deficiency since {points[0].date}"
+        if name == "platelets" and consecutive_abnormal >= 3 and all(status == "low" for status in statuses[-3:]):
+            return f"Platelets low in {min(3, len(points))} consecutive reports"
+        if name == "iron" and consecutive_abnormal >= 2 and all(status == "high" for status in statuses[-2:]):
+            return "Iron consistently high across recent reports"
+        if consecutive_abnormal >= 3 and statuses[-1] in abnormal_statuses:
+            return f"{label} has remained abnormal across multiple reports"
+        return None
+
+    def _build_system_level_insight(self, improving: int, declining: int) -> str | None:
+        if improving >= 2 and improving > declining:
+            return "Overall blood profile improving over time"
+        if declining >= 2 and declining > improving:
+            return "Multiple markers are trending in a concerning direction"
+        return None
+
+    def _build_anomalies(
+        self,
+        series: dict[str, list[TrendValuePoint]],
+        metrics: dict[str, TrendMetric],
+    ) -> list[dict[str, Any]]:
+        anomalies: list[dict[str, Any]] = []
+
+        for name, points in series.items():
+            if not points:
+                continue
+
+            label = self._label(name)
+            statuses = [self._derive_status(name, point) for point in points]
+            abnormal_statuses = {"low", "high", "deficient", "insufficient"}
+            abnormal_count = sum(1 for status in statuses if status in abnormal_statuses)
+
+            if abnormal_count >= 2 and statuses[-1] in abnormal_statuses:
+                anomaly_type = f"persistent_{statuses[-1]}"
+                anomalies.append(
+                    {
+                        "parameter": name,
+                        "type": anomaly_type,
+                        "message": f"{label} consistently {statuses[-1]} across {abnormal_count} reports",
+                        "severity": "critical" if abnormal_count >= 3 else "warning",
+                    }
+                )
+
+            if len(points) >= 2:
+                previous = points[-2].value
+                latest = points[-1].value
+                if previous:
+                    percent_change = round(((latest - previous) / previous) * 100, 2)
+                    if percent_change <= -15:
+                        anomalies.append(
+                            {
+                                "parameter": name,
+                                "type": "sudden_drop",
+                                "message": f"{label} dropped {abs(percent_change)}% from the last report",
+                                "severity": "critical" if abs(percent_change) >= 25 else "warning",
+                            }
+                        )
+                    elif percent_change >= 15:
+                        anomalies.append(
+                            {
+                                "parameter": name,
+                                "type": "sudden_rise",
+                                "message": f"{label} increased {percent_change}% from the last report",
+                                "severity": "warning",
+                            }
+                        )
+
+            latest_point = points[-1]
+            if self._is_critical_value(name, latest_point.value, statuses[-1]):
+                anomalies.append(
+                    {
+                        "parameter": name,
+                        "type": "critical_value",
+                        "message": self._critical_value_message(name, latest_point.value, latest_point.unit),
+                        "severity": "critical",
+                    }
+                )
+
+        unique: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for item in anomalies:
+            signature = f"{item['parameter']}|{item['type']}|{item['message']}"
+            if signature in seen:
+                continue
+            seen.add(signature)
+            unique.append(item)
+        return unique
+
+    def _is_critical_value(self, name: str, value: float, status: str) -> bool:
+        if name == "platelets":
+            return value < 100000 or value > 600000
+        if name == "hemoglobin":
+            return value < 9 or value > 19
+        if name == "iron":
+            return value > 190
+        if name == "vitamin_b12":
+            return status == "deficient" and value < 150
+        return False
+
+    def _critical_value_message(self, name: str, value: float, unit: str | None) -> str:
+        label = self._label(name)
+        if name == "platelets":
+            return f"{label} is at a critically abnormal level ({value} {unit or ''}).".strip()
+        if name == "iron":
+            return f"{label} is markedly elevated ({value} {unit or ''}).".strip()
+        if name == "vitamin_b12":
+            return f"{label} is severely reduced ({value} {unit or ''}).".strip()
+        return f"{label} is outside the expected range at {value} {unit or ''}.".strip()
+
     def _is_low(self, name: str, value: float) -> bool:
         thresholds = {"platelets": 150000, "hemoglobin": 12.0, "vitamin_b12": 200.0}
         return value < thresholds.get(name, float("-inf"))
@@ -349,6 +513,62 @@ class TrendService:
         normalized_unit = normalized_unit.replace("x10^3/µL", "×10³/µL")
         normalized_unit = normalized_unit.replace("x10^6/uL", "×10⁶/µL")
         normalized_unit = normalized_unit.replace("x10^6/µL", "×10⁶/µL")
+
+        if name == "platelets":
+            if numeric_value < 1000:
+                numeric_value = round(numeric_value * 1000, 2)
+            normalized_unit = "/µL"
+        elif name == "white_blood_cells":
+            if numeric_value > 1000:
+                numeric_value = round(numeric_value / 1000, 2)
+            normalized_unit = "×10³/µL"
+
+        if numeric_value != original_value or normalized_unit != original_unit:
+            unit_corrections.append(
+                {
+                    "parameter": name,
+                    "from_value": original_value,
+                    "to_value": numeric_value,
+                    "from_unit": original_unit or None,
+                    "to_unit": normalized_unit or None,
+                }
+            )
+
+        return {
+            **param,
+            "value": numeric_value,
+            "unit": normalized_unit or None,
+        }
+
+    def _normalize_trend_parameter(
+        self,
+        param: dict[str, Any],
+        unit_corrections: list[dict[str, Any]],
+    ) -> dict[str, Any] | None:
+        name = param.get("name")
+        value = param.get("value")
+        if not name or not isinstance(value, (float, int)):
+            return None
+
+        numeric_value = float(value)
+        unit = str(param.get("unit") or "").strip()
+        original_value = numeric_value
+        original_unit = unit
+
+        unit_map = {
+            "Î¼": "µ",
+            "Âµ": "µ",
+            "uL": "µL",
+            "ul": "µL",
+            "ug/dL": "µg/dL",
+            "x10^3/uL": "×10³/µL",
+            "x10^3/µL": "×10³/µL",
+            "x10^6/uL": "×10⁶/µL",
+            "x10^6/µL": "×10⁶/µL",
+        }
+        normalized_unit = unit
+        for source, target in unit_map.items():
+            normalized_unit = normalized_unit.replace(source, target)
 
         if name == "platelets":
             if numeric_value < 1000:
@@ -509,6 +729,10 @@ class TrendService:
             deltas[name] = {
                 "delta": metrics[name].delta,
                 "percentage_change": metrics[name].percentage_change,
+                "change": metrics[name].change,
+                "direction": metrics[name].direction,
+                "stability_score": metrics[name].stability_score,
+                "stability": metrics[name].stability,
                 "trend": metrics[name].trend,
             }
 

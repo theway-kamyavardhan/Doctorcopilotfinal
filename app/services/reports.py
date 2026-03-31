@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import UUID
 
 from fastapi import UploadFile
@@ -59,6 +60,26 @@ class ReportService:
         orchestrator = ReportProcessingOrchestrator(self.db)
         result = await orchestrator.debug_process(patient, file)
         return DebugProcessReportResponse(**result)
+
+    async def delete_report(self, report_id: UUID, current_user: User) -> None:
+        patient = await self._get_patient_by_user_id(current_user.id)
+        statement = select(Report).where(Report.id == report_id)
+        report = (await self.db.execute(statement)).scalar_one_or_none()
+        if not report:
+            raise NotFoundError("Report not found.")
+        if report.patient_id != patient.id:
+            raise AuthorizationError("You can only delete your own reports.")
+
+        file_path = Path(report.file_path) if report.file_path else None
+        await self.db.delete(report)
+        await self.db.commit()
+
+        if file_path and file_path.exists():
+            try:
+                file_path.unlink()
+            except OSError:
+                # Keep the DB delete successful even if local cleanup fails.
+                pass
 
     async def _get_patient_by_user_id(self, user_id) -> Patient:
         patient = (await self.db.execute(select(Patient).where(Patient.user_id == user_id))).scalar_one_or_none()

@@ -24,3 +24,4 @@ class Case(UUIDTimestampMixin, Base):
     reports = relationship("Report", back_populates="case")
     messages = relationship("Message", back_populates="case", cascade="all, delete-orphan")
     clinical_notes = relationship("ClinicalNote", back_populates="case", cascade="all, delete-orphan")
+    appointments = relationship("Appointment", back_populates="case", cascade="all, delete-orphan")

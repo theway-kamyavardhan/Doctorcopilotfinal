@@ -1,3 +1,4 @@
+from app.models.appointment import Appointment  # noqa: F401
 from app.models.case import Case  # noqa: F401
 from app.models.doctor import Doctor  # noqa: F401
 from app.models.message import Message  # noqa: F401

@@ -7,6 +7,7 @@ import LiquidEther from "../ui/LiquidEther";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
 import { User, Stethoscope, ShieldCheck, ArrowRight, Mail, Lock, PlusCircle } from "lucide-react";
+import { authService } from "../../services/auth.service";
 
 const ROLES = [
   { id: 'patient', label: 'Patient', icon: User, color: '#06b6d4' },
@@ -28,10 +29,9 @@ export default function Login() {
     e.preventDefault();
     setIsAuthenticating(true);
     try {
-      const data = await authService.login({ identifier, password });
-      // Role is typically returned in the user object or the data itself
-      const userRoleFull = data.user?.role || role; 
-      const userRole = userRoleFull.toLowerCase();
+      await authService.loginUser({ username: identifier.trim(), password });
+      const currentUser = await authService.getMe();
+      const userRole = String(currentUser.role || role).toLowerCase();
       navigate(`/${userRole}/dashboard`);
     } catch (err) {
       console.error(err);
@@ -185,7 +185,7 @@ export default function Login() {
                     <Lock size={18} className={isDark ? "text-[var(--gold-soft)] opacity-60" : "text-slate-400"} />
                     <input
                       type="password"
-                      placeholder="Access Token"
+                      placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full py-4 bg-transparent border-none focus:ring-0 text-sm font-bold outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-colors"

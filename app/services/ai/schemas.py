@@ -15,6 +15,7 @@ class MedicalKeyValue(BaseModel):
     unit: str | None = None
     reference_range: str | None = None
     interpretation: str | None = None
+    panel: str | None = None
 
 
 class InsightMetadataItem(BaseModel):

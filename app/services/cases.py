@@ -20,17 +20,32 @@ class CaseService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    async def create_case(self, doctor_user_id, payload: CaseCreate) -> Case:
-        doctor = await self._get_doctor_by_user_id(doctor_user_id)
-        patient = await self.db.get(Patient, payload.patient_id)
-        if not patient:
-            raise NotFoundError("Patient not found.")
-        case = Case(
-            patient_id=patient.id,
-            doctor_id=doctor.id,
-            title=payload.title,
-            description=payload.description,
-        )
+    async def create_case(self, current_user: User, payload: CaseCreate) -> Case:
+        if current_user.role == UserRole.DOCTOR:
+            doctor = await self._get_doctor_by_user_id(current_user.id)
+            if not payload.patient_id:
+                raise NotFoundError("Patient not found.")
+            patient = await self.db.get(Patient, payload.patient_id)
+            if not patient:
+                raise NotFoundError("Patient not found.")
+            case = Case(
+                patient_id=patient.id,
+                doctor_id=doctor.id,
+                title=payload.title or "Consultation Case",
+                description=payload.description,
+                status=CaseStatus.OPEN,
+            )
+        elif current_user.role == UserRole.PATIENT:
+            patient = await self._get_patient_by_user_id(current_user.id)
+            case = Case(
+                patient_id=patient.id,
+                doctor_id=None,
+                title=payload.title or "Consultation Request",
+                description=payload.description or "Patient requested a consultation.",
+                status=CaseStatus.PENDING,
+            )
+        else:
+            raise AuthorizationError("Only doctors and patients can create cases.")
         self.db.add(case)
         await self.db.commit()
         await self.db.refresh(case)
@@ -92,11 +107,22 @@ class CaseService:
         case = await self._get_case(case_id)
         await self.ensure_case_membership(case_id, user)
         sender_type = SenderType.DOCTOR if user.role == UserRole.DOCTOR else SenderType.PATIENT
+        if sender_type == SenderType.PATIENT:
+            doctor_message = await self.db.scalar(
+                select(Message.id).where(Message.case_id == case.id, Message.sender_type == SenderType.DOCTOR).limit(1)
+            )
+            if not doctor_message:
+                raise AuthorizationError("Waiting for doctor to start consultation.")
         message = Message(case_id=case.id, sender_user_id=user.id, sender_type=sender_type, content=payload.content, message_type=payload.message_type)
         self.db.add(message)
         await self.db.commit()
         await self.db.refresh(message)
         return message
+
+    async def list_messages_for_user(self, case_id: UUID, user: User) -> list[Message]:
+        await self.ensure_case_membership(case_id, user)
+        statement = select(Message).where(Message.case_id == case_id).order_by(Message.created_at.asc())
+        return list((await self.db.scalars(statement)).all())
 
     async def ensure_case_membership(self, case_id: UUID, user: User) -> None:
         case = await self._get_case(case_id)

@@ -8,7 +8,7 @@ from app.schemas.user import UserRead
 
 class PatientCreate(BaseModel):
     email: EmailStr
-    password: str | None = Field(default=None, min_length=8)
+    password: str | None = Field(default=None)
     full_name: str
     gender: str | None = None
     age: int | None = None
@@ -28,6 +28,11 @@ class PatientUpdate(BaseModel):
     phone_number: str | None = None
     emergency_contact: str | None = None
     medical_history: str | None = None
+
+
+class PatientPasswordUpdate(BaseModel):
+    old_password: str
+    new_password: str = Field(min_length=8)
 
 
 class PatientRead(TimestampedResponse):

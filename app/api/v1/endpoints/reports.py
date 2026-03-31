@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -37,3 +37,13 @@ async def get_report(
     db: AsyncSession = Depends(get_db),
 ) -> ReportRead:
     return await ReportService(db).get_report(report_id, current_user)
+
+
+@router.delete("/{report_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+async def delete_report(
+    report_id: UUID,
+    current_user=Depends(get_current_active_role_user("patient")),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await ReportService(db).delete_report(report_id, current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

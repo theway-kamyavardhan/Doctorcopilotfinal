@@ -23,6 +23,12 @@ class DoctorService:
             doctor.user.full_name = payload.full_name
         if payload.specialization is not None:
             doctor.specialization = payload.specialization
+        if payload.hospital is not None:
+            doctor.hospital = payload.hospital
+        if payload.location is not None:
+            doctor.location = payload.location
+        if payload.phone_number is not None:
+            doctor.phone_number = payload.phone_number
         if payload.bio is not None:
             doctor.bio = payload.bio
         await self.db.commit()
@@ -43,6 +49,7 @@ class DoctorService:
         report_stmt = select(func.count(Report.id)).join(Case, Case.id == Report.case_id).where(Case.doctor_id == doctor.id)
         return DoctorDashboard(
             total_cases=sum(counts.values()),
+            pending_cases=counts.get(CaseStatus.PENDING, 0),
             open_cases=counts[CaseStatus.OPEN],
             in_review_cases=counts[CaseStatus.IN_REVIEW],
             closed_cases=counts[CaseStatus.CLOSED],

@@ -25,6 +25,8 @@ class Report(UUIDTimestampMixin, Base):
     mime_type: Mapped[str] = mapped_column(String(128), nullable=False)
     checksum: Mapped[str | None] = mapped_column(String(128), nullable=True)
     report_type: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    report_category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    report_keywords: Mapped[list | None] = mapped_column(JSONB().with_variant(JSON(), "sqlite"), nullable=True, default=list)
     report_metadata: Mapped[dict | None] = mapped_column(JSONB().with_variant(JSON(), "sqlite"), nullable=True, default=dict)
     parameters: Mapped[list | None] = mapped_column(JSONB().with_variant(JSON(), "sqlite"), nullable=True, default=list)
     patient_name: Mapped[str | None] = mapped_column(String(255), nullable=True)

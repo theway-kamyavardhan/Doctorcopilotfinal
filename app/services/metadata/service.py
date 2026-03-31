@@ -148,6 +148,8 @@ class ReportMetadataExtractor:
                 "lab_name": lab_name,
                 "hospital_name": self._extract_hospital_name(raw_text),
                 "address": self._extract_lab_address(raw_text),
+                "location": self._extract_lab_address(raw_text),
+                "phone": self._extract_lab_phone(raw_text),
                 "lab_id": self._extract_lab_id(raw_text),
                 "accreditation": self._extract_labeled_value(raw_text, [r"nabl", r"cap", r"iso", r"accreditation"]),
             },
@@ -155,6 +157,7 @@ class ReportMetadataExtractor:
                 "doctor_name": doctor_name,
                 "referring_doctor": self._extract_labeled_value(raw_text, [r"referred\s+by", r"referring\s+doctor"]),
                 "consulting_doctor": self._extract_labeled_value(raw_text, [r"consultant", r"consulting\s+doctor"]),
+                "doctor_contact": self._extract_doctor_contact(raw_text),
                 "doctor_specialization": self._extract_labeled_value(raw_text, [r"speciali[sz]ation", r"department", r"speciality"]),
             },
             "sample": {
@@ -245,6 +248,10 @@ class ReportMetadataExtractor:
             "email": email_match.group(0) if email_match else None,
         }
 
+    def _extract_phone_number(self, value: str) -> str | None:
+        match = re.search(r"(\+?\d[\d\s-]{7,}\d)", value or "", re.IGNORECASE)
+        return self._clean_captured_value(match.group(1)) if match else None
+
     def _extract_lab_name(self, raw_text: str) -> str | None:
         labeled = self._extract_labeled_value(raw_text, [r"lab(?:oratory)?\s+name", r"diagnostic\s+center", r"laboratory"])
         if labeled:
@@ -272,6 +279,10 @@ class ReportMetadataExtractor:
     def _extract_lab_id(self, raw_text: str) -> str | None:
         return self._extract_labeled_value(raw_text, [r"lab\s+id", r"laboratory\s+id"])
 
+    def _extract_lab_phone(self, raw_text: str) -> str | None:
+        labeled = self._extract_labeled_value(raw_text, [r"lab\s+phone", r"laboratory\s+phone", r"contact", r"phone"])
+        return self._extract_phone_number(labeled or raw_text)
+
     def _extract_doctor_name(self, raw_text: str) -> str | None:
         labeled = self._extract_labeled_value(
             raw_text,
@@ -281,6 +292,10 @@ class ReportMetadataExtractor:
             match = re.search(r"(Dr\.?\s*[A-Za-z][A-Za-z.\s]+)", labeled, re.IGNORECASE)
             return self._clean_person_name(match.group(1) if match else labeled, doctor=True)
         return None
+
+    def _extract_doctor_contact(self, raw_text: str) -> str | None:
+        labeled = self._extract_labeled_value(raw_text, [r"doctor\s+contact", r"consultant\s+contact", r"doctor\s+phone"])
+        return self._extract_phone_number(labeled or "")
 
     def _extract_report_type(self, raw_text: str) -> str | None:
         labeled = self._extract_labeled_value(raw_text, [r"report\s+type", r"test\s+name", r"investigation"])

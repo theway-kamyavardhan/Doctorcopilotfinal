@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import LiquidEther from '../../components/ui/LiquidEther';
 import { authService } from '../../services/auth.service';
 import {
-  User, Mail, Phone, Heart, Activity, ArrowLeft,
-  ChevronRight, CheckCircle2, Copy, LogIn, Shield, Info, Calendar
+  User, Mail, Phone, Heart, ArrowLeft,
+  ChevronRight, CheckCircle2, Copy, Shield, Info, Calendar
 } from 'lucide-react';
 
 export default function RegisterPatient() {
@@ -27,6 +27,7 @@ export default function RegisterPatient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successData, setSuccessData] = useState(null);
+  const [copiedType, setCopiedType] = useState(null); // 'id', 'pass', 'all'
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,21 +52,53 @@ export default function RegisterPatient() {
       }
 
       const payload = {
-        ...formData,
-        age: calculatedAge
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim(),
+        phone_number: formData.phone_number.trim(),
+        birth_date: formData.birth_date || null,
+        gender: formData.gender || null,
+        blood_group: formData.blood_group || null,
+        medical_history: formData.medical_history.trim() || null,
+        age: calculatedAge,
+        password: formData.password.trim() || null
       };
 
       const response = await authService.registerPatient(payload);
-      setSuccessData(response);
+      setSuccessData({
+        ...response,
+        password: formData.password.trim() || response.password || "Unavailable",
+      });
     } catch (err) {
-      setError(err.message || 'Registration failed. Please verify your connection.');
+      console.error('Registration Error:', err);
+      
+      let errorMessage = 'Initialization failed. Please check your data.';
+      
+      // Map technical errors to cinematic "System Messages"
+      const technicalMsg = (err?.message || String(err)).toLowerCase();
+      
+      if (technicalMsg.includes('already registered') || technicalMsg.includes('already exists')) {
+        errorMessage = 'This subject is already registered in the neural database.';
+      } else if (err.message) {
+        errorMessage = typeof err.message === 'string' ? err.message : JSON.stringify(err.message);
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, type) => {
     navigator.clipboard.writeText(text);
+    setCopiedType(type);
+    setTimeout(() => setCopiedType(null), 2000);
+  };
+
+  const copyAllCredentials = () => {
+    const text = `System ID: ${successData.patient_id}\nAccess Key: ${successData.password}`;
+    copyToClipboard(text, 'all');
   };
 
   const appleEase = [0.22, 1, 0.36, 1];
@@ -97,14 +130,23 @@ export default function RegisterPatient() {
             <p className="text-[var(--text-secondary)] font-medium mb-10">Your medical profile is now active on the neural grid.</p>
 
             <div className="space-y-4 mb-10 text-left">
+              {/* Sync Status Badge */}
+              {false && (
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl mb-4 text-[0.6rem] font-bold uppercase tracking-widest ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                  <Info size={14} />
+                  Neural Profile Active • Identity Sync Pending
+                </div>
+              )}
+
               <div className={`p-5 rounded-2xl border transition-all ${isDark ? 'bg-slate-800/50 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[0.6rem] font-bold uppercase tracking-widest opacity-40">System ID (For Login)</span>
                   <button 
-                    onClick={() => copyToClipboard(successData.patient_id)}
-                    className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-blue-500"
+                    onClick={() => copyToClipboard(successData.patient_id, 'id')}
+                    className={`p-1.5 rounded-lg transition-all flex items-center gap-2 text-xs font-bold ${copiedType === 'id' ? 'text-emerald-500 bg-emerald-500/10' : 'text-blue-500 hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
-                    <Copy size={14} />
+                    {copiedType === 'id' ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                    {copiedType === 'id' && "Copied"}
                   </button>
                 </div>
                 <div className="text-xl font-mono font-bold tracking-wider">
@@ -116,16 +158,30 @@ export default function RegisterPatient() {
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[0.6rem] font-bold uppercase tracking-widest opacity-40">Access Key</span>
                   <button 
-                    onClick={() => copyToClipboard(successData.password || "")}
-                    className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-blue-500"
+                    onClick={() => copyToClipboard(successData.password || "", 'pass')}
+                    className={`p-1.5 rounded-lg transition-all flex items-center gap-2 text-xs font-bold ${copiedType === 'pass' ? 'text-emerald-500 bg-emerald-500/10' : 'text-blue-500 hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
-                    <Copy size={14} />
+                    {copiedType === 'pass' ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                    {copiedType === 'pass' && "Copied"}
                   </button>
                 </div>
-                <div className="text-xl font-mono font-bold tracking-wider blur-sm hover:blur-none transition-all duration-300 cursor-help">
+                <div className="text-xl font-mono font-bold tracking-wider">
                   {successData.password || "••••••••"}
                 </div>
               </div>
+
+              {/* Copy All Button */}
+              <button
+                onClick={copyAllCredentials}
+                className={`w-full py-3 rounded-2xl border flex items-center justify-center gap-2 text-[0.65rem] font-bold uppercase tracking-widest transition-all ${
+                  copiedType === 'all' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+                    : 'bg-blue-500/5 border-blue-500/10 text-blue-500 hover:bg-blue-500/10'
+                }`}
+              >
+                {copiedType === 'all' ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+                {copiedType === 'all' ? 'All Credentials Copied' : 'Copy All Credentials'}
+              </button>
             </div>
 
             <button
@@ -288,7 +344,7 @@ export default function RegisterPatient() {
 
               {/* Password */}
               <div className="space-y-2 md:col-span-1">
-                <label className="text-[0.65rem] font-bold uppercase tracking-widest opacity-40 ml-1 text-blue-500">Secure Access Key (Optional)</label>
+                <label className="text-[0.65rem] font-bold uppercase tracking-widest opacity-40 ml-1 text-blue-500">Secure Access Key</label>
                 <div className={`flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800/50 border-white/5 focus-within:border-blue-500/50 focus-within:ring-4 focus-within:ring-blue-500/5' : 'bg-slate-50 border-slate-100 focus-within:border-blue-500/50 focus-within:ring-4 focus-within:ring-blue-500/5'}`}>
                   <Shield size={18} className="text-slate-400" />
                   <input
@@ -297,7 +353,7 @@ export default function RegisterPatient() {
                     value={formData.password}
                     onChange={handleChange}
                     className="bg-transparent border-none outline-none w-full text-base font-semibold placeholder:opacity-20"
-                    placeholder="Auto-generate if blank"
+                    placeholder="Minimum 8 characters"
                   />
                 </div>
               </div>

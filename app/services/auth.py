@@ -74,6 +74,9 @@ class AuthService:
             user=user,
             license_number=payload.license_number,
             specialization=payload.specialization,
+            hospital=payload.hospital,
+            location=payload.location,
+            phone_number=payload.phone_number,
             bio=payload.bio,
         )
         self.db.add(doctor)

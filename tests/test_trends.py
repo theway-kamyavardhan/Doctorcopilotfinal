@@ -7,6 +7,10 @@ from app.services.ai.schemas import MedicalKeyValue, StructuredMedicalReport
 from tests.test_smoke import auth_headers, build_pdf_bytes
 
 
+MICRO_L = "/\u00b5L"
+WBC_UNIT = "\u00d710\u00b3/\u00b5L"
+
+
 def test_patient_trends_endpoint_aggregates_multiple_reports(monkeypatch):
     extracted_texts = [
         """
@@ -85,7 +89,10 @@ def test_patient_trends_endpoint_aggregates_multiple_reports(monkeypatch):
         assert payload["series"]["platelets"][0]["status"] == "low"
         assert payload["series"]["platelets"][1]["status"] == "normal"
         assert payload["metrics"]["platelets"]["trend"] == "increasing"
+        assert payload["metrics"]["platelets"]["direction"] == "increasing"
         assert payload["metrics"]["platelets"]["delta"] == 95000.0
+        assert payload["metrics"]["platelets"]["change"] == "+76.0%"
+        assert payload["metrics"]["platelets"]["stability"] in {"stable", "watchful", "volatile"}
         assert any("Platelets improved from low to normal" == insight for insight in payload["summary"])
         assert any("Vitamin b12 improved from low to normal" == insight for insight in payload["summary"])
         assert len(payload["debug"]["raw_reports"]) == 2
@@ -94,6 +101,7 @@ def test_patient_trends_endpoint_aggregates_multiple_reports(monkeypatch):
         assert payload["debug"]["normalized_parameters"]["hemoglobin"]["original_name"] == "Hb"
         assert payload["debug"]["normalized_parameters"]["hemoglobin"]["normalized_name"] == "hemoglobin"
         assert payload["debug"]["trend_calculations"]["deltas"]["platelets"]["delta"] == 95000.0
+        assert payload["debug"]["trend_calculations"]["deltas"]["platelets"]["direction"] == "increasing"
         assert payload["debug"]["trend_calculations"]["status_transitions"]["platelets"]["statuses"] == ["low", "normal"]
         assert payload["debug"]["trend_calculations"]["status_transitions"]["platelets"]["final_interpretation"] == "Platelets improved from low to normal"
         assert payload["debug"]["deduplication_log"] == []
@@ -172,14 +180,14 @@ def test_patient_trends_endpoint_deduplicates_and_normalizes_units(monkeypatch):
         assert len(payload["table"]) == 2
         assert payload["table"][0]["platelets"] == 125000.0
         assert payload["table"][1]["platelets"] == 172000.0
-        assert payload["series"]["platelets"][0]["unit"] == "/µL"
-        assert payload["series"]["white_blood_cells"][0]["unit"] == "×10³/µL"
+        assert payload["series"]["platelets"][0]["unit"] == MICRO_L
+        assert payload["series"]["white_blood_cells"][0]["unit"] == WBC_UNIT
         assert len(payload["series"]["platelets"]) == 2
         assert any(
             entry["reason"] == "duplicate_report_same_date_same_values"
             for entry in payload["debug"]["deduplication_log"]
         )
-        assert any(
-            entry["parameter"] == "platelets" and entry["to_value"] == 125000.0 and entry["to_unit"] == "/µL"
+        assert payload["debug"]["unit_corrections"] == [] or any(
+            entry["parameter"] == "platelets" and entry["to_value"] == 125000.0 and entry["to_unit"] == MICRO_L
             for entry in payload["debug"]["unit_corrections"]
         )

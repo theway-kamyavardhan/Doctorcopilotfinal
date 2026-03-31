@@ -2,10 +2,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import AuthenticationError, NotFoundError
+from app.core.security import hash_password, verify_password
 from app.models.patient import Patient
 from app.models.report import Report, ReportInsight
-from app.schemas.patient import PatientUpdate
+from app.schemas.patient import PatientPasswordUpdate, PatientUpdate
 from app.schemas.insights import PatientInsightsResponse
 from app.schemas.trends import PatientTrendsResponse
 from app.services.insights.service import InsightsService
@@ -23,10 +24,19 @@ class PatientService:
         patient = await self._get_patient_by_user_id(user_id)
         if payload.full_name is not None:
             patient.user.full_name = payload.full_name
-        for field in ["gender", "birth_date", "phone_number", "emergency_contact", "medical_history"]:
+        for field in ["gender", "age", "birth_date", "blood_group", "phone_number", "emergency_contact", "medical_history"]:
             value = getattr(payload, field)
             if value is not None:
                 setattr(patient, field, value)
+        await self.db.commit()
+        await self.db.refresh(patient, attribute_names=["user"])
+        return patient
+
+    async def change_password(self, user_id, payload: PatientPasswordUpdate) -> Patient:
+        patient = await self._get_patient_by_user_id(user_id)
+        if not verify_password(payload.old_password, patient.user.hashed_password):
+            raise AuthenticationError("Current password is incorrect.")
+        patient.user.hashed_password = hash_password(payload.new_password)
         await self.db.commit()
         await self.db.refresh(patient, attribute_names=["user"])
         return patient
@@ -37,7 +47,7 @@ class PatientService:
             select(Report)
             .where(Report.patient_id == patient.id)
             .options(selectinload(Report.extracted_data), selectinload(Report.insights))
-            .order_by(Report.created_at.desc())
+            .order_by(Report.report_date.desc(), Report.created_at.desc())
         )
         return list((await self.db.scalars(statement)).all())
 

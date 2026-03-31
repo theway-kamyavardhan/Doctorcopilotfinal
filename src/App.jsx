@@ -9,16 +9,28 @@ import Landing from "./components/landing/Landing";
 // Patient Imports
 import PatientLayout from "./components/patient/PatientLayout";
 import PatientDashboard from "./pages/patient/PatientDashboard";
-import PatientTrends from "./pages/patient/PatientTrends";
-import PatientReports from "./pages/patient/PatientReports";
+import Timeline from "./pages/patient/Timeline";
+import Trends from "./pages/patient/Trends";
+import Reports from "./pages/patient/Reports";
+import ParameterDetail from "./pages/patient/ParameterDetail";
 import PatientCases from "./pages/patient/PatientCases";
 import PatientChats from "./pages/patient/PatientChats";
+import Settings from "./pages/patient/Settings";
 import RegisterPatient from "./pages/auth/RegisterPatient";
 
 // Other Roles
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ParticleTransition from "./components/ui/ParticleTransition";
+import { authService } from "./services/auth.service";
+
+function ProtectedRoute({ children }) {
+  if (!authService.hasToken()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -69,38 +81,54 @@ function AnimatedRoutes() {
         <Route path="/register/patient" element={<RegisterPatient />} />
 
         {/* NESTED PATIENT ROUTES */}
-        <Route path="/patient" element={<PatientLayout />}>
+        <Route
+          path="/patient"
+          element={
+            <ProtectedRoute>
+              <PatientLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/patient/dashboard" replace />} />
           <Route path="dashboard" element={<PatientDashboard />} />
-          <Route path="trends" element={<PatientTrends />} />
-          <Route path="reports" element={<PatientReports />} />
+          <Route path="timeline" element={<Timeline />} />
+          <Route path="trends" element={<Trends />} />
+          <Route path="parameter/:name" element={<ParameterDetail />} />
+          <Route path="reports" element={<Reports />} />
           <Route path="cases" element={<PatientCases />} />
+          <Route path="case" element={<PatientCases />} />
           <Route path="chats" element={<PatientChats />} />
+          <Route path="chat" element={<PatientChats />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         <Route 
           path="/doctor/dashboard" 
           element={
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: appleEase }}
-            >
-              <DoctorDashboard />
-            </motion.div>
+            <ProtectedRoute>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: appleEase }}
+              >
+                <DoctorDashboard />
+              </motion.div>
+            </ProtectedRoute>
           } 
         />
 
         <Route 
           path="/admin/dashboard" 
           element={
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: appleEase }}
-            >
-              <AdminDashboard />
-            </motion.div>
+            <ProtectedRoute>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: appleEase }}
+              >
+                <AdminDashboard />
+              </motion.div>
+            </ProtectedRoute>
           } 
         />
       </Routes>

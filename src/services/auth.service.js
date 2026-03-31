@@ -1,111 +1,98 @@
-/**
- * DoctorCopilot Auth Service
- * Handles API communication for authentication and registration.
- */
+import api, { clearAuthToken, getAuthToken, setAuthToken } from "./api";
 
-const API_BASE_URL = '/api/v1/auth';
+const AUTH_BASE_PATH = "/api/v1/auth";
+
+function getErrorMessage(error, fallbackMessage) {
+  return error?.response?.data?.detail || error?.message || fallbackMessage;
+}
+
+export async function loginUser({ username, password }) {
+  try {
+    const response = await api.post(`${AUTH_BASE_PATH}/login`, {
+      username,
+      password,
+    });
+
+    if (response.data?.access_token) {
+      setAuthToken(response.data.access_token);
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Login failed."));
+  }
+}
+
+export async function registerPatient(payload) {
+  try {
+    const response = await api.post(`${AUTH_BASE_PATH}/register/patient`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Patient registration failed."));
+  }
+}
+
+export async function getMe() {
+  if (!getAuthToken()) {
+    throw new Error("No authentication token found.");
+  }
+
+  try {
+    const response = await api.get(`${AUTH_BASE_PATH}/me`);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to fetch current user."));
+  }
+}
+
+export async function getPatientProfile() {
+  if (!getAuthToken()) {
+    throw new Error("No authentication token found.");
+  }
+
+  try {
+    const response = await api.get("/api/v1/patients/me");
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to fetch patient profile."));
+  }
+}
+
+export async function updatePatientProfile(payload) {
+  try {
+    const response = await api.patch("/api/v1/patients/me", payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to update patient profile."));
+  }
+}
+
+export async function changePatientPassword(payload) {
+  try {
+    const response = await api.patch("/api/v1/patients/me/password", payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to update password."));
+  }
+}
+
+export function logout() {
+  clearAuthToken();
+}
+
+export function hasToken() {
+  return Boolean(getAuthToken());
+}
 
 export const authService = {
-  /**
-   * Register a new patient
-   * @param {Object} data - Patient registration data
-   * @returns {Promise<Object>} The created patient profile
-   */
-  registerPatient: async (data) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/register/patient`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Registration failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Registration Error:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Login user and store token
-   * @param {Object} credentials - Email and Password
-   * @returns {Promise<Object>} Token response
-   */
-  login: async (credentials) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
-      }
-
-      const data = await response.json();
-      if (data.access_token) {
-        localStorage.setItem('token', data.access_token);
-      }
-      return data;
-    } catch (error) {
-      console.error('Login Error:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Get current user profile
-   * @returns {Promise<Object>} User profile
-   */
-  getMe: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('No authentication token found');
-
-    const response = await fetch(`${API_BASE_URL}/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) throw new Error('Failed to fetch user profile');
-    return await response.json();
-  },
-
-  /**
-   * Get current patient specific profile
-   * @returns {Promise<Object>} Patient profile
-   */
-  getPatientProfile: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('No authentication token found');
-
-    const response = await fetch('/api/v1/patients/me', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) throw new Error('Failed to fetch patient profile');
-    return await response.json();
-  },
-
-  /**
-   * Logout user
-   */
-  logout: () => {
-    localStorage.removeItem('token');
-  }
+  loginUser,
+  registerPatient,
+  getMe,
+  getPatientProfile,
+  updatePatientProfile,
+  changePatientPassword,
+  logout,
+  hasToken,
 };
 
 export default authService;

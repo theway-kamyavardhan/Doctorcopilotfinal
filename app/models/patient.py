@@ -27,3 +27,4 @@ class Patient(UUIDTimestampMixin, Base):
     user = relationship("User", back_populates="patient_profile")
     reports = relationship("Report", back_populates="patient")
     cases = relationship("Case", back_populates="patient")
+    appointments = relationship("Appointment", back_populates="patient", cascade="all, delete-orphan")
