@@ -8,9 +8,14 @@ from app.models.mixins import UUIDTimestampMixin
 
 class User(UUIDTimestampMixin, Base):
     __tablename__ = "users"
-    __table_args__ = (Index("ix_users_email", "email", unique=True), Index("ix_users_role_active", "role", "is_active"))
+    __table_args__ = (
+        Index("ix_users_email", "email", unique=True),
+        Index("ix_users_admin_code", "admin_code", unique=True),
+        Index("ix_users_role_active", "role", "is_active"),
+    )
 
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    admin_code: Mapped[str | None] = mapped_column(String(32), nullable=True, unique=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False)

@@ -25,9 +25,19 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ParticleTransition from "./components/ui/ParticleTransition";
 import { authService } from "./services/auth.service";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, roleRequired = null }) {
   if (!authService.hasToken()) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (roleRequired) {
+    const currentRole = authService.getStoredRole();
+    if (!currentRole) {
+      return <Navigate to="/login" replace />;
+    }
+    if (currentRole !== authService.normalizeRole(roleRequired)) {
+      return <Navigate to={authService.getDashboardPathForRole(currentRole)} replace />;
+    }
   }
 
   return children;
@@ -85,7 +95,7 @@ function AnimatedRoutes() {
         <Route
           path="/patient"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute roleRequired="patient">
               <PatientLayout />
             </ProtectedRoute>
           }
@@ -105,9 +115,9 @@ function AnimatedRoutes() {
         </Route>
 
         <Route 
-          path="/doctor/dashboard" 
+          path="/doctor/*" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute roleRequired="doctor">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -120,9 +130,9 @@ function AnimatedRoutes() {
         />
 
         <Route 
-          path="/admin/dashboard" 
+          path="/admin/*" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute roleRequired="admin">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

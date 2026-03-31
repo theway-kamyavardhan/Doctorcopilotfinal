@@ -29,10 +29,13 @@ export default function Login() {
     e.preventDefault();
     setIsAuthenticating(true);
     try {
-      await authService.loginUser({ username: identifier.trim(), password });
+      const normalizedIdentifier =
+        role === "admin" ? identifier.trim().toUpperCase() : identifier.trim();
+
+      await authService.loginUser({ username: normalizedIdentifier, password });
       const currentUser = await authService.getMe();
-      const userRole = String(currentUser.role || role).toLowerCase();
-      navigate(`/${userRole}/dashboard`);
+      const targetPath = authService.getDashboardPathForRole(currentUser.role || role);
+      navigate(targetPath, { replace: true });
     } catch (err) {
       console.error(err);
       alert(err.message || 'Verification failed. Neural link rejected.');

@@ -72,6 +72,16 @@ def ensure_runtime_schema(connection) -> None:
         for statement in doctor_additions:
             connection.execute(text(statement))
 
+    inspector = inspect(connection)
+    if "users" in inspector.get_table_names():
+        user_cols = {column["name"] for column in inspector.get_columns("users")}
+        user_additions: list[str] = []
+        if "admin_code" not in user_cols:
+            user_additions.append("ALTER TABLE users ADD COLUMN admin_code VARCHAR(32)")
+
+        for statement in user_additions:
+            connection.execute(text(statement))
+
     # Use IF NOT EXISTS for indexes to avoid conflicts with Metadata creation
     connection.execute(text("CREATE INDEX IF NOT EXISTS ix_reports_report_date ON reports (report_date)"))
     # The patient_id index is already handled by the model, but we add IF NOT EXISTS for safety
@@ -79,4 +89,8 @@ def ensure_runtime_schema(connection) -> None:
         connection.execute(text("CREATE INDEX IF NOT EXISTS ix_patients_patient_id ON patients (patient_id)"))
     except Exception:
         # If SQLite version doesn't support IF NOT EXISTS or it's already there
+        pass
+    try:
+        connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_admin_code ON users (admin_code)"))
+    except Exception:
         pass

@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const TOKEN_STORAGE_KEY = "token";
+const ROLE_STORAGE_KEY = "role";
 
 const api = axios.create({
   baseURL: "http://127.0.0.1:8000",
@@ -23,8 +24,19 @@ export function getAuthToken() {
   return localStorage.getItem(TOKEN_STORAGE_KEY);
 }
 
+export function setAuthRole(role) {
+  if (role) {
+    localStorage.setItem(ROLE_STORAGE_KEY, String(role).toLowerCase());
+  }
+}
+
+export function getAuthRole() {
+  return localStorage.getItem(ROLE_STORAGE_KEY);
+}
+
 export function clearAuthToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(ROLE_STORAGE_KEY);
 }
 
 export async function processReport(file, token) {

@@ -88,6 +88,11 @@ class AuthService:
         # Check if the identifier is a Patient ID (e.g., starts with P-)
         if payload.identifier.startswith("P-"):
             statement = select(User).join(Patient).where(Patient.patient_id == payload.identifier)
+        elif payload.identifier.upper().startswith("ADMIN-"):
+            statement = select(User).where(
+                User.admin_code == payload.identifier.upper(),
+                User.role == UserRole.ADMIN,
+            )
         else:
             statement = select(User).where(User.email == payload.identifier)
             
