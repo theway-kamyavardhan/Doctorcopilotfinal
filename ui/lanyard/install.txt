@@ -1,0 +1,5 @@
+npx shadcn@latest add @react-bits/Lanyard-JS-TW
+yarn add three meshline @react-three/fiber @react-three/drei @react-three/rapier
+
+if you want cli :
+npx shadcn@latest add @react-bits/Lanyard-JS-TW

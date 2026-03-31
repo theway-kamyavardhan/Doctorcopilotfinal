@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, TokenResponse
 from app.schemas.doctor import DoctorCreate, DoctorRead
-from app.schemas.patient import PatientCreate, PatientRead
+from app.schemas.patient import PatientCreate, PatientRead, PatientRegistrationResponse
 from app.schemas.user import UserRead
 from app.services.auth import AuthService
 from app.utils.dependencies import get_current_user
@@ -12,8 +12,8 @@ from app.utils.dependencies import get_current_user
 router = APIRouter()
 
 
-@router.post("/register/patient", response_model=PatientRead, status_code=status.HTTP_201_CREATED)
-async def register_patient(payload: PatientCreate, db: AsyncSession = Depends(get_db)) -> PatientRead:
+@router.post("/register/patient", response_model=PatientRegistrationResponse, status_code=status.HTTP_201_CREATED)
+async def register_patient(payload: PatientCreate, db: AsyncSession = Depends(get_db)) -> PatientRegistrationResponse:
     return await AuthService(db).register_patient(payload)
 
 

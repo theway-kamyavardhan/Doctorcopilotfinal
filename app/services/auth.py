@@ -18,16 +18,26 @@ class AuthService:
 
     async def register_patient(self, payload: PatientCreate) -> Patient:
         await self._ensure_unique_email(payload.email)
+        
+        # Auto-generate password if not provided
+        password = payload.password or self._generate_temp_password()
+        
+        # Generate Patient ID (e.g., P-10045)
+        patient_id = await self._generate_patient_id()
+
         user = User(
             email=payload.email,
-            hashed_password=hash_password(payload.password),
+            hashed_password=hash_password(password),
             full_name=payload.full_name,
             role=UserRole.PATIENT,
         )
         patient = Patient(
             user=user,
+            patient_id=patient_id,
             gender=payload.gender,
+            age=payload.age,
             birth_date=payload.birth_date,
+            blood_group=payload.blood_group,
             phone_number=payload.phone_number,
             emergency_contact=payload.emergency_contact,
             medical_history=payload.medical_history,
@@ -35,7 +45,22 @@ class AuthService:
         self.db.add(patient)
         await self.db.commit()
         await self.db.refresh(patient, attribute_names=["user"])
+        
+        # Attach raw password temporarily so it can be returned to the user on creation
+        setattr(patient, "_raw_password", password)
         return patient
+
+    def _generate_temp_password(self) -> str:
+        import secrets
+        import string
+        alphabet = string.ascii_letters + string.digits
+        return ''.join(secrets.choice(alphabet) for i in range(12))
+
+    async def _generate_patient_id(self) -> str:
+        from sqlalchemy import func
+        statement = select(func.count(Patient.id))
+        count = (await self.db.execute(statement)).scalar() or 0
+        return f"P-{10000 + count + 1}"
 
     async def register_doctor(self, payload: DoctorCreate) -> Doctor:
         await self._ensure_unique_email(payload.email)
@@ -57,7 +82,12 @@ class AuthService:
         return doctor
 
     async def login(self, payload: LoginRequest) -> TokenResponse:
-        statement = select(User).where(User.email == payload.email)
+        # Check if the identifier is a Patient ID (e.g., starts with P-)
+        if payload.identifier.startswith("P-"):
+            statement = select(User).join(Patient).where(Patient.patient_id == payload.identifier)
+        else:
+            statement = select(User).where(User.email == payload.identifier)
+            
         user = (await self.db.execute(statement)).scalar_one_or_none()
         if not user or not verify_password(payload.password, user.hashed_password):
             raise AuthenticationError("Invalid credentials.")

@@ -1,116 +1,127 @@
-import { useState } from "react";
-import UploadPanel from "./components/UploadPanel";
-import ResultViewer from "./components/ResultViewer";
-import InsightsViewer from "./components/InsightsViewer";
-import TrendDashboard from "./components/TrendDashboard";
-import ReportList from "./components/ReportList";
-import MultiUpload from "./components/MultiUpload";
-import { processReport, fetchPatientInsights, fetchPatientTrends, uploadReport, fetchMyReports } from "./services/api";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { ThemeProvider } from "./context/ThemeContext";
+import ThemeReveal from "./components/ui/ThemeReveal";
+import ThemeToggle from "./components/ui/ThemeToggle";
+import Login from "./components/auth/Login";
+import Landing from "./components/landing/Landing";
 
-function App() {
-  const [token, setToken] = useState("");
-  const [result, setResult] = useState(null);
-  const [insights, setInsights] = useState(null);
-  const [trendsData, setTrendsData] = useState(null);
-  const [reports, setReports] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState("");
-  const [patientId, setPatientId] = useState("");
+// Patient Imports
+import PatientLayout from "./components/patient/PatientLayout";
+import PatientDashboard from "./pages/patient/PatientDashboard";
+import PatientTrends from "./pages/patient/PatientTrends";
+import PatientReports from "./pages/patient/PatientReports";
+import PatientCases from "./pages/patient/PatientCases";
+import PatientChats from "./pages/patient/PatientChats";
+import RegisterPatient from "./pages/auth/RegisterPatient";
 
-  const handleUpload = async ({ file, token: tok }) => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const data = await processReport(file, tok);
-      setResult(data);
-    } catch (err) {
-      setError(err?.response?.data?.detail || err.message || "Upload failed.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+// Other Roles
+import DoctorDashboard from "./pages/doctor/DoctorDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ParticleTransition from "./components/ui/ParticleTransition";
 
-  const handleFetchInsights = async (pid) => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const data = await fetchPatientInsights(pid, token);
-      setInsights(data);
-    } catch (err) {
-      setError(err?.response?.data?.detail || err.message || "Failed to fetch insights.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLoadTrends = async (pid) => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const data = await fetchPatientTrends(pid, token);
-      setTrendsData(data);
-    } catch (err) {
-      setError(err?.response?.data?.detail || err.message || "Failed to fetch trends.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUploadMany = async (files) => {
-    setIsUploading(true);
-    setError("");
-    try {
-      for (const file of files) {
-        await uploadReport(file, token);
-      }
-      const data = await fetchMyReports(token);
-      setReports(data);
-    } catch (err) {
-      setError(err?.response?.data?.detail || err.message || "Multi-upload failed.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+function AnimatedRoutes() {
+  const location = useLocation();
+  const appleEase = [0.22, 1, 0.36, 1];
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <h1>DoctorCopilot Debug UI</h1>
-        {error ? <div className="error-banner">{error}</div> : null}
-      </header>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname.split('/')[1] || '/'}>
+        {/* Landing Page as Entry Point */}
+        <Route 
+          path="/" 
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ 
+                opacity: 0, 
+                scale: 1.1,
+                filter: "blur(20px)",
+                transition: { duration: 1.2, ease: appleEase } 
+              }}
+              transition={{ duration: 1, ease: appleEase }}
+            >
+              <Landing />
+            </motion.div>
+          } 
+        />
+        
+        <Route 
+          path="/login" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, filter: "blur(20px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ 
+                opacity: 0, 
+                filter: "blur(20px)",
+                transition: { duration: 1, ease: appleEase } 
+              }}
+              transition={{ duration: 0.8, ease: appleEase }}
+              className="bg-[#02040a]"
+            >
+              <Login />
+            </motion.div>
+          } 
+        />
 
-      <main className="app-main">
-        <UploadPanel
-          onUpload={handleUpload}
-          isLoading={isLoading}
-          token={token}
-          onTokenChange={setToken}
+        <Route path="/register/patient" element={<RegisterPatient />} />
+
+        {/* NESTED PATIENT ROUTES */}
+        <Route path="/patient" element={<PatientLayout />}>
+          <Route index element={<Navigate to="/patient/dashboard" replace />} />
+          <Route path="dashboard" element={<PatientDashboard />} />
+          <Route path="trends" element={<PatientTrends />} />
+          <Route path="reports" element={<PatientReports />} />
+          <Route path="cases" element={<PatientCases />} />
+          <Route path="chats" element={<PatientChats />} />
+        </Route>
+
+        <Route 
+          path="/doctor/dashboard" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: appleEase }}
+            >
+              <DoctorDashboard />
+            </motion.div>
+          } 
         />
-        <MultiUpload
-          token={token}
-          onUploadMany={handleUploadMany}
-          isUploading={isUploading}
+
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: appleEase }}
+            >
+              <AdminDashboard />
+            </motion.div>
+          } 
         />
-        <ResultViewer result={result} />
-        <InsightsViewer
-          token={token}
-          onFetchInsights={handleFetchInsights}
-          insights={insights}
-          isLoading={isLoading}
-        />
-        <TrendDashboard
-          trendsData={trendsData}
-          isLoading={isLoading}
-          onLoad={handleLoadTrends}
-          patientId={patientId}
-          onPatientIdChange={setPatientId}
-          token={token}
-        />
-        <ReportList reports={reports} />
-      </main>
-    </div>
+      </Routes>
+    </AnimatePresence>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className="bg-[var(--bg-primary)] min-h-screen text-[var(--text-primary)] font-sans antialiased overflow-x-hidden transition-colors duration-700">
+          <ThemeReveal />
+          <ThemeToggle />
+          
+          {/* CINEMATIC PARTICLE LAYER */}
+          <ParticleTransition />
+          
+          <AnimatedRoutes />
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}
