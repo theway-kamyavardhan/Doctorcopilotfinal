@@ -4,22 +4,22 @@ export function getAdminTheme(isDark) {
       ? "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.12),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.08),_transparent_22%),#0A0F1C] px-4 py-6 text-white md:px-6"
       : "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.08),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.04),_transparent_22%),#f8fafc] px-4 py-6 text-slate-900 md:px-6",
     surface: isDark
-      ? "rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
-      : "rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-xl shadow-[0_24px_80px_rgba(15,23,42,0.06)]",
+      ? "rounded-[2rem] border border-white/5 bg-white/[0.02] backdrop-blur-3xl shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+      : "rounded-[2rem] border border-slate-200/40 bg-white/70 backdrop-blur-3xl shadow-[0_8px_40px_rgba(15,23,42,0.04)]",
     surfaceMuted: isDark
-      ? "rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.35)]"
-      : "rounded-2xl border border-slate-200/50 bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,250,252,1))] shadow-[0_18px_40px_rgba(15,23,42,0.04)]",
+      ? "rounded-[2rem] border border-white/5 bg-white/[0.01] backdrop-blur-2xl shadow-[0_18px_60px_rgba(0,0,0,0.35)]"
+      : "rounded-[2rem] border border-slate-200/30 bg-white/50 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.03)]",
     insetSurface: isDark
-      ? "rounded-2xl border border-white/10 bg-[#0D1424]/85 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-      : "rounded-2xl border border-slate-200/50 bg-slate-50/80 shadow-[inset_0_1px_0_rgba(255,255,255,1)]",
+      ? "rounded-[1.5rem] border border-white/5 bg-white/[0.03] backdrop-blur-xl"
+      : "rounded-[1.5rem] border border-slate-200/40 bg-slate-50/50 backdrop-blur-xl",
     headerSurface: isDark
-      ? "rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.08),rgba(255,255,255,0.04),rgba(16,185,129,0.05))] backdrop-blur-xl shadow-[0_28px_90px_rgba(0,0,0,0.45)]"
-      : "rounded-2xl border border-slate-200/60 bg-[linear-gradient(135deg,rgba(14,165,233,0.04),rgba(255,255,255,0.8),rgba(16,185,129,0.02))] backdrop-blur-xl shadow-[0_28px_90px_rgba(15,23,42,0.06)]",
-    title: isDark ? "text-white" : "text-slate-900",
+      ? "rounded-[2rem] border border-white/5 bg-white/[0.03] backdrop-blur-3xl shadow-[0_28px_90px_rgba(0,0,0,0.45)]"
+      : "rounded-[2rem] border border-slate-200/40 bg-white/80 backdrop-blur-3xl shadow-[0_12px_50px_rgba(15,23,42,0.05)]",
+    title: isDark ? "text-white" : "text-slate-800",
     body: isDark ? "text-gray-400" : "text-slate-500",
     eyebrow: isDark
-      ? "text-[11px] font-black uppercase tracking-[0.3em] text-cyan-300/90"
-      : "text-[11px] font-black uppercase tracking-[0.3em] text-blue-600/90",
+      ? "text-[11px] font-black uppercase tracking-[0.2em] text-cyan-300/80"
+      : "text-[11px] font-black uppercase tracking-[0.2em] text-slate-500",
     input: isDark
       ? "w-full rounded-2xl border border-white/10 bg-[#0D1424]/90 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 transition-all duration-300 focus:border-cyan-400/40 focus:bg-[#10192D]"
       : "w-full rounded-2xl border border-slate-300/60 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 transition-all duration-300 focus:border-blue-500/50 focus:bg-white shadow-[inset_0_2px_4px_rgba(15,23,42,0.02)]",
@@ -40,19 +40,19 @@ export function getAdminTheme(isDark) {
 
 export function getAdminStatTone(tone = "default", isDark) {
   const tonesDark = {
-    healthy: "border-emerald-400/20 bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(6,182,212,0.08))] text-emerald-100 shadow-[0_18px_50px_rgba(16,185,129,0.14)]",
-    warning: "border-amber-400/20 bg-[linear-gradient(135deg,rgba(245,158,11,0.18),rgba(249,115,22,0.08))] text-amber-50 shadow-[0_18px_50px_rgba(245,158,11,0.14)]",
-    critical: "border-rose-400/20 bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(239,68,68,0.08))] text-rose-50 shadow-[0_18px_50px_rgba(244,63,94,0.16)]",
-    accent: "border-violet-400/20 bg-[linear-gradient(135deg,rgba(139,92,246,0.18),rgba(34,211,238,0.08))] text-violet-50 shadow-[0_18px_50px_rgba(139,92,246,0.14)]",
-    default: "border-cyan-400/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(255,255,255,0.04))] text-white shadow-[0_18px_50px_rgba(34,211,238,0.08)]",
+    healthy: "border-transparent bg-white/[0.04] text-emerald-100",
+    warning: "border-transparent bg-white/[0.04] text-amber-50",
+    critical: "border-transparent bg-white/[0.04] text-rose-50",
+    accent: "border-transparent bg-white/[0.04] text-violet-50",
+    default: "border-transparent bg-white/[0.02] text-white",
   };
 
   const tonesLight = {
-    healthy: "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-[0_8px_30px_rgba(16,185,129,0.1)]",
-    warning: "border-amber-200 bg-amber-50 text-amber-800 shadow-[0_8px_30px_rgba(245,158,11,0.1)]",
-    critical: "border-rose-200 bg-rose-50 text-rose-800 shadow-[0_8px_30px_rgba(244,63,94,0.1)]",
-    accent: "border-indigo-200 bg-indigo-50 text-indigo-800 shadow-[0_8px_30px_rgba(99,102,241,0.1)]",
-    default: "border-blue-100 bg-blue-50 text-blue-900 shadow-[0_8px_30px_rgba(37,99,235,0.08)]",
+    healthy: "border-transparent bg-white/60 text-emerald-800 shadow-[0_4px_20px_rgba(15,23,42,0.02)]",
+    warning: "border-transparent bg-white/60 text-amber-800 shadow-[0_4px_20px_rgba(15,23,42,0.02)]",
+    critical: "border-transparent bg-white/60 text-rose-800 shadow-[0_4px_20px_rgba(15,23,42,0.02)]",
+    accent: "border-transparent bg-white/60 text-indigo-800 shadow-[0_4px_20px_rgba(15,23,42,0.02)]",
+    default: "border-transparent bg-white/50 text-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.02)]",
   };
 
   return isDark ? (tonesDark[tone] || tonesDark.default) : (tonesLight[tone] || tonesLight.default);

@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Bot,
+  Cpu,
   FileWarning,
   HeartPulse,
   LoaderCircle,
+  LogOut,
   RefreshCcw,
   ShieldCheck,
   Stethoscope,
@@ -13,6 +15,7 @@ import {
   UserRoundPlus,
   Workflow,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import AdminShell from "../../components/admin/AdminShell";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminSectionCard from "../../components/admin/AdminSectionCard";
@@ -20,10 +23,13 @@ import AdminStatTile from "../../components/admin/AdminStatTile";
 import AdminStatusBadge from "../../components/admin/AdminStatusBadge";
 import AdminTable from "../../components/admin/AdminTable";
 import AdminConfirmModal from "../../components/admin/AdminConfirmModal";
+import SignalFeed from "../../components/admin/SignalFeed";
+import StatusDot from "../../components/admin/StatusDot";
 import { getAdminTheme } from "../../components/admin/adminTheme";
 import { authService } from "../../services/auth.service";
 import adminService from "../../services/admin.service";
 import { useTheme } from "../../context/ThemeContext";
+import { useNavigate } from "react-router-dom";
 
 const MODULES = [
   { key: "dashboard", label: "Dashboard", description: "Operational overview, health metrics, and live system posture.", icon: Activity },
@@ -161,9 +167,15 @@ function buildMetricTiles(summary) {
   ];
 }
 
+function formatSignalTimestamp(value) {
+  if (!value) return "live";
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function AdminDashboard() {
   const { isDark } = useTheme();
   const theme = getAdminTheme(isDark);
+  const navigate = useNavigate();
   const [activeModule, setActiveModule] = useState("dashboard");
   const [authUser, setAuthUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -262,6 +274,69 @@ export default function AdminDashboard() {
   );
 
   const criticalLogs = useMemo(() => (pipeline?.recent_logs || []).filter((item) => item.status === "failed"), [pipeline]);
+  const liveSignals = useMemo(() => {
+    const signals = [];
+
+    if (systemStatus?.backend_status) {
+      signals.push({
+        id: "backend-status",
+        title: "Backend heartbeat",
+        message: `Core API is ${systemStatus.backend_status}. Database is ${systemStatus?.database_status || "unknown"}.`,
+        level:
+          systemStatus.backend_status === "online" && systemStatus?.database_status === "connected"
+            ? "success"
+            : "critical",
+        time: "live",
+      });
+    }
+
+    if (summary?.ai_processing_state) {
+      signals.push({
+        id: "ai-processing",
+        title: "AI processing state",
+        message: `Extraction engine is ${String(summary.ai_processing_state).replaceAll("_", " ")} with ${summary?.pipeline_success_rate ?? "--"}% success rate.`,
+        level:
+          summary.ai_processing_state === "idle"
+            ? "success"
+            : summary.ai_processing_state === "processing"
+              ? "warning"
+              : "critical",
+        time: "live",
+      });
+    }
+
+    (criticalLogs || []).slice(0, 3).forEach((item) => {
+      signals.push({
+        id: `critical-${item.id}`,
+        title: item.report_file_name || "Pipeline failure",
+        message: item.error_message || item.detail || "A critical processing issue was captured.",
+        level: "critical",
+        time: formatSignalTimestamp(item.created_at),
+      });
+    });
+
+    (pipeline?.evaluation_results || []).slice(0, 3).forEach((item) => {
+      signals.push({
+        id: `eval-${item.report_id}`,
+        title: item.file_name || "Evaluation result",
+        message: `Confidence settled at ${typeof item.confidence === "number" ? item.confidence.toFixed(2) : "--"}.`,
+        level: (item.confidence ?? 0) >= 0.95 ? "success" : "warning",
+        time: formatSignalTimestamp(item.processed_at),
+      });
+    });
+
+    if ((pipeline?.reports_in_processing ?? 0) > 0) {
+      signals.push({
+        id: "reports-processing",
+        title: "Queue activity detected",
+        message: `${pipeline.reports_in_processing} report(s) are currently moving through OCR and extraction.`,
+        level: "warning",
+        time: "live",
+      });
+    }
+
+    return signals;
+  }, [criticalLogs, pipeline, summary, systemStatus]);
 
   const handleRefresh = async () => {
     setBusy(true);
@@ -382,6 +457,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleExitAdmin = () => {
+    authService.logout();
+    navigate("/login", { replace: true });
+  };
+
   if (loading) {
     return (
       <div className={`flex min-h-screen items-center justify-center ${theme.shell}`}>
@@ -411,9 +491,9 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <div className={theme.eyebrow}>Administration</div>
-              <h1 className={`mt-3 text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>DoctorCopilot Control Surface</h1>
-              <p className={`mt-3 max-w-3xl text-sm leading-7 ${isDark ? "text-gray-400" : "text-slate-500"}`}>
-                Oversee platform operations, clinical teams, patient records, and the AI extraction pipeline from one premium admin workspace.
+              <h1 className={`mt-3 text-3xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-800"}`}>DoctorCopilot Control Surface</h1>
+              <p className={`mt-3 max-w-2xl text-sm leading-relaxed ${isDark ? "text-gray-400" : "text-slate-500"}`}>
+                Oversee platform operations, clinical teams, patient records, and the AI extraction pipeline from this premium workspace.
               </p>
             </div>
 
@@ -426,6 +506,14 @@ export default function AdminDashboard() {
               {busy ? <LoaderCircle size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
               Refresh Workspace
             </button>
+            <button
+              type="button"
+              onClick={handleExitAdmin}
+              className={`${theme.ghostButton} border-rose-400/20 text-rose-100 hover:bg-rose-500/12`}
+            >
+              <LogOut size={16} />
+              Exit Admin
+            </button>
           </div>
         </section>
 
@@ -434,49 +522,88 @@ export default function AdminDashboard() {
 
         {activeModule === "dashboard" ? (
           <div className="space-y-6">
-            <div className="grid gap-4 xl:grid-cols-5">
-              {metricTiles.map((tile) => (
-                <AdminStatTile key={tile.label} {...tile} />
-              ))}
+            <section className={`${theme.surfaceMuted} px-6 py-5`}>
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div>
+                  <div className={theme.eyebrow}>DoctorCopilot AI Core</div>
+                  <h2 className={`mt-2 text-2xl font-bold tracking-tight ${theme.title}`}>Realtime Overview</h2>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isDark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700 shadow-sm"}`}>
+                    <StatusDot status={systemStatus?.backend_status} />
+                    Backend {systemStatus?.backend_status || "unknown"}
+                  </div>
+                  <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isDark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700 shadow-sm"}`}>
+                    <StatusDot status={systemStatus?.database_status} />
+                    DB {systemStatus?.database_status || "unknown"}
+                  </div>
+                  <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isDark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700 shadow-sm"}`}>
+                    <StatusDot status={systemStatus?.ai_engine_state || summary?.ai_processing_state} />
+                    AI {systemStatus?.ai_engine_state || summary?.ai_processing_state || "unknown"}
+                  </div>
+                  <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${isDark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700 shadow-sm"}`}>
+                    <Cpu size={15} className="opacity-60" />
+                    {healthPing?.latencyMs ?? "--"} ms
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
+              <div className="space-y-6">
+                <AdminSectionCard
+                  title="System Matrix"
+                  subtitle="Core platform counts, live posture, and operational intensity."
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {metricTiles.map((tile) => (
+                      <AdminStatTile key={tile.label} {...tile} />
+                    ))}
+                  </div>
+                </AdminSectionCard>
+
+                <AdminSectionCard
+                  title="System Status"
+                  subtitle="Realtime heartbeat for infrastructure and AI state transitions."
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className={`${theme.insetSurface} px-5 py-4`}>
+                      <div className={theme.eyebrow}>Backend</div>
+                      <div className="mt-2 flex items-center gap-3">
+                        <AdminStatusBadge value={systemStatus?.backend_status || "unknown"} />
+                      </div>
+                    </div>
+                    <div className={`${theme.insetSurface} px-5 py-4`}>
+                      <div className={theme.eyebrow}>Database</div>
+                      <div className="mt-2 flex items-center gap-3">
+                        <AdminStatusBadge value={systemStatus?.database_status || "unknown"} />
+                      </div>
+                    </div>
+                    <div className={`${theme.insetSurface} px-5 py-4`}>
+                      <div className={theme.eyebrow}>Frontend</div>
+                      <div className="mt-2 flex items-center gap-3">
+                        <AdminStatusBadge value={summary?.frontend_status || "connected"} />
+                      </div>
+                    </div>
+                    <div className={`${theme.insetSurface} px-5 py-4`}>
+                      <div className={theme.eyebrow}>Latency</div>
+                      <div className={`mt-2 text-2xl font-bold ${theme.title}`}>{healthPing?.latencyMs ?? "--"} ms</div>
+                    </div>
+                  </div>
+                </AdminSectionCard>
+              </div>
+
+              <SignalFeed
+                items={liveSignals}
+                aiState={systemStatus?.ai_engine_state || summary?.ai_processing_state}
+              />
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
               <AdminSectionCard
-                title="System Status"
-                subtitle="Live operational state across backend, database connectivity, frontend reachability, and AI processing readiness."
-              >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className={`${theme.insetSurface} p-5`}>
-                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Backend</div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <AdminStatusBadge value={systemStatus?.backend_status || "unknown"} />
-                      <span className={`text-sm ${isDark ? "text-gray-400" : "text-slate-500"}`}>/health latency {healthPing?.latencyMs ?? "--"} ms</span>
-                    </div>
-                  </div>
-                  <div className={`${theme.insetSurface} p-5`}>
-                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Database</div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <AdminStatusBadge value={systemStatus?.database_status || "unknown"} />
-                    </div>
-                  </div>
-                  <div className={`${theme.insetSurface} p-5`}>
-                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Frontend</div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <AdminStatusBadge value={summary?.frontend_status || "connected"} />
-                    </div>
-                  </div>
-                  <div className={`${theme.insetSurface} p-5`}>
-                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>AI Engine</div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <AdminStatusBadge value={systemStatus?.ai_engine_state || summary?.ai_processing_state || "unknown"} />
-                    </div>
-                  </div>
-                </div>
-              </AdminSectionCard>
-
-              <AdminSectionCard
                 title="AI Pipeline Snapshot"
-                subtitle="Operational throughput, failures, and recent model output quality."
+                subtitle="Operational throughput, evaluation confidence, and processing stability."
               >
                 <div className="grid gap-4 md:grid-cols-3">
                   <AdminStatTile label="Processing" value={pipeline?.reports_in_processing ?? 0} tone="warning" />
@@ -487,15 +614,44 @@ export default function AdminDashboard() {
                   <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Latest evaluation results</div>
                   <div className="mt-4 space-y-3">
                     {(pipeline?.evaluation_results || []).slice(0, 4).map((item) => (
-                      <div key={item.report_id} className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition-all duration-300 hover:scale-[1.01] ${isDark ? "border-white/10 bg-white/5 hover:bg-white/8" : "border-slate-200 bg-white shadow-sm hover:shadow-md"}`}>
+                      <motion.div
+                        key={item.report_id}
+                        whileHover={{ scale: 1.015 }}
+                        className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${isDark ? "border-white/10 bg-white/5 hover:bg-white/8" : "border-slate-200 bg-white shadow-sm hover:shadow-md"}`}
+                      >
                         <div>
                           <div className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{item.file_name}</div>
                           <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{formatDateTime(item.processed_at)}</div>
                         </div>
                         <div className={`text-sm font-bold ${isDark ? "text-cyan-100" : "text-blue-700"}`}>{item.confidence ?? "--"}</div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
+                </div>
+              </AdminSectionCard>
+
+              <AdminSectionCard
+                title="Last Error Pulse"
+                subtitle="Most recent surfaced pipeline faults and recovery pressure."
+              >
+                <div className="space-y-3">
+                  {criticalLogs.length ? (
+                    criticalLogs.slice(0, 5).map((item) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`rounded-2xl border px-4 py-4 text-sm ${isDark ? "border-rose-400/20 bg-rose-500/10 text-rose-50 shadow-[0_12px_30px_rgba(244,63,94,0.12)]" : "border-rose-200 bg-rose-50 text-rose-900 shadow-[0_4px_20px_rgba(244,63,94,0.06)]"}`}
+                      >
+                        <div className="font-bold">{item.report_file_name || "Pipeline issue"}</div>
+                        <div className={`mt-2 leading-6 ${isDark ? "text-rose-100/80" : "text-rose-800/80"}`}>{item.error_message || item.detail || "No detail provided."}</div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className={`rounded-2xl border px-4 py-4 text-sm ${isDark ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-50 shadow-[0_12px_30px_rgba(16,185,129,0.12)]" : "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-[0_4px_20px_rgba(16,185,129,0.06)]"}`}>
+                      No active critical failures detected. The system is operating within expected thresholds.
+                    </div>
+                  )}
                 </div>
               </AdminSectionCard>
             </div>
@@ -508,7 +664,7 @@ export default function AdminDashboard() {
               title="Register Doctor"
               subtitle="Create a new doctor account and wire it directly into the clinical network."
               actions={
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-gray-300">
+                <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.22em] ${isDark ? "border-white/10 bg-white/5 text-gray-300" : "border-slate-200 bg-slate-100 text-slate-600"}`}>
                   <UserRoundPlus size={14} />
                   Doctor onboarding
                 </div>
@@ -563,14 +719,14 @@ export default function AdminDashboard() {
                             payload: { doctorId: doctor.id, nextState: !doctor.is_active },
                           })
                         }
-                        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white transition-all duration-300 hover:scale-[1.02] hover:bg-white/10"
+                        className={`rounded-xl border px-3 py-2 text-xs font-bold transition-all duration-300 hover:scale-[1.02] ${isDark ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm"}`}
                       >
                         {doctor.is_active ? "Disable" : "Enable"}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDoctorReset(doctor.id)}
-                        className="rounded-xl border border-cyan-400/20 bg-cyan-500/15 px-3 py-2 text-xs font-bold text-cyan-50 transition-all duration-300 hover:scale-[1.02] hover:bg-cyan-500/22"
+                        className={`rounded-xl border px-3 py-2 text-xs font-bold transition-all duration-300 hover:scale-[1.02] ${isDark ? "border-cyan-400/20 bg-cyan-500/15 text-cyan-50 hover:bg-cyan-500/22" : "border-cyan-200 bg-cyan-50 text-cyan-800 hover:bg-cyan-100"}`}
                       >
                         Reset Password
                       </button>
@@ -628,7 +784,7 @@ export default function AdminDashboard() {
                           payload: { patientId: patient.id },
                         })
                       }
-                      className="inline-flex items-center gap-2 rounded-xl bg-rose-500/12 px-3 py-2 text-xs font-bold text-rose-100 hover:bg-rose-500/18"
+                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${isDark ? "bg-rose-500/12 text-rose-100 hover:bg-rose-500/18" : "bg-rose-50 text-rose-700 hover:bg-rose-100 shadow-sm border border-rose-200"}`}
                     >
                       <Trash2 size={14} />
                       Delete

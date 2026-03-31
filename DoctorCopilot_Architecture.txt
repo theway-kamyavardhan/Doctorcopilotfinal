@@ -9,10 +9,16 @@ DoctorCopilot is a modern, AI-driven medical intelligence platform. It is split 
 ### 🎨 Frontend (The User Interface)
 - **Framework:** React 18 + Vite (for ultra-fast bundling and HMR).
 - **Styling:** TailwindCSS (for utility-first styling) + Framer Motion (for smooth micro-animations).
-- **Routing:** React Router DOM (Patient and Doctor specific portals).
+- **Design System:** Apple-inspired minimalist Glassmorphism (using `backdrop-blur` and dynamic `ThemeContext` resolution).
+- **Routing:** React Router DOM.
 - **Charts/Data Vis:** Recharts (for medical timelines and tracking hemoglobin/platelet trends).
-- **State Management:** React Context API (e.g., ThemeContext) + Local React State.
+- **State Management:** React Context API + LocalSession Cache (e.g. `PatientDashboard` 5-minute cache) + Local React State.
 - **Authentication:** JWT (JSON Web Tokens) stored in localStorage, intercepted via Axios.
+
+### 👥 Role-Based Portals
+1. **Patient Portal**: The default dashboard for uploaded and extracted medical history, timelines, and anomaly streams. 
+2. **Admin Control Surface**: An ultra-minimalistic, glassmorphic realtime matrix for system monitoring, user administration, and OCR pipeline checks.
+3. **Doctor Workspace**: A futuristic, 3-panel triage layout featuring chronological patient history, an AI Clinical Engine for automated case interpretation, and interactive chat routing.
 
 ### ⚙️ Backend (The Server & AI Engine)
 - **Framework:** FastAPI (Python 3.11+). Chosen for its incredibly fast performance, async support, and native OpenAPI/Swagger documentation.
@@ -72,7 +78,8 @@ Doctorcopilot_finale/
 │   ├── pages/                  // Full screen views
 │   │   ├── auth/               // Authentication screens
 │   │   ├── patient/            // Patient portals (Dashboard, Chat, Cases, Timeline)
-│   │   └── doctor/             // Future doctor oversight screens
+│   │   ├── admin/              // The Control Surface (System tracking, Pipeline oversight)
+│   │   └── doctor/             // Tri-Panel Triage Workspace (Inbox, CaseView, AI Engine)
 │   ├── services/               // Axios API callers (talks to FastAPI)
 │   │   ├── api.js              // Base Axios configuration + JWT interceptor
 │   │   └── auth.service.js     // Fetch logic for profiles
