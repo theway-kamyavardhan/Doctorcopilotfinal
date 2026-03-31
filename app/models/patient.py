@@ -25,6 +25,6 @@ class Patient(UUIDTimestampMixin, Base):
     medical_history: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user = relationship("User", back_populates="patient_profile")
-    reports = relationship("Report", back_populates="patient")
-    cases = relationship("Case", back_populates="patient")
+    reports = relationship("Report", back_populates="patient", cascade="all, delete-orphan")
+    cases = relationship("Case", back_populates="patient", cascade="all, delete-orphan")
     appointments = relationship("Appointment", back_populates="patient", cascade="all, delete-orphan")

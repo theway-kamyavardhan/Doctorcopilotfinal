@@ -20,9 +20,10 @@ import AdminStatTile from "../../components/admin/AdminStatTile";
 import AdminStatusBadge from "../../components/admin/AdminStatusBadge";
 import AdminTable from "../../components/admin/AdminTable";
 import AdminConfirmModal from "../../components/admin/AdminConfirmModal";
-import { adminTheme } from "../../components/admin/adminTheme";
+import { getAdminTheme } from "../../components/admin/adminTheme";
 import { authService } from "../../services/auth.service";
 import adminService from "../../services/admin.service";
+import { useTheme } from "../../context/ThemeContext";
 
 const MODULES = [
   { key: "dashboard", label: "Dashboard", description: "Operational overview, health metrics, and live system posture.", icon: Activity },
@@ -47,41 +48,50 @@ const INITIAL_DOCTOR_FORM = {
 };
 
 function InputField({ label, value, onChange, placeholder, type = "text" }) {
+  const { isDark } = useTheme();
+  const theme = getAdminTheme(isDark);
   return (
     <label className="space-y-2">
-      <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">{label}</div>
+      <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>{label}</div>
       <input
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={adminTheme.input}
+        className={theme.input}
       />
     </label>
   );
 }
 
 function TextAreaField({ label, value, onChange, placeholder }) {
+  const { isDark } = useTheme();
+  const theme = getAdminTheme(isDark);
   return (
     <label className="space-y-2">
-      <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">{label}</div>
+      <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>{label}</div>
       <textarea
         rows={3}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={adminTheme.textArea}
+        className={theme.textArea}
       />
     </label>
   );
 }
 
 function InlineSelect({ value, onChange, options }) {
+  const { isDark } = useTheme();
   return (
     <select
       value={value ?? ""}
       onChange={(event) => onChange(event.target.value || null)}
-      className="w-full rounded-xl border border-white/10 bg-[#0D1424]/90 px-3 py-2 text-sm text-white outline-none transition-all duration-300 focus:border-cyan-400/40"
+      className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition-all duration-300 ${
+        isDark
+          ? "border-white/10 bg-[#0D1424]/90 text-white focus:border-cyan-400/40"
+          : "border-slate-300 bg-white text-slate-900 focus:border-blue-500/50"
+      }`}
     >
       <option value="">Unassigned</option>
       {options.map((option) => (
@@ -94,11 +104,16 @@ function InlineSelect({ value, onChange, options }) {
 }
 
 function InlineStatusSelect({ value, onChange, options }) {
+  const { isDark } = useTheme();
   return (
     <select
       value={value ?? ""}
       onChange={(event) => onChange(event.target.value || null)}
-      className="w-full rounded-xl border border-white/10 bg-[#0D1424]/90 px-3 py-2 text-sm text-white outline-none transition-all duration-300 focus:border-cyan-400/40"
+      className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition-all duration-300 ${
+        isDark
+          ? "border-white/10 bg-[#0D1424]/90 text-white focus:border-cyan-400/40"
+          : "border-slate-300 bg-white text-slate-900 focus:border-blue-500/50"
+      }`}
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>
@@ -147,6 +162,8 @@ function buildMetricTiles(summary) {
 }
 
 export default function AdminDashboard() {
+  const { isDark } = useTheme();
+  const theme = getAdminTheme(isDark);
   const [activeModule, setActiveModule] = useState("dashboard");
   const [authUser, setAuthUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -367,19 +384,19 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <LoaderCircle size={30} className="animate-spin text-cyan-300" />
+      <div className={`flex min-h-screen items-center justify-center ${theme.shell}`}>
+        <LoaderCircle size={30} className={`animate-spin ${isDark ? "text-cyan-300" : "text-blue-500"}`} />
       </div>
     );
   }
 
   if (String(authUser?.role || "").toLowerCase() !== "admin") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
-        <div className="max-w-xl rounded-2xl border border-rose-500/20 bg-rose-500/12 p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-          <div className="text-[11px] font-black uppercase tracking-[0.28em] text-rose-300">Access Restricted</div>
-          <h1 className="mt-4 text-3xl font-black text-white">Admin role required</h1>
-          <p className="mt-3 text-sm leading-7 text-rose-100/90">
+      <div className={`flex min-h-screen items-center justify-center px-4 ${theme.shell}`}>
+        <div className={`max-w-xl rounded-2xl border p-8 text-center ${isDark ? "border-rose-500/20 bg-rose-500/12 shadow-[0_24px_80px_rgba(0,0,0,0.45)]" : "border-rose-200 bg-rose-50 shadow-sm"}`}>
+          <div className={`text-[11px] font-black uppercase tracking-[0.28em] ${isDark ? "text-rose-300" : "text-rose-600"}`}>Access Restricted</div>
+          <h1 className={`mt-4 text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>Admin role required</h1>
+          <p className={`mt-3 text-sm leading-7 ${isDark ? "text-rose-100/90" : "text-rose-700/80"}`}>
             This control surface is only available to administrator accounts. Your current role does not have permission to open the admin panel.
           </p>
         </div>
@@ -390,12 +407,12 @@ export default function AdminDashboard() {
   return (
     <>
       <AdminShell sidebar={<AdminSidebar items={MODULES} activeKey={activeModule} onChange={setActiveModule} />}>
-        <section className={`${adminTheme.headerSurface} px-6 py-6`}>
+        <section className={`${theme.headerSurface} px-6 py-6`}>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <div className={adminTheme.eyebrow}>Administration</div>
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-white">DoctorCopilot Control Surface</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-400">
+              <div className={theme.eyebrow}>Administration</div>
+              <h1 className={`mt-3 text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>DoctorCopilot Control Surface</h1>
+              <p className={`mt-3 max-w-3xl text-sm leading-7 ${isDark ? "text-gray-400" : "text-slate-500"}`}>
                 Oversee platform operations, clinical teams, patient records, and the AI extraction pipeline from one premium admin workspace.
               </p>
             </div>
@@ -404,7 +421,7 @@ export default function AdminDashboard() {
               type="button"
               onClick={handleRefresh}
               disabled={busy}
-              className={`${adminTheme.accentButton} disabled:opacity-50`}
+              className={`${theme.accentButton} disabled:opacity-50`}
             >
               {busy ? <LoaderCircle size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
               Refresh Workspace
@@ -429,27 +446,27 @@ export default function AdminDashboard() {
                 subtitle="Live operational state across backend, database connectivity, frontend reachability, and AI processing readiness."
               >
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className={`${adminTheme.insetSurface} p-5`}>
-                    <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">Backend</div>
+                  <div className={`${theme.insetSurface} p-5`}>
+                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Backend</div>
                     <div className="mt-3 flex items-center gap-3">
                       <AdminStatusBadge value={systemStatus?.backend_status || "unknown"} />
-                      <span className="text-sm text-gray-400">/health latency {healthPing?.latencyMs ?? "--"} ms</span>
+                      <span className={`text-sm ${isDark ? "text-gray-400" : "text-slate-500"}`}>/health latency {healthPing?.latencyMs ?? "--"} ms</span>
                     </div>
                   </div>
-                  <div className={`${adminTheme.insetSurface} p-5`}>
-                    <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">Database</div>
+                  <div className={`${theme.insetSurface} p-5`}>
+                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Database</div>
                     <div className="mt-3 flex items-center gap-3">
                       <AdminStatusBadge value={systemStatus?.database_status || "unknown"} />
                     </div>
                   </div>
-                  <div className={`${adminTheme.insetSurface} p-5`}>
-                    <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">Frontend</div>
+                  <div className={`${theme.insetSurface} p-5`}>
+                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Frontend</div>
                     <div className="mt-3 flex items-center gap-3">
                       <AdminStatusBadge value={summary?.frontend_status || "connected"} />
                     </div>
                   </div>
-                  <div className={`${adminTheme.insetSurface} p-5`}>
-                    <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">AI Engine</div>
+                  <div className={`${theme.insetSurface} p-5`}>
+                    <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>AI Engine</div>
                     <div className="mt-3 flex items-center gap-3">
                       <AdminStatusBadge value={systemStatus?.ai_engine_state || summary?.ai_processing_state || "unknown"} />
                     </div>
@@ -466,16 +483,16 @@ export default function AdminDashboard() {
                   <AdminStatTile label="Success Logs" value={pipeline?.success_logs ?? 0} tone="healthy" />
                   <AdminStatTile label="Failure Logs" value={pipeline?.failure_logs ?? 0} tone={pipeline?.failure_logs ? "critical" : "default"} />
                 </div>
-                <div className={`mt-5 ${adminTheme.insetSurface} bg-[linear-gradient(135deg,rgba(34,211,238,0.08),rgba(139,92,246,0.06),rgba(10,15,28,0.92))] p-5`}>
-                  <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">Latest evaluation results</div>
+                <div className={`mt-5 ${theme.insetSurface} ${isDark ? "bg-[linear-gradient(135deg,rgba(34,211,238,0.08),rgba(139,92,246,0.06),rgba(10,15,28,0.92))]" : ""} p-5`}>
+                  <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Latest evaluation results</div>
                   <div className="mt-4 space-y-3">
                     {(pipeline?.evaluation_results || []).slice(0, 4).map((item) => (
-                      <div key={item.report_id} className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-all duration-300 hover:scale-[1.01] hover:bg-white/8">
+                      <div key={item.report_id} className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition-all duration-300 hover:scale-[1.01] ${isDark ? "border-white/10 bg-white/5 hover:bg-white/8" : "border-slate-200 bg-white shadow-sm hover:shadow-md"}`}>
                         <div>
-                          <div className="font-semibold text-white">{item.file_name}</div>
-                          <div className="text-xs text-gray-400">{formatDateTime(item.processed_at)}</div>
+                          <div className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{item.file_name}</div>
+                          <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{formatDateTime(item.processed_at)}</div>
                         </div>
-                        <div className="text-sm font-bold text-cyan-100">{item.confidence ?? "--"}</div>
+                        <div className={`text-sm font-bold ${isDark ? "text-cyan-100" : "text-blue-700"}`}>{item.confidence ?? "--"}</div>
                       </div>
                     ))}
                   </div>
@@ -508,7 +525,7 @@ export default function AdminDashboard() {
                 <InputField label="Phone" value={doctorForm.phone_number} onChange={(event) => setDoctorForm((current) => ({ ...current, phone_number: event.target.value }))} placeholder="98XXXXXXXX" />
                 <TextAreaField label="Bio" value={doctorForm.bio} onChange={(event) => setDoctorForm((current) => ({ ...current, bio: event.target.value }))} placeholder="Short clinical profile" />
                 <div className="xl:col-span-3">
-                  <button type="submit" disabled={busy} className={`${adminTheme.accentButton} disabled:opacity-50`}>
+                  <button type="submit" disabled={busy} className={`${theme.accentButton} disabled:opacity-50`}>
                     {busy ? <LoaderCircle size={16} className="animate-spin" /> : <UserRoundPlus size={16} />}
                     Create Doctor
                   </button>
@@ -523,12 +540,12 @@ export default function AdminDashboard() {
                   key: doctor.id,
                   cells: [
                     <div>
-                      <div className="font-semibold text-white">{doctor.full_name}</div>
-                      <div className="text-xs text-gray-400">{doctor.email}</div>
+                      <div className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{doctor.full_name}</div>
+                      <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{doctor.email}</div>
                     </div>,
                     <div>
                       <div>{doctor.specialization}</div>
-                      <div className="text-xs text-gray-400">{doctor.license_number}</div>
+                      <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{doctor.license_number}</div>
                     </div>,
                     <div>
                       <div>{doctor.hospital || "Hospital pending"}</div>
@@ -576,7 +593,7 @@ export default function AdminDashboard() {
                   value={patientSearch}
                   onChange={(event) => setPatientSearch(event.target.value)}
                   placeholder="Search name, email, patient ID, phone..."
-                  className={adminTheme.input}
+                  className={theme.input}
                 />
               </div>
             }
@@ -592,13 +609,13 @@ export default function AdminDashboard() {
                     <div className="mt-1 text-xs text-gray-500">{patient.patient_id}</div>
                   </div>,
                   <div>
-                    <div>{patient.gender || "Gender pending"} · {patient.age ?? "Age pending"}</div>
-                    <div className="text-xs text-gray-400">{patient.blood_group || "Blood group pending"}</div>
-                    <div className="text-xs text-gray-500">{patient.phone_number || "Phone pending"}</div>
+                    <div className={`${isDark ? "text-white" : "text-slate-900"}`}>{patient.gender || "Gender pending"} · {patient.age ?? "Age pending"}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{patient.blood_group || "Blood group pending"}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-500" : "text-slate-400"}`}>{patient.phone_number || "Phone pending"}</div>
                   </div>,
                   <div>
-                    <div>{patient.report_count} reports</div>
-                    <div className="text-xs text-gray-400">{patient.active_case_count} active cases</div>
+                    <div className={`${isDark ? "text-white" : "text-slate-900"}`}>{patient.report_count} reports</div>
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{patient.active_case_count} active cases</div>
                   </div>,
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -632,12 +649,12 @@ export default function AdminDashboard() {
                 key: item.id,
                 cells: [
                   <div>
-                    <div className="font-semibold text-white">{item.title}</div>
-                    <div className="text-xs text-gray-400">{item.description || "No description"}</div>
+                    <div className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{item.title}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{item.description || "No description"}</div>
                   </div>,
                   <div>
-                    <div>{item.patient_name}</div>
-                    <div className="text-xs text-gray-400">{formatDateTime(item.created_at)}</div>
+                    <div className={`${isDark ? "text-white" : "text-slate-900"}`}>{item.patient_name}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{formatDateTime(item.created_at)}</div>
                   </div>,
                   <InlineSelect value={caseDrafts[item.id]?.doctor_id} onChange={(value) => handleCaseDraftChange(item.id, "doctor_id", value)} options={doctorOptions} />,
                   <InlineStatusSelect
@@ -670,13 +687,13 @@ export default function AdminDashboard() {
                 cells: [
                   <div>
                     <div className="font-semibold text-white">{report.file_name}</div>
-                    <div className="text-xs text-gray-400">{report.report_type || report.report_category || "Unclassified"}</div>
-                    <div className="text-xs text-gray-500">{formatDate(report.report_date || report.created_at)}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{report.report_type || report.report_category || "Unclassified"}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-500" : "text-slate-400"}`}>{formatDate(report.report_date || report.created_at)}</div>
                   </div>,
                   <div>
-                    <div>{report.patient_name || "Patient pending"}</div>
-                    <div className="text-xs text-gray-400">{report.lab_name || "Lab pending"}</div>
-                    <div className="text-xs text-gray-500">{report.summary || "No summary stored"}</div>
+                    <div className={`${isDark ? "text-white" : "text-slate-900"}`}>{report.patient_name || "Patient pending"}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{report.lab_name || "Lab pending"}</div>
+                    <div className={`text-xs ${isDark ? "text-gray-500" : "text-slate-400"}`}>{report.summary || "No summary stored"}</div>
                   </div>,
                   <div>
                     <AdminStatusBadge value={report.status} />
@@ -703,21 +720,21 @@ export default function AdminDashboard() {
           <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
             <AdminSectionCard title="System Health" subtitle="Direct system state from backend, database, AI engine, and health ping.">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className={`${adminTheme.insetSurface} p-5`}>
-                  <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">Backend Status</div>
+                <div className={`${theme.insetSurface} p-5`}>
+                  <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Backend Status</div>
                   <div className="mt-3"><AdminStatusBadge value={systemStatus?.backend_status || "unknown"} /></div>
                 </div>
-                <div className={`${adminTheme.insetSurface} p-5`}>
-                  <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">Database Connection</div>
+                <div className={`${theme.insetSurface} p-5`}>
+                  <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Database Connection</div>
                   <div className="mt-3"><AdminStatusBadge value={systemStatus?.database_status || "unknown"} /></div>
                 </div>
-                <div className={`${adminTheme.insetSurface} p-5`}>
-                  <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">AI Engine</div>
+                <div className={`${theme.insetSurface} p-5`}>
+                  <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>AI Engine</div>
                   <div className="mt-3"><AdminStatusBadge value={systemStatus?.ai_engine_state || "unknown"} /></div>
                 </div>
-                <div className={`${adminTheme.insetSurface} p-5`}>
-                  <div className="text-[11px] font-black uppercase tracking-[0.24em] text-gray-400">API Latency</div>
-                  <div className="mt-3 text-3xl font-black text-white">{healthPing?.latencyMs ?? "--"} ms</div>
+                <div className={`${theme.insetSurface} p-5`}>
+                  <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>API Latency</div>
+                  <div className={`mt-3 text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{healthPing?.latencyMs ?? "--"} ms</div>
                 </div>
               </div>
             </AdminSectionCard>
@@ -756,12 +773,12 @@ export default function AdminDashboard() {
                     key: item.id,
                     cells: [
                       <div>
-                        <div className="font-semibold text-white">{item.report_file_name || "Report"}</div>
-                        <div className="text-xs text-gray-400">{formatDateTime(item.created_at)}</div>
+                        <div className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{item.report_file_name || "Report"}</div>
+                        <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{formatDateTime(item.created_at)}</div>
                       </div>,
-                      <div>{String(item.step).replaceAll("_", " ")}</div>,
+                      <div className={`${isDark ? "text-white" : "text-slate-900"}`}>{String(item.step).replaceAll("_", " ")}</div>,
                       <AdminStatusBadge value={item.status} />,
-                      <div>{item.error_message || item.detail || "No additional details"}</div>,
+                      <div className={`${isDark ? "text-gray-300" : "text-slate-700"}`}>{item.error_message || item.detail || "No additional details"}</div>,
                     ],
                   }))}
                   emptyMessage="No pipeline events available."
@@ -771,10 +788,10 @@ export default function AdminDashboard() {
               <AdminSectionCard title="Evaluation Results" subtitle="Recent extracted confidence snapshots and critical failures.">
                 <div className="space-y-4">
                   {(pipeline?.evaluation_results || []).map((item) => (
-                    <div key={item.report_id} className={`${adminTheme.insetSurface} px-4 py-4`}>
-                      <div className="font-semibold text-white">{item.file_name}</div>
-                      <div className="mt-1 text-xs text-gray-400">{formatDateTime(item.processed_at)}</div>
-                      <div className="mt-3 text-sm text-cyan-100">Confidence: {typeof item.confidence === "number" ? item.confidence.toFixed(2) : "--"}</div>
+                    <div key={item.report_id} className={`${theme.insetSurface} px-4 py-4`}>
+                      <div className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{item.file_name}</div>
+                      <div className={`mt-1 text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{formatDateTime(item.processed_at)}</div>
+                      <div className={`mt-3 text-sm ${isDark ? "text-cyan-100" : "text-blue-700"}`}>Confidence: {typeof item.confidence === "number" ? item.confidence.toFixed(2) : "--"}</div>
                     </div>
                   ))}
 

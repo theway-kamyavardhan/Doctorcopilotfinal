@@ -1,5 +1,6 @@
 import React from "react";
-import { adminTheme } from "./adminTheme";
+import { getAdminTheme } from "./adminTheme";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function AdminConfirmModal({
   open,
@@ -11,19 +12,22 @@ export default function AdminConfirmModal({
   onConfirm,
   onCancel,
 }) {
+  const { isDark } = useTheme();
+  const theme = getAdminTheme(isDark);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040712]/80 px-4 backdrop-blur-md">
-      <div className={`w-full max-w-md p-6 ${adminTheme.surfaceMuted}`}>
-        <h3 className="text-2xl font-black text-white">{title}</h3>
-        <p className="mt-3 text-sm leading-7 text-gray-400">{description}</p>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-md ${isDark ? "bg-[#040712]/80" : "bg-slate-900/40"}`}>
+      <div className={`w-full max-w-md p-6 ${theme.surfaceMuted}`}>
+        <h3 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h3>
+        <p className={`mt-3 text-sm leading-7 ${isDark ? "text-gray-400" : "text-slate-500"}`}>{description}</p>
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className={`${adminTheme.ghostButton} disabled:opacity-50`}
+            className={`${theme.ghostButton} disabled:opacity-50`}
           >
             {cancelLabel}
           </button>
@@ -31,7 +35,7 @@ export default function AdminConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className={`${adminTheme.dangerButton} disabled:opacity-50`}
+            className={`${theme.dangerButton} disabled:opacity-50`}
           >
             {busy ? "Working..." : confirmLabel}
           </button>

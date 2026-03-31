@@ -21,6 +21,38 @@ import {
 } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
 
+const DASHBOARD_CACHE_KEY = "patient-dashboard-cache-v1";
+const DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function readDashboardCache() {
+  try {
+    const raw = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.savedAt || Date.now() - parsed.savedAt > DASHBOARD_CACHE_TTL_MS) {
+      sessionStorage.removeItem(DASHBOARD_CACHE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeDashboardCache(payload) {
+  try {
+    sessionStorage.setItem(
+      DASHBOARD_CACHE_KEY,
+      JSON.stringify({
+        ...payload,
+        savedAt: Date.now(),
+      })
+    );
+  } catch {
+    // Ignore cache write failures.
+  }
+}
+
 function HeroAction({ to, icon: Icon, label, isDark }) {
   return (
     <Link
@@ -144,32 +176,74 @@ export default function PatientDashboard() {
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    const cached = readDashboardCache();
+    if (cached) {
+      setProfile(cached.profile || null);
+      setReports(cached.reports || []);
+      setTrends(cached.trends || null);
+      setInsights(cached.insights || null);
+      setCases(cached.cases || []);
+      setAppointments(cached.appointments || []);
+      setLoading(false);
+    }
+
     const loadDashboard = async () => {
       try {
-        const [profileData, reportData, trendData, insightData, caseData, appointmentData] =
-          await Promise.all([
-            authService.getPatientProfile(),
-            reportService.getReports(),
-            reportService.getTrends(),
-            reportService.getInsights(),
-            caseService.getCases(),
-            appointmentService.getPatientAppointments(),
-          ]);
+        const [profileData, reportData, trendData] = await Promise.all([
+          authService.getPatientProfile(),
+          reportService.getReports(),
+          reportService.getTrends(),
+        ]);
+
+        if (cancelled) return;
 
         setProfile(profileData);
         setReports(reportData || []);
         setTrends(trendData);
+        setLoading(false);
+
+        const [insightResult, caseResult, appointmentResult] = await Promise.allSettled([
+          reportService.getInsights(),
+          caseService.getCases(),
+          appointmentService.getPatientAppointments(),
+        ]);
+
+        if (cancelled) return;
+
+        const insightData = insightResult.status === "fulfilled" ? insightResult.value : null;
+        const caseData = caseResult.status === "fulfilled" ? caseResult.value : [];
+        const appointmentData = appointmentResult.status === "fulfilled" ? appointmentResult.value : [];
+
         setInsights(insightData);
         setCases(caseData || []);
         setAppointments(appointmentData || []);
+
+        writeDashboardCache({
+          profile: profileData,
+          reports: reportData || [],
+          trends: trendData || null,
+          insights: insightData,
+          cases: caseData || [],
+          appointments: appointmentData || [],
+        });
       } catch (error) {
         console.error("Failed to load patient dashboard:", error);
+        if (!cached) {
+          setLoading(false);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadDashboard();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const isNewUser = reports.length === 0;
