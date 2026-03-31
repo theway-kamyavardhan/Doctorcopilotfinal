@@ -1,4 +1,7 @@
+from io import BytesIO
+
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,6 +66,19 @@ async def get_my_trends(
     db: AsyncSession = Depends(get_db),
 ) -> PatientTrendsResponse:
     return await PatientService(db).get_trends(current_user.id)
+
+
+@router.get("/me/export")
+async def export_my_health_report(
+    current_user=Depends(get_current_active_role_user("patient")),
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    pdf_bytes, filename = await PatientService(db).export_health_report(current_user.id)
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/me/appointments", response_model=list[AppointmentRead])

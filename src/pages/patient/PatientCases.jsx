@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ClipboardPlus, LoaderCircle, MessageSquareHeart, RefreshCcw } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
+import appointmentService from "../../services/appointment.service";
 import caseService from "../../services/case.service";
 
 function formatDate(value) {
@@ -12,6 +13,7 @@ function formatDate(value) {
 export default function PatientCases() {
   const { isDark } = useTheme();
   const [cases, setCases] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState("");
@@ -19,8 +21,12 @@ export default function PatientCases() {
 
   const loadCases = async () => {
     try {
-      const data = await caseService.getCases();
+      const [data, appointmentData] = await Promise.all([
+        caseService.getCases(),
+        appointmentService.getPatientAppointments(),
+      ]);
       setCases(data || []);
+      setAppointments(appointmentData || []);
     } catch (loadError) {
       setError(loadError.message || "Failed to load your cases.");
     } finally {
@@ -35,6 +41,15 @@ export default function PatientCases() {
   const activeCase = useMemo(
     () => cases.find((item) => item.status === "pending" || item.status === "open" || item.status === "in_review") || null,
     [cases]
+  );
+  const activeCaseAppointments = useMemo(
+    () =>
+      activeCase
+        ? appointments
+            .filter((item) => item.case_id === activeCase.id)
+            .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
+        : [],
+    [appointments, activeCase]
   );
 
   const handleRequestConsultation = async () => {
@@ -137,6 +152,48 @@ export default function PatientCases() {
           </div>
         </section>
       )}
+
+      <section className={`rounded-[2rem] border p-6 ${isDark ? "bg-slate-900 border-white/10" : "bg-white border-slate-100 shadow-lg shadow-slate-100/50"}`}>
+        <h2 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>Appointments</h2>
+        <div className="mt-5 space-y-3">
+          {activeCase ? (
+            activeCaseAppointments.length ? (
+              activeCaseAppointments.map((appointment) => (
+                <div key={appointment.id} className={`rounded-2xl px-4 py-4 ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <div className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{appointment.title}</div>
+                      <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                        {formatDate(appointment.date_time)} - {new Date(appointment.date_time).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                      </div>
+                      <div className={`mt-1 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                        {appointment.doctor_name || "Assigned doctor pending"} {appointment.location ? `• ${appointment.location}` : ""}
+                      </div>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      appointment.status === "completed"
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : appointment.status === "cancelled"
+                          ? "bg-red-500/10 text-red-500"
+                          : "bg-amber-500/10 text-amber-500"
+                    }`}>
+                      {appointment.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={`rounded-2xl border border-dashed px-4 py-8 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
+                No appointments scheduled for the active case yet.
+              </div>
+            )
+          ) : (
+            <div className={`rounded-2xl border border-dashed px-4 py-8 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
+              Appointments will appear here after a consultation case is active and a doctor schedules a visit.
+            </div>
+          )}
+        </div>
+      </section>
 
       <section className={`rounded-[2rem] border p-6 ${isDark ? "bg-slate-900 border-white/10" : "bg-white border-slate-100 shadow-lg shadow-slate-100/50"}`}>
         <h2 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>Case History</h2>

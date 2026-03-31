@@ -1,0 +1,88 @@
+# DoctorCopilot Full Deployment Guide (100% Free)
+
+To deploy DoctorCopilot to the internet for free so that every feature (including Tesseract OCR) works perfectly, you need to split the deployment into three parts: Database, Backend, and Frontend.
+
+Here is the exact step-by-step process.
+
+---
+
+## Step 1: Secure a Permanent Database (Supabase or Neon)
+Right now, you are using `sqlite3` (`doctorcopilot.db`). Free backend hosts like Render or Railway wipe their hard drives every time the server restarts or goes to sleep. If you keep SQLite, **all your patient data will be deleted daily**.
+
+1. Go to your existing **Supabase** project (or create a new free one at Neon.tech).
+2. Go to Project Settings -> Database -> Connection String.
+3. Copy the PostgreSQL Connection String.
+4. In your backend code (`app/db/session.py`), you will change the SQLite URL to this Postgres URL so your data never gets deleted.
+
+---
+
+## Step 2: Deploy the Backend (FastAPI + Tesseract OCR) to Render.com
+Because your app reads medical reports using AI, it requires the Linux system package `tesseract-ocr`. Standard Python deployments will fail because Tesseract isn't installed. 
+
+We must use **Render.com** (Free Tier) with a `Dockerfile`.
+
+1. Create a file named `Dockerfile` in the root of your project:
+```dockerfile
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
+
+# Install Tesseract OCR and its dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
+# Expose port and run the FastAPI app
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+2. Go to **Render.com** and create a free account.
+3. Click **New +** -> **Web Service**.
+4. Connect your GitHub repository.
+5. In the settings:
+   - Name: `doctorcopilot-backend`
+   - Language/Environment: **Docker** (Render will automatically detect your `Dockerfile` and install Tesseract).
+   - Instance Type: **Free**
+   - Click **Deploy Period**.
+6. **Environment Variables**: Add your API Keys (Gemini, Supabase, Postgres Database URL) in the Render dashboard under the Environment tab.
+
+Wait for the deployment to finish, and copy your live backend URL (e.g., `https://doctorcopilot-backend.onrender.com`).
+
+---
+
+## Step 3: Deploy the Frontend (React + Vite) to Vercel
+Vercel is the fastest and easiest way to host React websites for free.
+
+1. Before deploying, update your frontend to talk to your new live backend.
+   Open your `.env` file (and specifically `.env.production` if you use it) or `src/services/api.js` and change `http://127.0.0.1:8000` to your new Render backend URL:
+   `VITE_API_URL=https://doctorcopilot-backend.onrender.com`
+
+2. Go to **Vercel.com** and create a free account.
+3. Click **Add New** -> **Project**.
+4. Import your GitHub repository.
+5. In the configuration:
+   - Framework Preset: **Vite**
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+6. Open the **Environment Variables** dropdown and add:
+   - `VITE_SUPABASE_URL` (Your Supabase URL)
+   - `VITE_SUPABASE_ANON_KEY` (Your Supabase Anon Key)
+7. Click **Deploy**.
+
+## Summary
+Once finished, Vercel will give you a live URL for your website (e.g., `https://doctorcopilot.vercel.app`).
+- **Frontend** lives on Vercel forever for free.
+- **Backend & Tesseract OCR** live on Render via Docker for free.
+- **Database & Identity** live on Supabase for free, safely storing patient records exactly like a real hospital.

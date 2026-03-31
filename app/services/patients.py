@@ -9,6 +9,7 @@ from app.models.report import Report, ReportInsight
 from app.schemas.patient import PatientPasswordUpdate, PatientUpdate
 from app.schemas.insights import PatientInsightsResponse
 from app.schemas.trends import PatientTrendsResponse
+from app.services.export.pdf_generator import PatientPdfExportService
 from app.services.insights.service import InsightsService
 from app.services.insights.trends import TrendService
 
@@ -64,6 +65,10 @@ class PatientService:
 
     async def get_trends_by_patient_id(self, patient_id) -> PatientTrendsResponse:
         return await TrendService(self.db).build_trends(patient_id)
+
+    async def export_health_report(self, user_id) -> tuple[bytes, str]:
+        patient = await self._get_patient_by_user_id(user_id)
+        return await PatientPdfExportService(self.db).generate_patient_report_pdf(patient.id)
 
     async def _get_patient_by_user_id(self, user_id) -> Patient:
         statement = select(Patient).where(Patient.user_id == user_id).options(selectinload(Patient.user))

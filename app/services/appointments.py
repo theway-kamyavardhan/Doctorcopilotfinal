@@ -42,7 +42,7 @@ class AppointmentService:
         )
         self.db.add(appointment)
         await self.db.commit()
-        await self.db.refresh(appointment, attribute_names=["doctor", "patient"])
+        appointment = await self._get_appointment(appointment.id)
         return self._serialize_appointment(appointment)
 
     async def list_patient_appointments(self, patient_user_id) -> list[AppointmentRead]:
@@ -79,7 +79,7 @@ class AppointmentService:
                 setattr(appointment, field, value)
 
         await self.db.commit()
-        await self.db.refresh(appointment, attribute_names=["doctor", "patient"])
+        appointment = await self._get_appointment(appointment.id)
         return self._serialize_appointment(appointment)
 
     async def _get_appointment(self, appointment_id) -> Appointment:

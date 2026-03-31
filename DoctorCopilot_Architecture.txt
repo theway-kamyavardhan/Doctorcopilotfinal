@@ -1,0 +1,106 @@
+# DoctorCopilot: Full Stack Project Architecture & Overview
+
+DoctorCopilot is a modern, AI-driven medical intelligence platform. It is split into a decoupled Frontend (Client) and Backend (API) architecture. 
+
+---
+
+## 🏗️ 1. Full Stack Framework Overview
+
+### 🎨 Frontend (The User Interface)
+- **Framework:** React 18 + Vite (for ultra-fast bundling and HMR).
+- **Styling:** TailwindCSS (for utility-first styling) + Framer Motion (for smooth micro-animations).
+- **Routing:** React Router DOM (Patient and Doctor specific portals).
+- **Charts/Data Vis:** Recharts (for medical timelines and tracking hemoglobin/platelet trends).
+- **State Management:** React Context API (e.g., ThemeContext) + Local React State.
+- **Authentication:** JWT (JSON Web Tokens) stored in localStorage, intercepted via Axios.
+
+### ⚙️ Backend (The Server & AI Engine)
+- **Framework:** FastAPI (Python 3.11+). Chosen for its incredibly fast performance, async support, and native OpenAPI/Swagger documentation.
+- **Database ORM:** SQLAlchemy (sync/async database abstraction layer).
+- **Data Validation:** Pydantic (ensures data coming in/out of the API matches strict medical schemas).
+- **Database:** SQLite (Default for quick local development) / PostgreSQL (Supabase/Neon for production).
+- **AI Integration:** Google Gemini (used for clinical normalization, extracting structured data from unstructured OCR text, and AI medical summaries).
+
+---
+
+## 👁️ 2. The OCR Engine: Tesseract & Requirements
+To read scanned medical PDFs, DoctorCopilot relies on a powerful Optical Character Recognition (OCR) pipeline before AI analysis.
+
+**Core Dependencies for Document Processing:**
+1. **Tesseract OCR (`tesseract-ocr`)**: 
+   - This is NOT a Python library. It is a system-level C++ software developed by Google. It actually "looks" at images and extracts the English text.
+   - **Requirement:** Must be installed on the host operating system (e.g., via `apt-get install tesseract-ocr` or a Windows installer) for the backend to work.
+2. **`pytesseract`**: The Python wrapper that allows our FastAPI backend to talk to the Tesseract software installed on the computer.
+3. **`pdf2image`**: Converts uploaded multipage PDF medical reports into images that Tesseract can read.
+4. **`poppler-utils`**: A system dependency required by `pdf2image` to handle the actual PDF translation.
+
+*Flow*: User uploads PDF -> Backend uses `poppler` to render images -> `Tesseract` reads text -> `Gemini` structures the text into JSON.
+
+---
+
+## 📂 3. Folder Structure Breakdown
+
+```text
+Doctorcopilot_finale/
+│
+├── app/                        // 🐍 BACKEND (FastAPI - Python)
+│   ├── api/v1/endpoints/       // ALL API Routes (e.g., auth, patients, reports, cases)
+│   ├── core/                   // Security, config, JWT logic, passwords
+│   ├── db/                     // Session makers, SQLite configurations
+│   ├── models/                 // SQLAlchemy Database Models (Tables)
+│   ├── schemas/                // Pydantic Models (JSON Validation for API requests/responses)
+│   ├── services/               // Core business logic (separated from API routes)
+│   │   ├── auth.py             // Registration/Login logic
+│   │   ├── processing/         // Tesseract OCR, PDF parsing, text extraction logic
+│   │   └── llm/                // Google Gemini integration & prompt templates
+│   └── main.py                 // The FastAPI application entrypoint runs here
+│
+├── src/                        // ⚛️ FRONTEND (React + Vite)
+│   ├── assets/                 // Global styles (index.css), images, fonts
+│   ├── components/             // Reusable UI pieces
+│   │   ├── auth/               // Login/Register forms
+│   │   ├── patient/            // Modular Dashboard Components:
+│   │   │   ├── HealthBar.jsx        // Aggregated health scores & subsystem analysis
+│   │   │   ├── SignalStream.jsx     // Clinical timeline of anomalies and alerts
+│   │   │   ├── PatientContextPanel  // High-level narrative and patient summary
+│   │   │   ├── DataStrip.jsx        // Micro-trends of key lab parameters
+│   │   │   ├── TimelineRibbon.jsx   // Visual timeline of all ingested reports
+│   │   │   ├── SystemPanel.jsx      // Overview of cases, stats, appointments
+│   │   │   └── ExpandableReportCard // Detailed individual lab report view
+│   │   └── ui/                 // Pure UI (Buttons, Glass surfaces, Modals)
+│   ├── context/                // Global state (ThemeContext for Dark/Light mode)
+│   ├── pages/                  // Full screen views
+│   │   ├── auth/               // Authentication screens
+│   │   ├── patient/            // Patient portals (Dashboard, Chat, Cases, Timeline)
+│   │   └── doctor/             // Future doctor oversight screens
+│   ├── services/               // Axios API callers (talks to FastAPI)
+│   │   ├── api.js              // Base Axios configuration + JWT interceptor
+│   │   └── auth.service.js     // Fetch logic for profiles
+│   ├── utils/                  // Helper functions (Intelligence math, formatters)
+│   ├── App.jsx                 // React Native Router setup
+│   └── main.jsx                // React mount point to DOM
+│
+├── storage/                    // 📁 LOCAL FILE STORAGE
+│   └── uploads/                // Temporarily holds PDFs while Tesseract processes them
+│
+├── .env                        // Environment Variables (API keys, )
+├── doctorcopilot.db            // Your local SQLite database file containing user data
+├── package.json                // Node.js dependencies for React/Vite
+├── requirements.txt            // Python dependencies for FastAPI
+└── vite.config.js              // Frontend build configuration
+```
+
+---
+
+## 🚀 4. How to Run It Locally (Quick Reference)
+
+**Start the Backend:**
+1. Open a terminal.
+2. Activate your virtual environment: `.\venv\Scripts\activate` (Windows)
+3. Start FastAPI server: `uvicorn app.main:app --reload`
+4. The API (and Swagger Docs) are now live at `http://127.0.0.1:8000/docs`
+
+**Start the Frontend:**
+1. Open a second terminal.
+2. Run Vite: `npm run dev`
+3. The UI is live at `http://localhost:5173`

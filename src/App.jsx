@@ -11,6 +11,7 @@ import PatientLayout from "./components/patient/PatientLayout";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import Timeline from "./pages/patient/Timeline";
 import Trends from "./pages/patient/Trends";
+import Calendar from "./pages/patient/Calendar";
 import Reports from "./pages/patient/Reports";
 import ParameterDetail from "./pages/patient/ParameterDetail";
 import PatientCases from "./pages/patient/PatientCases";
@@ -92,6 +93,7 @@ function AnimatedRoutes() {
           <Route index element={<Navigate to="/patient/dashboard" replace />} />
           <Route path="dashboard" element={<PatientDashboard />} />
           <Route path="timeline" element={<Timeline />} />
+          <Route path="calendar" element={<Calendar />} />
           <Route path="trends" element={<Trends />} />
           <Route path="parameter/:name" element={<ParameterDetail />} />
           <Route path="reports" element={<Reports />} />
