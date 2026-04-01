@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import LiquidEther from '../../components/ui/LiquidEther';
+import AmbientBackdrop from '../../components/ui/AmbientBackdrop';
+import useAdaptiveVisuals from '../../hooks/useAdaptiveVisuals';
 import { authService } from '../../services/auth.service';
 import {
   User, Mail, Phone, Heart, ArrowLeft,
@@ -12,6 +14,7 @@ import {
 export default function RegisterPatient() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const { allowFluid } = useAdaptiveVisuals({ preferPerformance: true });
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -111,8 +114,12 @@ export default function RegisterPatient() {
   if (successData) {
     return (
       <div className="relative min-h-screen flex items-center justify-center px-6 bg-[var(--bg-primary)] overflow-hidden transition-colors duration-700">
-        <div className="fixed inset-0 z-0 pointer-events-none opacity-30">
-           <LiquidEther colors={etherColors} autoDemo autoSpeed={0.2} resolution={0.3} />
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-30">
+           {allowFluid ? (
+             <LiquidEther colors={etherColors} autoDemo autoSpeed={0.2} resolution={0.3} />
+           ) : (
+             <AmbientBackdrop palette={etherColors} opacity={0.4} />
+           )}
         </div>
 
         <motion.div
@@ -200,7 +207,11 @@ export default function RegisterPatient() {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center py-20 px-6 bg-[var(--bg-primary)] overflow-x-hidden transition-colors duration-700">
       <div className="fixed inset-0 z-0 pointer-events-none opacity-20">
-         <LiquidEther colors={etherColors} autoDemo autoSpeed={0.1} resolution={0.3} />
+         {allowFluid ? (
+           <LiquidEther colors={etherColors} autoDemo autoSpeed={0.1} resolution={0.3} />
+         ) : (
+           <AmbientBackdrop palette={etherColors} opacity={0.35} />
+         )}
       </div>
 
       <motion.div

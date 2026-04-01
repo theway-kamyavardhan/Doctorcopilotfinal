@@ -6,6 +6,8 @@ import Lanyard from "../ui/lanyard";
 import LiquidEther from "../ui/LiquidEther";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
+import AmbientBackdrop from "../ui/AmbientBackdrop";
+import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
 import { User, Stethoscope, ShieldCheck, ArrowRight, Mail, Lock, PlusCircle } from "lucide-react";
 import { authService } from "../../services/auth.service";
 
@@ -18,6 +20,7 @@ const ROLES = [
 export default function Login() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const { allowFluid, allow3D } = useAdaptiveVisuals({ preferPerformance: true });
   const [role, setRole] = useState('patient');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -57,17 +60,25 @@ export default function Login() {
 
       {/* ── BACKGROUND: VIBRANT LIQUID GRADIENT ── */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <LiquidEther
-          colors={etherColors}
-          mouseForce={0}
-          autoDemo={true}
-          autoSpeed={0.8}
-          autoIntensity={4.2}
-          isViscous={true}
-          viscous={24}
-          resolution={0.6}
-          className={`h-full w-full transition-all duration-1000 ${isDark ? 'mix-blend-screen opacity-70' : 'mix-blend-multiply opacity-50'}`}
-        />
+        {allowFluid ? (
+          <LiquidEther
+            colors={etherColors}
+            mouseForce={0}
+            autoDemo={true}
+            autoSpeed={0.8}
+            autoIntensity={4.2}
+            isViscous={true}
+            viscous={24}
+            resolution={0.6}
+            className={`h-full w-full transition-all duration-1000 ${isDark ? 'mix-blend-screen opacity-70' : 'mix-blend-multiply opacity-50'}`}
+          />
+        ) : (
+          <AmbientBackdrop
+            palette={etherColors}
+            opacity={isDark ? 0.78 : 0.62}
+            className={isDark ? 'mix-blend-screen' : 'mix-blend-multiply'}
+          />
+        )}
 
         {/* Cinematic Vignette Overlay */}
         <div
@@ -87,14 +98,47 @@ export default function Login() {
           transition={{ duration: 1.2, ease: appleEase }}
           className="hidden lg:flex relative h-full items-start justify-center pt-16 pointer-events-none"
         >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[750px]">
-            <Lanyard
-              role={role}
-              idValue={identifier.split('@')[0].toUpperCase() || 'USER-ID'}
-              passValue={password}
-              status={isAuthenticating ? 'AUTHENTICATING' : (identifier && password ? 'READY' : 'IDLE')}
-            />
-          </div>
+          {allow3D ? (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[750px]">
+              <Lanyard
+                role={role}
+                idValue={identifier.split('@')[0].toUpperCase() || 'USER-ID'}
+                passValue={password}
+                status={isAuthenticating ? 'AUTHENTICATING' : (identifier && password ? 'READY' : 'IDLE')}
+              />
+            </div>
+          ) : (
+            <div className={`absolute top-10 left-1/2 w-full max-w-[26rem] -translate-x-1/2 rounded-[2rem] border p-8 backdrop-blur-2xl transition-all duration-700 ${isDark ? 'border-white/10 bg-slate-950/55 shadow-[0_30px_80px_rgba(2,6,23,0.55)]' : 'border-white/70 bg-white/70 shadow-[0_24px_70px_rgba(148,163,184,0.2)]'}`}>
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <p className="text-[0.65rem] font-black uppercase tracking-[0.3em] text-slate-400">Access Capsule</p>
+                  <h3 className="mt-2 text-2xl font-black tracking-tight">DoctorCopilot</h3>
+                </div>
+                <div
+                  className="h-4 w-4 rounded-full shadow-[0_0_20px_currentColor]"
+                  style={{ color: activeRoleData?.color }}
+                />
+              </div>
+              <div className={`rounded-[1.5rem] border p-6 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/90'}`}>
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">{activeRoleData?.label}</span>
+                  <span className={`rounded-full px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] ${isDark ? 'bg-white/10 text-slate-200' : 'bg-slate-200 text-slate-700'}`}>
+                    {isAuthenticating ? 'Auth' : identifier && password ? 'Ready' : 'Idle'}
+                  </span>
+                </div>
+                <div className="space-y-3 text-left">
+                  <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-slate-900/80' : 'bg-white'}`}>
+                    <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">Identifier</p>
+                    <p className="mt-1 truncate font-mono text-sm font-bold">{identifier.trim() || 'USER-ID'}</p>
+                  </div>
+                  <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-slate-900/80' : 'bg-white'}`}>
+                    <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">Security State</p>
+                    <p className="mt-1 text-sm font-semibold text-[var(--text-secondary)]">Static visual mode enabled for stability.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* ── RIGHT: LOGIN FORM ── */}

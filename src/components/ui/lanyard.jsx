@@ -36,10 +36,15 @@ export default function Lanyard({
 
   return (
     <div className="w-full h-full min-h-[600px] select-none">
-      <Canvas camera={{ position, fov }} dpr={[1, 2]} shadows>
+      <Canvas
+        camera={{ position, fov }}
+        dpr={[1, 1.25]}
+        shadows={!isMobile}
+        gl={{ antialias: false, powerPreference: 'low-power' }}
+      >
         <ambientLight intensity={Math.PI / 2} />
         <pointLight position={[10, 10, 10]} intensity={1.5} color={activeRole.color} />
-        <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={2.5} color={activeRole.color} castShadow />
+        <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={2.5} color={activeRole.color} castShadow={!isMobile} />
 
         <Physics gravity={gravity}>
           <Band role={role} idValue={idValue} passValue={passValue} status={status} isMobile={isMobile} />

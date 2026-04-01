@@ -4,6 +4,8 @@ import { useTheme } from "../../context/ThemeContext";
 import GlassSurface from "../ui/GlassSurface";
 import LiquidEther from "../ui/LiquidEther";
 import RefractionFilter from "../ui/RefractionFilter";
+import AmbientBackdrop from "../ui/AmbientBackdrop";
+import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
 
 // Reusable glass button — every button uses this
 function GlassButton({ onClick, children, primary = false, className = "" }) {
@@ -60,6 +62,7 @@ const ease = [0.22, 1, 0.36, 1];
 export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const { allowFluid } = useAdaptiveVisuals();
 
   const handleEnter = () => {
     navigate("/login");
@@ -93,24 +96,32 @@ export default function Landing() {
 
       {/* ── BACKGROUND: IRIDESCENT LIQUID ETHER ── */}
       <div className="fixed inset-0 z-0 pointer-events-none select-none">
-        <LiquidEther
-          colors={etherColors}
-          mouseForce={28}
-          cursorSize={180}
-          isViscous
-          viscous={32}
-          iterationsViscous={40}
-          iterationsPoisson={40}
-          resolution={0.5}
-          isBounce={false}
-          autoDemo
-          autoSpeed={0.8}
-          autoIntensity={3.2}
-          takeoverDuration={0.4}
-          autoResumeDelay={2500}
-          autoRampDuration={1.2}
-          className={`h-full w-full ${isDark ? 'mix-blend-screen opacity-90' : 'mix-blend-multiply opacity-80'}`}
-        />
+        {allowFluid ? (
+          <LiquidEther
+            colors={etherColors}
+            mouseForce={28}
+            cursorSize={180}
+            isViscous
+            viscous={32}
+            iterationsViscous={40}
+            iterationsPoisson={40}
+            resolution={0.5}
+            isBounce={false}
+            autoDemo
+            autoSpeed={0.8}
+            autoIntensity={3.2}
+            takeoverDuration={0.4}
+            autoResumeDelay={2500}
+            autoRampDuration={1.2}
+            className={`h-full w-full ${isDark ? 'mix-blend-screen opacity-90' : 'mix-blend-multiply opacity-80'}`}
+          />
+        ) : (
+          <AmbientBackdrop
+            palette={etherColors}
+            opacity={isDark ? 0.9 : 0.75}
+            className={isDark ? "mix-blend-screen" : "mix-blend-multiply"}
+          />
+        )}
       </div>
 
       {/* Cinematic Deep Space Vignette */}

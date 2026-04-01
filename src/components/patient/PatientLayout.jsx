@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import GlassSurface from '../ui/GlassSurface';
 import RefractionFilter from '../ui/RefractionFilter';
-import LiquidEther from '../ui/LiquidEther';
+import AmbientBackdrop from '../ui/AmbientBackdrop';
 import { LayoutDashboard, TrendingUp, FileText, ClipboardList, MessageSquare, LogOut, Search, History, Settings, CalendarDays } from 'lucide-react';
 import { authService } from '../../services/auth.service';
 
@@ -39,16 +39,10 @@ export default function PatientLayout() {
       
       {/* ── BACKGROUND: SUBTLE LIQUID ── */}
       <div className="fixed inset-0 z-0 pointer-events-none select-none">
-        <LiquidEther
-          colors={etherColors}
-          mouseForce={15}
-          isViscous
-          viscous={18}
-          resolution={0.3} // lower resolution for more subtle effect
-          autoDemo
-          autoSpeed={0.3}
-          autoIntensity={1.5}
-          className={`h-full w-full ${isDark ? 'mix-blend-screen opacity-30' : 'mix-blend-multiply opacity-20'}`}
+        <AmbientBackdrop
+          palette={etherColors}
+          opacity={isDark ? 0.38 : 0.26}
+          className={isDark ? 'mix-blend-screen' : 'mix-blend-multiply'}
         />
       </div>
       
