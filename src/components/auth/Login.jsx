@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
-import Lanyard from "../ui/lanyard";
 import LiquidEther from "../ui/LiquidEther";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
@@ -20,7 +19,7 @@ const ROLES = [
 export default function Login() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const { allowFluid, allow3D } = useAdaptiveVisuals({ preferPerformance: true });
+  const { allowFluid } = useAdaptiveVisuals({ preferPerformance: true });
   const [role, setRole] = useState('patient');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -91,54 +90,43 @@ export default function Login() {
 
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 min-h-screen items-center px-6 lg:px-20 max-w-7xl mx-auto py-12">
 
-        {/* ── LEFT: LANYARD (REFINED POSITIONING) ── */}
+        {/* ── LEFT: ACCESS CAPSULE (STATIC FOR PERFORMANCE) ── */}
         <motion.div
           initial={{ opacity: 0, x: -40, filter: "blur(12px)" }}
           animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
           transition={{ duration: 1.2, ease: appleEase }}
           className="hidden lg:flex relative h-full items-start justify-center pt-16 pointer-events-none"
         >
-          {allow3D ? (
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[750px]">
-              <Lanyard
-                role={role}
-                idValue={identifier.split('@')[0].toUpperCase() || 'USER-ID'}
-                passValue={password}
-                status={isAuthenticating ? 'AUTHENTICATING' : (identifier && password ? 'READY' : 'IDLE')}
+          <div className={`absolute top-10 left-1/2 w-full max-w-[26rem] -translate-x-1/2 rounded-[2rem] border p-8 backdrop-blur-2xl transition-all duration-700 ${isDark ? 'border-white/10 bg-slate-950/55 shadow-[0_30px_80px_rgba(2,6,23,0.55)]' : 'border-white/70 bg-white/70 shadow-[0_24px_70px_rgba(148,163,184,0.2)]'}`}>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-[0.65rem] font-black uppercase tracking-[0.3em] text-slate-400">Access Capsule</p>
+                <h3 className="mt-2 text-2xl font-black tracking-tight">DoctorCopilot</h3>
+              </div>
+              <div
+                className="h-4 w-4 rounded-full shadow-[0_0_20px_currentColor]"
+                style={{ color: activeRoleData?.color }}
               />
             </div>
-          ) : (
-            <div className={`absolute top-10 left-1/2 w-full max-w-[26rem] -translate-x-1/2 rounded-[2rem] border p-8 backdrop-blur-2xl transition-all duration-700 ${isDark ? 'border-white/10 bg-slate-950/55 shadow-[0_30px_80px_rgba(2,6,23,0.55)]' : 'border-white/70 bg-white/70 shadow-[0_24px_70px_rgba(148,163,184,0.2)]'}`}>
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <p className="text-[0.65rem] font-black uppercase tracking-[0.3em] text-slate-400">Access Capsule</p>
-                  <h3 className="mt-2 text-2xl font-black tracking-tight">DoctorCopilot</h3>
-                </div>
-                <div
-                  className="h-4 w-4 rounded-full shadow-[0_0_20px_currentColor]"
-                  style={{ color: activeRoleData?.color }}
-                />
+            <div className={`rounded-[1.5rem] border p-6 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/90'}`}>
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">{activeRoleData?.label}</span>
+                <span className={`rounded-full px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] ${isDark ? 'bg-white/10 text-slate-200' : 'bg-slate-200 text-slate-700'}`}>
+                  {isAuthenticating ? 'Auth' : identifier && password ? 'Ready' : 'Idle'}
+                </span>
               </div>
-              <div className={`rounded-[1.5rem] border p-6 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/90'}`}>
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">{activeRoleData?.label}</span>
-                  <span className={`rounded-full px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.2em] ${isDark ? 'bg-white/10 text-slate-200' : 'bg-slate-200 text-slate-700'}`}>
-                    {isAuthenticating ? 'Auth' : identifier && password ? 'Ready' : 'Idle'}
-                  </span>
+              <div className="space-y-3 text-left">
+                <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-slate-900/80' : 'bg-white'}`}>
+                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">Identifier</p>
+                  <p className="mt-1 truncate font-mono text-sm font-bold">{identifier.trim() || 'USER-ID'}</p>
                 </div>
-                <div className="space-y-3 text-left">
-                  <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-slate-900/80' : 'bg-white'}`}>
-                    <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">Identifier</p>
-                    <p className="mt-1 truncate font-mono text-sm font-bold">{identifier.trim() || 'USER-ID'}</p>
-                  </div>
-                  <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-slate-900/80' : 'bg-white'}`}>
-                    <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">Security State</p>
-                    <p className="mt-1 text-sm font-semibold text-[var(--text-secondary)]">Static visual mode enabled for stability.</p>
-                  </div>
+                <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-slate-900/80' : 'bg-white'}`}>
+                  <p className="text-[0.65rem] font-bold uppercase tracking-[0.22em] text-slate-400">Security State</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-secondary)]">Static visual mode enabled for stability.</p>
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </motion.div>
 
         {/* ── RIGHT: LOGIN FORM ── */}
