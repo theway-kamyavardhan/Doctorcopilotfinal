@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     ocr_timeout_seconds: float = Field(default=90.0, alias="OCR_TIMEOUT_SECONDS")
     min_direct_text_length: int = Field(default=40, alias="MIN_DIRECT_TEXT_LENGTH")
     max_ai_input_chars: int = Field(default=16000, alias="MAX_AI_INPUT_CHARS")
+    supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
+    supabase_service_role_key: str | None = Field(default=None, alias="SUPABASE_SERVICE_ROLE_KEY")
+    supabase_storage_bucket: str = Field(default="reports", alias="SUPABASE_STORAGE_BUCKET")
+    admin_seed_code: str = Field(default="ADMIN-001", alias="ADMIN_SEED_CODE")
+    admin_seed_email: str = Field(default="admin001@doctorcopilot.in", alias="ADMIN_SEED_EMAIL")
+    admin_seed_password: str = Field(default="demo123", alias="ADMIN_SEED_PASSWORD")
+    admin_seed_full_name: str = Field(default="DoctorCopilot Admin", alias="ADMIN_SEED_FULL_NAME")
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
@@ -39,6 +46,10 @@ class Settings(BaseSettings):
             raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
         Path(self.upload_dir).mkdir(parents=True, exist_ok=True)
+
+    @property
+    def has_supabase_storage(self) -> bool:
+        return bool(self.supabase_url and self.supabase_service_role_key and self.supabase_storage_bucket)
 
 
 @lru_cache

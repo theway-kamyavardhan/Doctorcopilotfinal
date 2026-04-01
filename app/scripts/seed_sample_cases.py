@@ -271,7 +271,9 @@ async def seed_sample_cases() -> None:
 
         await db.commit()
 
-    credentials_path = Path(__file__).resolve().parents[2] / "sample_patient_credentials.txt"
+    guide_dir = Path(__file__).resolve().parents[2] / "guide"
+    guide_dir.mkdir(parents=True, exist_ok=True)
+    credentials_path = guide_dir / "sample_patient_credentials.txt"
     credentials_path.write_text("\n".join(patient_credentials_lines) + "\n", encoding="utf-8")
 
 

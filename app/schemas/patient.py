@@ -8,7 +8,7 @@ from app.schemas.user import UserRead
 
 class PatientCreate(BaseModel):
     email: EmailStr
-    password: str | None = Field(default=None)
+    password: str = Field(min_length=8)
     full_name: str
     gender: str | None = None
     age: int | None = None

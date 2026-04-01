@@ -8,7 +8,7 @@ class DoctorCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: str
-    license_number: str
+    license_number: str | None = None
     specialization: str
     hospital: str | None = None
     location: str | None = None

@@ -1,12 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Download, LoaderCircle, Microscope, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
-import { authService } from "../../services/auth.service";
-import appointmentService from "../../services/appointment.service";
-import caseService from "../../services/case.service";
-import reportService from "../../services/report.service";
 import HealthBar from "../../components/patient/HealthBar";
 import SignalStream from "../../components/patient/SignalStream";
 import PatientContextPanel from "../../components/patient/PatientContextPanel";
@@ -20,38 +16,7 @@ import {
   getLatestReport,
 } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
-
-const DASHBOARD_CACHE_KEY = "patient-dashboard-cache-v1";
-const DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000;
-
-function readDashboardCache() {
-  try {
-    const raw = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed?.savedAt || Date.now() - parsed.savedAt > DASHBOARD_CACHE_TTL_MS) {
-      sessionStorage.removeItem(DASHBOARD_CACHE_KEY);
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function writeDashboardCache(payload) {
-  try {
-    sessionStorage.setItem(
-      DASHBOARD_CACHE_KEY,
-      JSON.stringify({
-        ...payload,
-        savedAt: Date.now(),
-      })
-    );
-  } catch {
-    // Ignore cache write failures.
-  }
-}
+import usePatientDashboardData from "../../hooks/usePatientDashboardData";
 
 function HeroAction({ to, icon: Icon, label, isDark }) {
   return (
@@ -165,86 +130,15 @@ function buildSubsystemStats(reports, fallbackScore) {
 export default function PatientDashboard() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
-  const [reports, setReports] = useState([]);
-  const [trends, setTrends] = useState(null);
-  const [insights, setInsights] = useState(null);
-  const [cases, setCases] = useState([]);
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [exportError, setExportError] = useState("");
   const [exporting, setExporting] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    const cached = readDashboardCache();
-    if (cached) {
-      setProfile(cached.profile || null);
-      setReports(cached.reports || []);
-      setTrends(cached.trends || null);
-      setInsights(cached.insights || null);
-      setCases(cached.cases || []);
-      setAppointments(cached.appointments || []);
-      setLoading(false);
-    }
-
-    const loadDashboard = async () => {
-      try {
-        const [profileData, reportData, trendData] = await Promise.all([
-          authService.getPatientProfile(),
-          reportService.getReports(),
-          reportService.getTrends(),
-        ]);
-
-        if (cancelled) return;
-
-        setProfile(profileData);
-        setReports(reportData || []);
-        setTrends(trendData);
-        setLoading(false);
-
-        const [insightResult, caseResult, appointmentResult] = await Promise.allSettled([
-          reportService.getInsights(),
-          caseService.getCases(),
-          appointmentService.getPatientAppointments(),
-        ]);
-
-        if (cancelled) return;
-
-        const insightData = insightResult.status === "fulfilled" ? insightResult.value : null;
-        const caseData = caseResult.status === "fulfilled" ? caseResult.value : [];
-        const appointmentData = appointmentResult.status === "fulfilled" ? appointmentResult.value : [];
-
-        setInsights(insightData);
-        setCases(caseData || []);
-        setAppointments(appointmentData || []);
-
-        writeDashboardCache({
-          profile: profileData,
-          reports: reportData || [],
-          trends: trendData || null,
-          insights: insightData,
-          cases: caseData || [],
-          appointments: appointmentData || [],
-        });
-      } catch (error) {
-        console.error("Failed to load patient dashboard:", error);
-        if (!cached) {
-          setLoading(false);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadDashboard();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data, error: dashboardError, isLoading: loading } = usePatientDashboardData();
+  const profile = data?.profile || null;
+  const reports = data?.reports || [];
+  const trends = data?.trends || null;
+  const insights = data?.insights || null;
+  const cases = data?.cases || [];
+  const appointments = data?.appointments || [];
 
   const isNewUser = reports.length === 0;
   const healthScore = useMemo(() => calculateHealthScore(reports, trends, insights), [reports, trends, insights]);
@@ -398,6 +292,11 @@ export default function PatientDashboard() {
         {exportError ? (
           <div className="rounded-[1.5rem] border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
             {exportError}
+          </div>
+        ) : null}
+        {dashboardError ? (
+          <div className="rounded-[1.5rem] border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+            {dashboardError.message || "Failed to load your health system."}
           </div>
         ) : null}
 

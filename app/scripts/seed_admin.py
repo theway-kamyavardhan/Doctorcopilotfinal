@@ -57,7 +57,9 @@ async def seed_admin() -> None:
 
         await db.commit()
 
-    credentials_path = Path(__file__).resolve().parents[2] / "admin_credentials.txt"
+    guide_dir = Path(__file__).resolve().parents[2] / "guide"
+    guide_dir.mkdir(parents=True, exist_ok=True)
+    credentials_path = guide_dir / "admin_credentials.txt"
     credentials_path.write_text(
         f'Admin User | ID: {ADMIN_USER["admin_code"]} | Password: {ADMIN_USER["password"]}\n',
         encoding="utf-8",

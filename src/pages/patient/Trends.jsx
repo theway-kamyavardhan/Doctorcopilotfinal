@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
-import reportService from "../../services/report.service";
 import { Activity, ArrowRight, Filter, LoaderCircle, Sparkles, TrendingUp } from "lucide-react";
 import {
   CartesianGrid,
@@ -13,9 +12,9 @@ import {
   YAxis,
 } from "recharts";
 import { formatParameterLabel, getTrendArrow } from "../../utils/patientIntelligence";
+import usePatientTrendsData from "../../hooks/usePatientTrendsData";
 
 const PRIORITY_PARAMETERS = ["hemoglobin", "platelets", "vitamin_b12"];
-const TRENDS_CACHE_KEY = "patient-trends-page-cache-v1";
 
 function getOrderedParameters(trends) {
   const available = Object.keys(trends?.series || {});
@@ -34,88 +33,20 @@ function badgeClasses(isDark, tone = "neutral") {
   return isDark ? "bg-white/5 text-slate-300" : "bg-slate-100 text-slate-700";
 }
 
-function readTrendsCache() {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(TRENDS_CACHE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function writeTrendsCache(payload) {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.setItem(TRENDS_CACHE_KEY, JSON.stringify(payload));
-  } catch {
-    // Ignore cache write failures.
-  }
-}
-
 export default function Trends() {
   const { isDark } = useTheme();
-  const [trends, setTrends] = useState(null);
-  const [insights, setInsights] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [selectedParameter, setSelectedParameter] = useState("");
   const [viewMode, setViewMode] = useState("both");
-
-  useEffect(() => {
-    const cached = readTrendsCache();
-    if (cached?.trends) {
-      setTrends(cached.trends);
-      setInsights(cached.insights || null);
-      setSelectedParameter(getOrderedParameters(cached.trends)[0] || "");
-      setLoading(false);
-    }
-
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const trendData = await reportService.getTrends();
-        if (cancelled) return;
-        setTrends(trendData);
-        setSelectedParameter((current) => current || getOrderedParameters(trendData)[0] || "");
-        setLoading(false);
-        setError("");
-
-        reportService
-          .getInsights()
-          .then((insightData) => {
-            if (cancelled) return;
-            setInsights(insightData);
-            writeTrendsCache({ trends: trendData, insights: insightData });
-          })
-          .catch((insightError) => {
-            if (cancelled) return;
-            console.error(insightError);
-            writeTrendsCache({ trends: trendData, insights: cached?.insights || null });
-          });
-
-        if (!cached?.trends) {
-          writeTrendsCache({ trends: trendData, insights: cached?.insights || null });
-        }
-      } catch (err) {
-        console.error(err);
-        if (!cached?.trends) {
-          setError(err.message || "Failed to load trends.");
-          setLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data, error: trendsError, isLoading: loading } = usePatientTrendsData();
+  const trends = data?.trends || null;
+  const insights = data?.insights || null;
 
   const parameters = useMemo(() => getOrderedParameters(trends), [trends]);
+  React.useEffect(() => {
+    if (!selectedParameter && parameters.length) {
+      setSelectedParameter(parameters[0]);
+    }
+  }, [parameters, selectedParameter]);
   const activeParameter = selectedParameter || parameters[0] || "";
   const activeSeries = trends?.series?.[activeParameter] || [];
   const activeMetric = trends?.metrics?.[activeParameter];
@@ -159,9 +90,9 @@ export default function Trends() {
         </div>
       </section>
 
-      {error ? (
+      {trendsError ? (
         <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
-          {error}
+          {trendsError.message || "Failed to load trends."}
         </div>
       ) : null}
 

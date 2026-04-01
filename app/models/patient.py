@@ -15,7 +15,7 @@ class Patient(UUIDTimestampMixin, Base):
     )
 
     user_id: Mapped[str] = mapped_column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    patient_id: Mapped[str] = mapped_column(String(32), unique=True, index=True, nullable=False)
+    patient_id: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     gender: Mapped[str | None] = mapped_column(String(32), nullable=True)
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     age: Mapped[int | None] = mapped_column(Integer, nullable=True)

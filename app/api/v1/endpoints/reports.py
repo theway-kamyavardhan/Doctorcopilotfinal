@@ -3,7 +3,7 @@ from uuid import UUID
 from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -47,12 +47,11 @@ async def get_report_file(
     report_id: UUID,
     current_user=Depends(get_current_active_role_user()),
     db: AsyncSession = Depends(get_db),
-) -> FileResponse:
-    report, file_path = await ReportService(db).get_report_file(report_id, current_user)
-    return FileResponse(
-        path=str(file_path),
+) -> StreamingResponse:
+    report, file_bytes = await ReportService(db).get_report_file(report_id, current_user)
+    return StreamingResponse(
+        BytesIO(file_bytes),
         media_type=report.mime_type or "application/octet-stream",
-        filename=report.file_name,
         headers={"Content-Disposition": f'inline; filename="{report.file_name}"'},
     )
 

@@ -1,4 +1,3 @@
-from pathlib import Path
 from uuid import UUID
 
 from fastapi import UploadFile
@@ -7,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import AuthorizationError, NotFoundError
+from app.core.debug_logger import append_debug_event
 from app.models.case import Case
 from app.models.doctor import Doctor
 from app.models.enums import UserRole
@@ -16,11 +16,13 @@ from app.models.user import User
 from app.schemas.report import DebugProcessReportResponse, ReportProcessingResponse
 from app.services.export.pdf_generator import SingleReportPdfExportService
 from app.services.processing.orchestrator import ReportProcessingOrchestrator
+from app.services.storage.service import ReportFileStorage
 
 
 class ReportService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
+        self.storage = ReportFileStorage()
 
     async def upload_and_process_report(self, current_user: User, file: UploadFile, case_id: UUID | None) -> ReportProcessingResponse:
         patient = await self._get_patient_by_user_id(current_user.id)
@@ -77,28 +79,30 @@ class ReportService:
         if report.patient_id != patient.id:
             raise AuthorizationError("You can only delete your own reports.")
 
-        file_path = Path(report.file_path) if report.file_path else None
+        stored_path = report.file_path
         await self.db.delete(report)
         await self.db.commit()
 
-        if file_path and file_path.exists():
+        if stored_path:
             try:
-                file_path.unlink()
-            except OSError:
-                # Keep the DB delete successful even if local cleanup fails.
-                pass
+                await self.storage.delete_file(stored_path)
+            except Exception as exc:
+                append_debug_event("report_delete", f"Failed to remove stored file for report {report_id}: {exc}")
 
     async def export_report_pdf(self, report_id: UUID, current_user: User, mode: str = "ai") -> tuple[bytes, str]:
         report = await self.get_report(report_id, current_user)
+        normalized_mode = (mode or "ai").strip().lower()
+        if normalized_mode == "source" and report.mime_type == "application/pdf" and report.file_path:
+            file_bytes = await self.storage.download_file(report.file_path)
+            return file_bytes, SingleReportPdfExportService()._filename(report, "source")
         exporter = SingleReportPdfExportService()
-        return exporter.generate_report_pdf(report, mode)
+        return exporter.generate_report_pdf(report, normalized_mode)
 
-    async def get_report_file(self, report_id: UUID, current_user: User) -> tuple[Report, Path]:
+    async def get_report_file(self, report_id: UUID, current_user: User) -> tuple[Report, bytes]:
         report = await self.get_report(report_id, current_user)
-        file_path = Path(report.file_path) if report.file_path else None
-        if not file_path or not file_path.exists():
+        if not report.file_path:
             raise NotFoundError("Original uploaded report file was not found.")
-        return report, file_path
+        return report, await self.storage.download_file(report.file_path)
 
     async def _get_patient_by_user_id(self, user_id) -> Patient:
         patient = (await self.db.execute(select(Patient).where(Patient.user_id == user_id))).scalar_one_or_none()

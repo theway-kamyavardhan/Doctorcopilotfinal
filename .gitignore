@@ -7,3 +7,14 @@ venv/
 __pycache__/
 .DS_Store
 .vscode/
+storage/uploads/tmp/
+vite-export-debug.log
+debug.txt
+admin_credentials.txt
+doctors_credentials.txt
+sample_patient_credentials.txt
+export_token.txt
+guide/admin_credentials.txt
+guide/doctors_credentials.txt
+guide/sample_patient_credentials.txt
+guide/export_token.txt

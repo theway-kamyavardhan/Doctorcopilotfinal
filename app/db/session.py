@@ -20,6 +20,8 @@ async def initialize_database() -> str:
             await connection.execute(text("SELECT 1"))
         return str(engine.url)
     except Exception:
+        if settings.environment.lower() == "production":
+            raise
         await engine.dispose()
         engine = create_async_engine(settings.sqlite_fallback_path, echo=False, future=True)
         AsyncSessionLocal.configure(bind=engine)

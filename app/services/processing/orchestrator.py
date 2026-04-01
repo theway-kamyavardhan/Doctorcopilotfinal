@@ -15,27 +15,27 @@ from app.services.insights.normalization import clean_numeric_value, extract_num
 from app.services.processing.metadata_extractor import clean_ocr_text, extract_metadata_bundle
 from app.services.processing.ocr import TextExtractionEngine
 from app.services.processing.report_classifier import ReportClassifier
-from app.services.storage.local import LocalFileStorage
+from app.services.storage.service import ReportFileStorage
 
 
 class ReportProcessingOrchestrator:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
-        self.storage = LocalFileStorage()
+        self.storage = ReportFileStorage()
         self.text_extractor = TextExtractionEngine()
         self.ai_client = OpenAIExtractionClient()
         self.clinical_normalizer = ClinicalNormalizer()
         self.report_classifier = ReportClassifier()
 
     async def process_upload(self, patient: Patient, file: UploadFile, case_id: UUID | None) -> Report:
-        saved_path, checksum = await self.storage.save_upload(file)
+        stored_upload = await self.storage.save_upload(file)
         report = Report(
             patient_id=patient.id,
             case_id=case_id,
             file_name=file.filename or "report",
-            file_path=saved_path,
+            file_path=stored_upload.storage_path,
             mime_type=file.content_type or "application/octet-stream",
-            checksum=checksum,
+            checksum=stored_upload.checksum,
             status=ReportStatus.UPLOADED,
         )
         self.db.add(report)
@@ -44,12 +44,12 @@ class ReportProcessingOrchestrator:
             report.id,
             ProcessingStep.UPLOAD,
             ProcessingStatus.SUCCESS,
-            detail="File stored on local filesystem.",
+            detail="File stored in report storage.",
             payload={"file_name": report.file_name, "mime_type": report.mime_type, "file_path": report.file_path},
         )
 
         try:
-            extraction_result = await self.text_extractor.extract(saved_path, report.mime_type)
+            extraction_result = await self.text_extractor.extract(stored_upload.temp_path, report.mime_type)
             cleaned_text = self._clean_text(extraction_result.text)
             report.raw_text = cleaned_text
             report.status = ReportStatus.OCR_COMPLETE
@@ -214,19 +214,21 @@ class ReportProcessingOrchestrator:
             await self._log(report.id, failed_step, ProcessingStatus.FAILED, detail=f"{failed_step} failed.", error_message=str(exc))
             await self.db.commit()
             raise ProcessingError(str(exc)) from exc
+        finally:
+            await self.storage.cleanup_temp(stored_upload.temp_path, uses_temp_copy=stored_upload.uses_temp_copy)
 
         await self.db.refresh(report, attribute_names=["extracted_data", "insights"])
         return report
 
     async def debug_process(self, patient: Patient, file: UploadFile) -> dict:
-        saved_path, checksum = await self.storage.save_upload(file)
+        stored_upload = await self.storage.save_upload(file)
         report = Report(
             patient_id=patient.id,
             case_id=None,
             file_name=file.filename or "debug-report",
-            file_path=saved_path,
+            file_path=stored_upload.storage_path,
             mime_type=file.content_type or "application/octet-stream",
-            checksum=checksum,
+            checksum=stored_upload.checksum,
             status=ReportStatus.UPLOADED,
         )
         self.db.add(report)
@@ -234,7 +236,7 @@ class ReportProcessingOrchestrator:
         await self._log(report.id, ProcessingStep.UPLOAD, ProcessingStatus.SUCCESS, detail="Debug upload stored.")
 
         try:
-            extraction_result = await self.text_extractor.extract(saved_path, report.mime_type)
+            extraction_result = await self.text_extractor.extract(stored_upload.temp_path, report.mime_type)
             cleaned_text = self._clean_text(extraction_result.text)
             metadata_result = extract_metadata_bundle(cleaned_text)
             await self._log(
@@ -362,6 +364,8 @@ class ReportProcessingOrchestrator:
             await self.db.commit()
             await self.db.refresh(report, attribute_names=["processing_logs"])
             raise ProcessingError(str(exc)) from exc
+        finally:
+            await self.storage.cleanup_temp(stored_upload.temp_path, uses_temp_copy=stored_upload.uses_temp_copy)
 
     def _clean_text(self, raw_text: str) -> str:
         cleaned = clean_ocr_text(raw_text)

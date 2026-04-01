@@ -1,35 +1,49 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { SWRConfig } from "swr";
 import { ThemeProvider } from "./context/ThemeContext";
 import ThemeReveal from "./components/ui/ThemeReveal";
 import ThemeToggle from "./components/ui/ThemeToggle";
 import Login from "./components/auth/Login";
 import Landing from "./components/landing/Landing";
+import swrConfig from "./lib/swr";
 
 // Patient Imports
 import PatientLayout from "./components/patient/PatientLayout";
-import PatientDashboard from "./pages/patient/PatientDashboard";
-import Timeline from "./pages/patient/Timeline";
-import Trends from "./pages/patient/Trends";
-import Calendar from "./pages/patient/Calendar";
-import Reports from "./pages/patient/Reports";
-import ParameterDetail from "./pages/patient/ParameterDetail";
-import PatientCases from "./pages/patient/PatientCases";
-import PatientCaseInsights from "./pages/patient/PatientCaseInsights";
-import PatientChats from "./pages/patient/PatientChats";
-import Settings from "./pages/patient/Settings";
-import RegisterPatient from "./pages/auth/RegisterPatient";
 import DoctorLayout from "./components/doctor/DoctorLayout";
-import DoctorDashboard from "./pages/doctor/DoctorDashboard";
-import DoctorCases from "./pages/doctor/DoctorCases";
-import DoctorCaseView from "./pages/doctor/DoctorCaseView";
-import DoctorCaseInsights from "./pages/doctor/DoctorCaseInsights";
-import DoctorChats from "./pages/doctor/DoctorChats";
-import DoctorCalendar from "./pages/doctor/DoctorCalendar";
-import DoctorSettings from "./pages/doctor/DoctorSettings";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import ParticleTransition from "./components/ui/ParticleTransition";
 import { authService } from "./services/auth.service";
+
+const RegisterPatient = lazy(() => import("./pages/auth/RegisterPatient"));
+const PatientDashboard = lazy(() => import("./pages/patient/PatientDashboard"));
+const Timeline = lazy(() => import("./pages/patient/Timeline"));
+const Trends = lazy(() => import("./pages/patient/Trends"));
+const Calendar = lazy(() => import("./pages/patient/Calendar"));
+const Reports = lazy(() => import("./pages/patient/Reports"));
+const ParameterDetail = lazy(() => import("./pages/patient/ParameterDetail"));
+const PatientCases = lazy(() => import("./pages/patient/PatientCases"));
+const PatientCaseInsights = lazy(() => import("./pages/patient/PatientCaseInsights"));
+const PatientChats = lazy(() => import("./pages/patient/PatientChats"));
+const Settings = lazy(() => import("./pages/patient/Settings"));
+const DoctorDashboard = lazy(() => import("./pages/doctor/DoctorDashboard"));
+const DoctorCases = lazy(() => import("./pages/doctor/DoctorCases"));
+const DoctorCaseView = lazy(() => import("./pages/doctor/DoctorCaseView"));
+const DoctorCaseInsights = lazy(() => import("./pages/doctor/DoctorCaseInsights"));
+const DoctorChats = lazy(() => import("./pages/doctor/DoctorChats"));
+const DoctorCalendar = lazy(() => import("./pages/doctor/DoctorCalendar"));
+const DoctorSettings = lazy(() => import("./pages/doctor/DoctorSettings"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+
+function RouteLoader() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <div className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300">
+        Loading workspace...
+      </div>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children, roleRequired = null }) {
   if (!authService.hasToken()) {
@@ -164,17 +178,21 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <div className="bg-[var(--bg-primary)] min-h-screen text-[var(--text-primary)] font-sans antialiased overflow-x-hidden transition-colors duration-700">
-          <ThemeReveal />
-          <ThemeToggle />
-          
-          {/* CINEMATIC PARTICLE LAYER */}
-          <ParticleTransition />
-          
-          <AnimatedRoutes />
-        </div>
-      </BrowserRouter>
+      <SWRConfig value={swrConfig}>
+        <BrowserRouter>
+          <div className="bg-[var(--bg-primary)] min-h-screen text-[var(--text-primary)] font-sans antialiased overflow-x-hidden transition-colors duration-700">
+            <ThemeReveal />
+            <ThemeToggle />
+
+            {/* CINEMATIC PARTICLE LAYER */}
+            <ParticleTransition />
+
+            <Suspense fallback={<RouteLoader />}>
+              <AnimatedRoutes />
+            </Suspense>
+          </div>
+        </BrowserRouter>
+      </SWRConfig>
     </ThemeProvider>
   );
 }

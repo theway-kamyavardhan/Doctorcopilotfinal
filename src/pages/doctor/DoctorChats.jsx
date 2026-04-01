@@ -3,12 +3,12 @@ import { CheckCircle2, FileSearch, LoaderCircle, MessageSquareHeart, SendHorizon
 import { useSearchParams } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
 import caseService from "../../services/case.service";
+import useCaseChatStream from "../../hooks/useCaseChatStream";
 import {
   getDoctorCase,
   getDoctorCases,
   requestDoctorReportAccess,
 } from "../../services/doctor.service";
-import api, { getAuthToken } from "../../services/api";
 
 function formatDateTime(value) {
   if (!value) return "";
@@ -132,58 +132,26 @@ export default function DoctorChats() {
     loadSelectedCase(selectedCaseId).catch((loadError) => {
       setError(loadError.message || "Failed to load case conversation.");
     });
-
-    const interval = window.setInterval(() => {
-      loadSelectedCase(selectedCaseId).catch(() => {});
-    }, 5000);
-
-    return () => window.clearInterval(interval);
   }, [selectedCaseId, loading, setSearchParams]);
 
-  useEffect(() => {
-    if (!selectedCaseId) return undefined;
-
-    const token = getAuthToken();
-    if (!token) return undefined;
-
-    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const socketUrl = `${protocol}://${new URL(api.defaults.baseURL).host}/ws/cases/${selectedCaseId}?token=${encodeURIComponent(token)}`;
-    let socket;
-
-    try {
-      socket = new WebSocket(socketUrl);
-    } catch (socketError) {
-      console.warn("Doctor chat websocket unavailable.", socketError);
-      return undefined;
-    }
-
-    socket.onmessage = (event) => {
-      try {
-        const incoming = JSON.parse(event.data);
-        setMessages((current) => {
-          const map = new Map(current.map((message) => [message.id, message]));
-          map.set(incoming.id, incoming);
-          return Array.from(map.values()).sort(
-            (left, right) => new Date(left.created_at) - new Date(right.created_at),
-          );
-        });
-        getDoctorCase(selectedCaseId).then((detail) => {
+  useCaseChatStream(selectedCaseId, {
+    enabled: Boolean(selectedCaseId),
+    onMessage: React.useCallback((incoming) => {
+      setMessages((current) => {
+        const map = new Map(current.map((message) => [message.id, message]));
+        map.set(incoming.id, incoming);
+        return Array.from(map.values()).sort(
+          (left, right) => new Date(left.created_at) - new Date(right.created_at),
+        );
+      });
+      getDoctorCase(selectedCaseId)
+        .then((detail) => {
           setSelectedCase(detail);
           setCases((current) => current.map((item) => (item.id === detail.id ? detail : item)));
-        }).catch(() => {});
-      } catch (parseError) {
-        console.warn("Unable to parse doctor chat payload.", parseError);
-      }
-    };
-
-    return () => {
-      try {
-        socket.close();
-      } catch (closeError) {
-        console.warn("Unable to close doctor chat websocket.", closeError);
-      }
-    };
-  }, [selectedCaseId]);
+        })
+        .catch(() => {});
+    }, [selectedCaseId]),
+  });
 
   useEffect(() => {
     if (listRef.current) {
