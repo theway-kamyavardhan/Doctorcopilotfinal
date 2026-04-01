@@ -13,7 +13,7 @@ export function normalizeRole(role) {
 export function getDashboardPathForRole(role) {
   const normalizedRole = normalizeRole(role);
   if (normalizedRole === "admin") return "/admin";
-  if (normalizedRole === "doctor") return "/doctor";
+  if (normalizedRole === "doctor") return "/doctor/dashboard";
   return "/patient/dashboard";
 }
 

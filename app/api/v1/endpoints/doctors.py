@@ -4,12 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.appointment import AppointmentRead
 from app.schemas.case import CaseRead
-from app.schemas.doctor import DoctorDashboard, DoctorRead, DoctorUpdate
+from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorRead, DoctorUpdate
 from app.services.appointments import AppointmentService
+from app.services.cases import CaseService
 from app.services.doctors import DoctorService
 from app.utils.dependencies import get_current_active_role_user
 
 router = APIRouter()
+
+
+@router.get("/directory", response_model=list[DoctorDirectoryItem])
+async def list_doctor_directory(
+    current_user=Depends(get_current_active_role_user()),
+    db: AsyncSession = Depends(get_db),
+) -> list[DoctorDirectoryItem]:
+    return await DoctorService(db).list_directory()
 
 
 @router.get("/me", response_model=DoctorRead)
@@ -34,7 +43,7 @@ async def list_doctor_cases(
     current_user=Depends(get_current_active_role_user("doctor")),
     db: AsyncSession = Depends(get_db),
 ) -> list[CaseRead]:
-    return await DoctorService(db).list_cases(current_user.id)
+    return await CaseService(db).list_cases_for_user(current_user)
 
 
 @router.get("/me/dashboard", response_model=DoctorDashboard)
@@ -51,3 +60,12 @@ async def list_doctor_appointments(
     db: AsyncSession = Depends(get_db),
 ) -> list[AppointmentRead]:
     return await AppointmentService(db).list_doctor_appointments(current_user.id)
+
+
+@router.get("/patients/search", response_model=list[DoctorPatientSearchItem])
+async def search_patients_for_doctor(
+    q: str | None = None,
+    current_user=Depends(get_current_active_role_user("doctor")),
+    db: AsyncSession = Depends(get_db),
+) -> list[DoctorPatientSearchItem]:
+    return await DoctorService(db).search_patients(q)

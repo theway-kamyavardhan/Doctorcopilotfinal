@@ -42,3 +42,21 @@ class DoctorDashboard(BaseModel):
     in_review_cases: int
     closed_cases: int
     recent_report_count: int
+
+
+class DoctorPatientSearchItem(BaseModel):
+    id: str
+    patient_id: str
+    full_name: str
+    age: int | None = None
+    gender: str | None = None
+    blood_group: str | None = None
+
+
+class DoctorDirectoryItem(BaseModel):
+    id: str
+    full_name: str
+    license_number: str
+    specialization: str
+    hospital: str | None = None
+    location: str | None = None

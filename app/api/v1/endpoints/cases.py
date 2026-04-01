@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal, get_db
 from app.models.user import User
-from app.schemas.case import CaseCreate, CaseRead, CaseStatusUpdate, CaseTransferRequest
+from app.schemas.case import CaseCreate, CaseDecisionRequest, CaseRead, CaseReferralRequest, CaseReportAccessDecision, CaseStatusUpdate, CaseTransferRequest
 from app.schemas.message import MessageCreate, MessageRead
 from app.schemas.note import ClinicalNoteCreate, ClinicalNoteRead
 from app.services.cases import CaseService
@@ -52,6 +52,26 @@ async def update_case_status(
     return await CaseService(db).update_status(case_id, current_user.id, payload)
 
 
+@router.patch("/{case_id}/cancel", response_model=CaseRead)
+async def cancel_case(
+    case_id: UUID,
+    payload: CaseDecisionRequest | None = None,
+    current_user=Depends(get_current_active_role_user("patient")),
+    db: AsyncSession = Depends(get_db),
+) -> CaseRead:
+    return await CaseService(db).cancel_case(case_id, current_user.id, payload)
+
+
+@router.patch("/{case_id}/reject", response_model=CaseRead)
+async def reject_case(
+    case_id: UUID,
+    payload: CaseDecisionRequest | None = None,
+    current_user=Depends(get_current_active_role_user("doctor")),
+    db: AsyncSession = Depends(get_db),
+) -> CaseRead:
+    return await CaseService(db).reject_case(case_id, current_user.id, payload)
+
+
 @router.patch("/{case_id}/transfer", response_model=CaseRead)
 async def transfer_case(
     case_id: UUID,
@@ -60,6 +80,25 @@ async def transfer_case(
     db: AsyncSession = Depends(get_db),
 ) -> CaseRead:
     return await CaseService(db).transfer_case(case_id, current_user.id, payload)
+
+
+@router.patch("/{case_id}/refer", response_model=CaseRead)
+async def refer_case(
+    case_id: UUID,
+    payload: CaseReferralRequest,
+    current_user=Depends(get_current_active_role_user("doctor")),
+    db: AsyncSession = Depends(get_db),
+) -> CaseRead:
+    return await CaseService(db).refer_case(case_id, current_user.id, payload)
+
+
+@router.delete("/{case_id}", status_code=204)
+async def delete_case(
+    case_id: UUID,
+    current_user=Depends(get_current_active_role_user("doctor")),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    await CaseService(db).delete_case(case_id, current_user.id)
 
 
 @router.post("/{case_id}/notes", response_model=ClinicalNoteRead)
@@ -80,6 +119,29 @@ async def create_case_message(
     db: AsyncSession = Depends(get_db),
 ) -> MessageRead:
     message = await CaseService(db).create_message(case_id, current_user, payload)
+    await connection_manager.broadcast_case_message(case_id, message)
+    return message
+
+
+@router.post("/{case_id}/report-access/request", response_model=MessageRead)
+async def request_case_report_access(
+    case_id: UUID,
+    current_user=Depends(get_current_active_role_user("doctor")),
+    db: AsyncSession = Depends(get_db),
+) -> MessageRead:
+    message = await CaseService(db).request_report_access(case_id, current_user.id)
+    await connection_manager.broadcast_case_message(case_id, message)
+    return message
+
+
+@router.patch("/{case_id}/report-access", response_model=MessageRead)
+async def respond_case_report_access(
+    case_id: UUID,
+    payload: CaseReportAccessDecision,
+    current_user=Depends(get_current_active_role_user("patient")),
+    db: AsyncSession = Depends(get_db),
+) -> MessageRead:
+    message = await CaseService(db).respond_report_access(case_id, current_user.id, payload)
     await connection_manager.broadcast_case_message(case_id, message)
     return message
 

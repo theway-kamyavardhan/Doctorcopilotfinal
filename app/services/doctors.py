@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -6,8 +6,10 @@ from app.core.exceptions import NotFoundError
 from app.models.case import Case
 from app.models.doctor import Doctor
 from app.models.enums import CaseStatus
+from app.models.patient import Patient
 from app.models.report import Report
-from app.schemas.doctor import DoctorDashboard, DoctorUpdate
+from app.models.user import User
+from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorUpdate
 
 
 class DoctorService:
@@ -55,6 +57,54 @@ class DoctorService:
             closed_cases=counts[CaseStatus.CLOSED],
             recent_report_count=(await self.db.scalar(report_stmt)) or 0,
         )
+
+    async def search_patients(self, query: str | None = None) -> list[DoctorPatientSearchItem]:
+        statement = select(Patient).join(Patient.user).options(selectinload(Patient.user)).order_by(Patient.created_at.desc()).limit(20)
+        normalized = (query or "").strip()
+        if normalized:
+            like = f"%{normalized}%"
+            statement = statement.where(
+                or_(
+                    Patient.patient_id.ilike(like),
+                    Patient.phone_number.ilike(like),
+                    Patient.gender.ilike(like),
+                    User.full_name.ilike(like),
+                )
+            )
+            patients = list((await self.db.scalars(statement)).all())
+        else:
+            patients = list((await self.db.scalars(statement)).all())
+
+        return [
+            DoctorPatientSearchItem(
+                id=str(patient.id),
+                patient_id=patient.patient_id,
+                full_name=patient.user.full_name,
+                age=patient.age,
+                gender=patient.gender,
+                blood_group=patient.blood_group,
+            )
+            for patient in patients
+        ]
+
+    async def list_directory(self) -> list[DoctorDirectoryItem]:
+        statement = (
+            select(Doctor)
+            .options(selectinload(Doctor.user))
+            .order_by(Doctor.specialization.asc(), Doctor.created_at.asc())
+        )
+        doctors = list((await self.db.scalars(statement)).all())
+        return [
+            DoctorDirectoryItem(
+                id=str(doctor.id),
+                full_name=doctor.user.full_name if doctor.user else "Doctor",
+                license_number=doctor.license_number,
+                specialization=doctor.specialization,
+                hospital=doctor.hospital,
+                location=doctor.location,
+            )
+            for doctor in doctors
+        ]
 
     async def _get_doctor_by_user_id(self, user_id) -> Doctor:
         statement = select(Doctor).where(Doctor.user_id == user_id).options(selectinload(Doctor.user))

@@ -18,6 +18,10 @@ class Doctor(UUIDTimestampMixin, Base):
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user = relationship("User", back_populates="doctor_profile")
-    cases = relationship("Case", back_populates="doctor")
+    cases = relationship(
+        "Case",
+        back_populates="doctor",
+        foreign_keys=lambda: [__import__("app.models.case", fromlist=["Case"]).Case.doctor_id],
+    )
     clinical_notes = relationship("ClinicalNote", back_populates="doctor")
     appointments = relationship("Appointment", back_populates="doctor", cascade="all, delete-orphan")

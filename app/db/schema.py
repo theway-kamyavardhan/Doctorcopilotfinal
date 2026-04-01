@@ -82,6 +82,35 @@ def ensure_runtime_schema(connection) -> None:
         for statement in user_additions:
             connection.execute(text(statement))
 
+    inspector = inspect(connection)
+    if "cases" in inspector.get_table_names():
+        case_cols = {column["name"] for column in inspector.get_columns("cases")}
+        case_additions: list[str] = []
+        uuid_type = "UUID" if dialect == "postgresql" else "VARCHAR(36)"
+        if "request_origin" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN request_origin VARCHAR(32) DEFAULT 'patient'")
+        if "referral_note" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN referral_note TEXT")
+        if "referred_by_doctor_id" not in case_cols:
+            case_additions.append(f"ALTER TABLE cases ADD COLUMN referred_by_doctor_id {uuid_type}")
+        if "report_access_status" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN report_access_status VARCHAR(32) DEFAULT 'not_requested'")
+        if "report_access_requested_at" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN report_access_requested_at TIMESTAMP")
+        if "report_access_updated_at" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN report_access_updated_at TIMESTAMP")
+        if "report_access_requested_by_doctor_id" not in case_cols:
+            case_additions.append(f"ALTER TABLE cases ADD COLUMN report_access_requested_by_doctor_id {uuid_type}")
+        if "closing_note" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN closing_note TEXT")
+        if "closed_by_doctor_id" not in case_cols:
+            case_additions.append(f"ALTER TABLE cases ADD COLUMN closed_by_doctor_id {uuid_type}")
+        if "closed_at" not in case_cols:
+            case_additions.append("ALTER TABLE cases ADD COLUMN closed_at TIMESTAMP")
+
+        for statement in case_additions:
+            connection.execute(text(statement))
+
     # Use IF NOT EXISTS for indexes to avoid conflicts with Metadata creation
     connection.execute(text("CREATE INDEX IF NOT EXISTS ix_reports_report_date ON reports (report_date)"))
     # The patient_id index is already handled by the model, but we add IF NOT EXISTS for safety

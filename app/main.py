@@ -45,6 +45,7 @@ async def healthcheck() -> dict[str, str]:
 
 
 app.websocket("/ws/{case_id}")(case_chat)
+app.websocket("/ws/cases/{case_id}")(case_chat)
 
 
 @app.exception_handler(AppException)

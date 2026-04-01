@@ -22,6 +22,26 @@ export async function requestConsultation(payload = { type: "consultation_reques
   }
 }
 
+export async function cancelConsultation(caseId, note = "") {
+  try {
+    const response = await api.patch(`/api/v1/cases/${caseId}/cancel`, {
+      note: note || "Consultation request cancelled by patient.",
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to cancel consultation request."));
+  }
+}
+
+export async function getCaseDetails(caseId) {
+  try {
+    const response = await api.get(`/api/v1/cases/${caseId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to load case details."));
+  }
+}
+
 export async function getCaseMessages(caseId) {
   try {
     const response = await api.get(`/api/v1/cases/${caseId}/messages`);
@@ -43,11 +63,25 @@ export async function sendCaseMessage(caseId, content) {
   }
 }
 
+export async function respondReportAccess(caseId, decision) {
+  try {
+    const response = await api.patch(`/api/v1/cases/${caseId}/report-access`, {
+      decision,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to respond to report access request."));
+  }
+}
+
 export const caseService = {
   getCases,
   requestConsultation,
+  cancelConsultation,
+  getCaseDetails,
   getCaseMessages,
   sendCaseMessage,
+  respondReportAccess,
 };
 
 export default caseService;

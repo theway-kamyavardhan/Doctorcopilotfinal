@@ -18,9 +18,13 @@ import PatientCases from "./pages/patient/PatientCases";
 import PatientChats from "./pages/patient/PatientChats";
 import Settings from "./pages/patient/Settings";
 import RegisterPatient from "./pages/auth/RegisterPatient";
-
-// Other Roles
+import DoctorLayout from "./components/doctor/DoctorLayout";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
+import DoctorCases from "./pages/doctor/DoctorCases";
+import DoctorCaseView from "./pages/doctor/DoctorCaseView";
+import DoctorChats from "./pages/doctor/DoctorChats";
+import DoctorCalendar from "./pages/doctor/DoctorCalendar";
+import DoctorSettings from "./pages/doctor/DoctorSettings";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ParticleTransition from "./components/ui/ParticleTransition";
 import { authService } from "./services/auth.service";
@@ -114,20 +118,24 @@ function AnimatedRoutes() {
           <Route path="settings" element={<Settings />} />
         </Route>
 
-        <Route 
-          path="/doctor/*" 
+        {/* NESTED DOCTOR ROUTES */}
+        <Route
+          path="/doctor"
           element={
             <ProtectedRoute roleRequired="doctor">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: appleEase }}
-              >
-                <DoctorDashboard />
-              </motion.div>
+              <DoctorLayout />
             </ProtectedRoute>
-          } 
-        />
+          }
+        >
+          <Route index element={<Navigate to="/doctor/dashboard" replace />} />
+          <Route path="dashboard" element={<DoctorDashboard />} />
+          <Route path="cases" element={<DoctorCases />} />
+          <Route path="case/:id" element={<DoctorCaseView />} />
+          <Route path="archived" element={<Navigate to="/doctor/cases" replace />} />
+          <Route path="chats" element={<DoctorChats />} />
+          <Route path="calendar" element={<DoctorCalendar />} />
+          <Route path="settings" element={<DoctorSettings />} />
+        </Route>
 
         <Route 
           path="/admin/*" 

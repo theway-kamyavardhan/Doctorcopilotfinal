@@ -57,10 +57,18 @@ class AuthService:
         return ''.join(secrets.choice(alphabet) for i in range(12))
 
     async def _generate_patient_id(self) -> str:
-        from sqlalchemy import func
-        statement = select(func.count(Patient.id))
-        count = (await self.db.execute(statement)).scalar() or 0
-        return f"P-{10000 + count + 1}"
+        statement = select(Patient.patient_id)
+        existing_ids = list((await self.db.scalars(statement)).all())
+        highest_numeric = 10000
+        for patient_id in existing_ids:
+            if not patient_id:
+                continue
+            try:
+                numeric = int(str(patient_id).split("-")[-1])
+            except ValueError:
+                continue
+            highest_numeric = max(highest_numeric, numeric)
+        return f"P-{highest_numeric + 1}"
 
     async def register_doctor(self, payload: DoctorCreate) -> Doctor:
         await self._ensure_unique_email(payload.email)
@@ -85,16 +93,20 @@ class AuthService:
         return doctor
 
     async def login(self, payload: LoginRequest) -> TokenResponse:
+        identifier = payload.identifier.strip()
+
         # Check if the identifier is a Patient ID (e.g., starts with P-)
-        if payload.identifier.startswith("P-"):
-            statement = select(User).join(Patient).where(Patient.patient_id == payload.identifier)
-        elif payload.identifier.upper().startswith("ADMIN-"):
+        if identifier.upper().startswith("P-"):
+            statement = select(User).join(Patient).where(Patient.patient_id == identifier.upper())
+        elif identifier.upper().startswith("D-"):
+            statement = select(User).join(Doctor).where(Doctor.license_number == identifier.upper())
+        elif identifier.upper().startswith("ADMIN-"):
             statement = select(User).where(
-                User.admin_code == payload.identifier.upper(),
+                User.admin_code == identifier.upper(),
                 User.role == UserRole.ADMIN,
             )
         else:
-            statement = select(User).where(User.email == payload.identifier)
+            statement = select(User).where(User.email == identifier)
             
         user = (await self.db.execute(statement)).scalar_one_or_none()
         if not user or not verify_password(payload.password, user.hashed_password):
