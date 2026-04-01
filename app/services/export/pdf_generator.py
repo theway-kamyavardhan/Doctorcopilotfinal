@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from io import BytesIO
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 from xml.sax.saxutils import escape
@@ -881,3 +882,266 @@ class PatientPdfExportService:
         return _clean_sentence(
             f"Overall interpretation: status is {health_score['status'].lower()} with a score of {health_score['score']} out of 100; {joined}. Continued physician review and interval monitoring are recommended."
         )
+
+
+class SingleReportPdfExportService:
+    def __init__(self) -> None:
+        self._ensure_reportlab()
+
+    def _ensure_reportlab(self) -> None:
+        if REPORTLAB_AVAILABLE:
+            return
+        raise RuntimeError(
+            "reportlab is required for PDF export. Install backend dependencies from requirements.txt."
+        ) from REPORTLAB_IMPORT_ERROR
+
+    def generate_report_pdf(self, report: Report, mode: str = "ai") -> tuple[bytes, str]:
+        normalized_mode = (mode or "ai").strip().lower()
+        if normalized_mode == "source" and report.mime_type == "application/pdf" and report.file_path:
+            file_path = Path(report.file_path)
+            if file_path.exists():
+                return file_path.read_bytes(), self._filename(report, "source")
+
+        if normalized_mode == "source":
+            pdf_bytes = self._build_source_pdf(report)
+        else:
+            pdf_bytes = self._build_ai_pdf(report)
+        return pdf_bytes, self._filename(report, normalized_mode)
+
+    def _filename(self, report: Report, mode: str) -> str:
+        stem = Path(report.file_name or f"report-{report.id}").stem
+        safe_stem = "".join(char if char.isalnum() or char in {"-", "_"} else "_" for char in stem).strip("_") or "report"
+        return f"{safe_stem}_{mode}.pdf"
+
+    def _styles(self):
+        base = getSampleStyleSheet()
+        return {
+            "Title": ParagraphStyle(
+                "SingleReportTitle",
+                parent=base["Heading1"],
+                fontName="Helvetica-Bold",
+                fontSize=22,
+                leading=26,
+                textColor=colors.HexColor(THEME["text"]),
+                spaceAfter=4,
+            ),
+            "Section": ParagraphStyle(
+                "SingleReportSection",
+                parent=base["Heading2"],
+                fontName="Helvetica-Bold",
+                fontSize=12,
+                leading=15,
+                textColor=colors.HexColor(THEME["text"]),
+                spaceAfter=6,
+            ),
+            "Body": ParagraphStyle(
+                "SingleReportBody",
+                parent=base["BodyText"],
+                fontName="Helvetica",
+                fontSize=10,
+                leading=15,
+                textColor=colors.HexColor(THEME["muted"]),
+            ),
+            "BodyStrong": ParagraphStyle(
+                "SingleReportBodyStrong",
+                parent=base["BodyText"],
+                fontName="Helvetica-Bold",
+                fontSize=10,
+                leading=15,
+                textColor=colors.HexColor(THEME["text"]),
+            ),
+            "Label": ParagraphStyle(
+                "SingleReportLabel",
+                parent=base["BodyText"],
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                leading=10,
+                textColor=colors.HexColor(THEME["muted"]),
+            ),
+        }
+
+    def _build_ai_pdf(self, report: Report) -> bytes:
+        styles = self._styles()
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            leftMargin=18 * mm,
+            rightMargin=18 * mm,
+            topMargin=18 * mm,
+            bottomMargin=16 * mm,
+            title=f"DoctorCopilot AI Report - {report.file_name}",
+            author="DoctorCopilot",
+        )
+        interpretation = self._clinical_interpretation(report)
+        findings = self._abnormal_findings(report)
+        rows = self._parameter_rows(report, styles)
+        story = [
+            Paragraph("DoctorCopilot AI Report Summary", styles["Title"]),
+            Paragraph(escape(_sanitize(report.file_name or "Clinical Report")), styles["Body"]),
+            Spacer(1, 8),
+            self._info_table(
+                [
+                    ("Patient", report.patient_name or "Unknown"),
+                    ("Report Type", report.report_type or "Clinical Report"),
+                    ("Lab", report.lab_name or "Unknown"),
+                    ("Date", report.report_date.isoformat() if report.report_date else "Unknown"),
+                ],
+                styles,
+            ),
+            Spacer(1, 12),
+            Paragraph("Critical Findings", styles["Section"]),
+            *self._bullet_paragraphs(findings or ["No high-priority abnormal findings were extracted from this report."], styles),
+            Spacer(1, 12),
+            Paragraph("AI Summary", styles["Section"]),
+            *self._bullet_paragraphs(interpretation or [report.summary or "Structured AI interpretation is not available."], styles),
+            Spacer(1, 12),
+            Paragraph("Structured Parameters", styles["Section"]),
+            self._data_table(["Parameter", "Value", "Range", "Status"], rows, [90 * mm, 28 * mm, 38 * mm, 22 * mm], styles),
+        ]
+        doc.build(story, onFirstPage=self._decorate_page, onLaterPages=self._decorate_page)
+        return buffer.getvalue()
+
+    def _build_source_pdf(self, report: Report) -> bytes:
+        styles = self._styles()
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            leftMargin=18 * mm,
+            rightMargin=18 * mm,
+            topMargin=18 * mm,
+            bottomMargin=16 * mm,
+            title=f"DoctorCopilot Source Report - {report.file_name}",
+            author="DoctorCopilot",
+        )
+        raw_text = _sanitize(report.raw_text or "")
+        story = [
+            Paragraph("DoctorCopilot Source Report Copy", styles["Title"]),
+            Paragraph(escape(_sanitize(report.file_name or "Clinical Report")), styles["Body"]),
+            Spacer(1, 8),
+            self._info_table(
+                [
+                    ("Patient", report.patient_name or "Unknown"),
+                    ("Report Type", report.report_type or "Clinical Report"),
+                    ("Lab", report.lab_name or "Unknown"),
+                    ("Mime Type", report.mime_type or "Unknown"),
+                    ("Date", report.report_date.isoformat() if report.report_date else "Unknown"),
+                    ("Stored File", report.file_name or "Unknown"),
+                ],
+                styles,
+            ),
+            Spacer(1, 12),
+            Paragraph("Extracted Raw Report Text", styles["Section"]),
+            Paragraph(
+                escape(raw_text or "No OCR or extracted raw text is available for this report."),
+                styles["Body"],
+            ),
+        ]
+        doc.build(story, onFirstPage=self._decorate_page, onLaterPages=self._decorate_page)
+        return buffer.getvalue()
+
+    def _decorate_page(self, canvas, doc) -> None:  # pragma: no cover - visual rendering
+        canvas.saveState()
+        canvas.setFillColor(colors.HexColor(THEME["background"]))
+        canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
+        canvas.setFillColor(colors.HexColor(THEME["muted"]))
+        canvas.setFont("Helvetica", 8)
+        canvas.drawString(doc.leftMargin, 10 * mm, "DoctorCopilot")
+        canvas.drawRightString(A4[0] - doc.rightMargin, 10 * mm, f"Page {doc.page}")
+        canvas.restoreState()
+
+    def _info_table(self, items: list[tuple[str, str]], styles):
+        rows = []
+        for index in range(0, len(items), 2):
+            cells = []
+            for label, value in items[index:index + 2]:
+                cells.append(
+                    Paragraph(
+                        f"<font color='{THEME['muted']}'>{escape(label.upper())}</font><br/>{escape(_sanitize(value))}",
+                        styles["BodyStrong"],
+                    )
+                )
+            if len(cells) == 1:
+                cells.append("")
+            rows.append(cells)
+        table = Table(rows, colWidths=[82 * mm, 82 * mm], hAlign="LEFT")
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_soft"])),
+                    ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line"])),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                    ("TOPPADDING", (0, 0), (-1, -1), 8),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ]
+            )
+        )
+        return table
+
+    def _data_table(self, headers, rows, widths, styles):
+        table_rows = [[Paragraph(f"<b>{escape(header)}</b>", styles["BodyStrong"]) for header in headers]]
+        table_rows.extend(rows or [[Paragraph("No structured values", styles["Body"]), "", "", ""]])
+        table = Table(table_rows, colWidths=widths, hAlign="LEFT")
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(THEME["surface_soft"])),
+                    ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor(THEME["text"])),
+                    ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line"])),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 8),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+        return table
+
+    def _bullet_paragraphs(self, items: list[str], styles) -> list[Any]:
+        return [Paragraph(f"&bull; {escape(_sanitize(item))}", styles["Body"]) for item in items if item]
+
+    def _clinical_interpretation(self, report: Report) -> list[str]:
+        findings = self._abnormal_findings(report)
+        ai_insights = [getattr(item, "description", "") for item in (report.insights or []) if getattr(item, "description", "")]
+        combined = []
+        for item in [*findings, *ai_insights, report.summary or ""]:
+            cleaned = _clean_sentence(item)
+            if cleaned:
+                combined.append(cleaned)
+        return list(dict.fromkeys(combined))[:5]
+
+    def _abnormal_findings(self, report: Report) -> list[str]:
+        findings = []
+        for parameter in report.parameters or []:
+            status = str(parameter.get("status") or parameter.get("interpretation") or "").lower()
+            if not _is_abnormal_status(status):
+                continue
+            label = _labelize(parameter.get("name"))
+            value_text = _format_value_unit(parameter.get("value"), parameter.get("unit"))
+            if label == "Platelets" and status == "low":
+                findings.append(f"Platelet count is low at {value_text}, compatible with a thrombocytopenic pattern.")
+            elif label == "Vitamin B12" and status in {"low", "deficient"}:
+                findings.append(f"Vitamin B12 is low at {value_text}, suggesting a deficiency pattern.")
+            elif label == "Vitamin D" and status in {"deficient", "insufficient"}:
+                findings.append(f"Vitamin D is {status} at {value_text}.")
+            else:
+                findings.append(f"{label} is {status} at {value_text}.")
+        return list(dict.fromkeys(_clean_sentence(item) for item in findings if item))[:5]
+
+    def _parameter_rows(self, report: Report, styles) -> list[list[Any]]:
+        rows = []
+        for parameter in report.parameters or []:
+            rows.append(
+                [
+                    Paragraph(escape(_labelize(parameter.get("name"))), styles["Body"]),
+                    Paragraph(escape(_format_value_unit(parameter.get("value"), parameter.get("unit"))), styles["Body"]),
+                    Paragraph(escape(_sanitize(parameter.get("reference_range") or "-")), styles["Body"]),
+                    Paragraph(escape(str(parameter.get("status") or parameter.get("interpretation") or "unknown").title()), styles["Body"]),
+                ]
+            )
+        return rows

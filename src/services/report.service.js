@@ -43,6 +43,25 @@ export async function getReports() {
   return response.data || [];
 }
 
+export async function getReport(reportId) {
+  const response = await api.get(`/api/v1/reports/${reportId}`);
+  return response.data;
+}
+
+export async function getReportFile(reportId) {
+  const response = await api.get(`/api/v1/reports/${reportId}/file`, {
+    responseType: "blob",
+  });
+
+  return {
+    blob: response.data,
+    headers: {
+      "content-type": response.headers?.["content-type"],
+      "content-disposition": response.headers?.["content-disposition"],
+    },
+  };
+}
+
 export async function getTrends() {
   const response = await api.get("/api/v1/patients/me/trends");
   return response.data;
@@ -77,13 +96,37 @@ export async function exportHealthSummary() {
   }
 }
 
+export async function exportReportPdf(reportId, mode = "ai") {
+  try {
+    const response = await api.get(`/api/v1/reports/${reportId}/export`, {
+      params: { mode },
+      responseType: "blob",
+      headers: {
+        Accept: "application/pdf",
+      },
+    });
+
+    return {
+      blob: response.data,
+      headers: {
+        "content-disposition": response.headers?.["content-disposition"],
+      },
+    };
+  } catch (error) {
+    throw new Error(await parseExportError(error));
+  }
+}
+
 export const reportService = {
   uploadReport,
   getReports,
+  getReport,
+  getReportFile,
   getTrends,
   getInsights,
   deleteReport,
   exportHealthSummary,
+  exportReportPdf,
 };
 
 export default reportService;

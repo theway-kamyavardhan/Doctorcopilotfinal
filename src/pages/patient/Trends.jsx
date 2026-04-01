@@ -15,6 +15,7 @@ import {
 import { formatParameterLabel, getTrendArrow } from "../../utils/patientIntelligence";
 
 const PRIORITY_PARAMETERS = ["hemoglobin", "platelets", "vitamin_b12"];
+const TRENDS_CACHE_KEY = "patient-trends-page-cache-v1";
 
 function getOrderedParameters(trends) {
   const available = Object.keys(trends?.series || {});
@@ -33,6 +34,26 @@ function badgeClasses(isDark, tone = "neutral") {
   return isDark ? "bg-white/5 text-slate-300" : "bg-slate-100 text-slate-700";
 }
 
+function readTrendsCache() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(TRENDS_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function writeTrendsCache(payload) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(TRENDS_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore cache write failures.
+  }
+}
+
 export default function Trends() {
   const { isDark } = useTheme();
   const [trends, setTrends] = useState(null);
@@ -43,24 +64,55 @@ export default function Trends() {
   const [viewMode, setViewMode] = useState("both");
 
   useEffect(() => {
+    const cached = readTrendsCache();
+    if (cached?.trends) {
+      setTrends(cached.trends);
+      setInsights(cached.insights || null);
+      setSelectedParameter(getOrderedParameters(cached.trends)[0] || "");
+      setLoading(false);
+    }
+
+    let cancelled = false;
+
     const load = async () => {
       try {
-        const [trendData, insightData] = await Promise.all([
-          reportService.getTrends(),
-          reportService.getInsights(),
-        ]);
+        const trendData = await reportService.getTrends();
+        if (cancelled) return;
         setTrends(trendData);
-        setInsights(insightData);
-        setSelectedParameter(getOrderedParameters(trendData)[0] || "");
+        setSelectedParameter((current) => current || getOrderedParameters(trendData)[0] || "");
+        setLoading(false);
+        setError("");
+
+        reportService
+          .getInsights()
+          .then((insightData) => {
+            if (cancelled) return;
+            setInsights(insightData);
+            writeTrendsCache({ trends: trendData, insights: insightData });
+          })
+          .catch((insightError) => {
+            if (cancelled) return;
+            console.error(insightError);
+            writeTrendsCache({ trends: trendData, insights: cached?.insights || null });
+          });
+
+        if (!cached?.trends) {
+          writeTrendsCache({ trends: trendData, insights: cached?.insights || null });
+        }
       } catch (err) {
         console.error(err);
-        setError(err.message || "Failed to load trends.");
-      } finally {
-        setLoading(false);
+        if (!cached?.trends) {
+          setError(err.message || "Failed to load trends.");
+          setLoading(false);
+        }
       }
     };
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const parameters = useMemo(() => getOrderedParameters(trends), [trends]);

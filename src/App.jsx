@@ -15,6 +15,7 @@ import Calendar from "./pages/patient/Calendar";
 import Reports from "./pages/patient/Reports";
 import ParameterDetail from "./pages/patient/ParameterDetail";
 import PatientCases from "./pages/patient/PatientCases";
+import PatientCaseInsights from "./pages/patient/PatientCaseInsights";
 import PatientChats from "./pages/patient/PatientChats";
 import Settings from "./pages/patient/Settings";
 import RegisterPatient from "./pages/auth/RegisterPatient";
@@ -22,6 +23,7 @@ import DoctorLayout from "./components/doctor/DoctorLayout";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorCases from "./pages/doctor/DoctorCases";
 import DoctorCaseView from "./pages/doctor/DoctorCaseView";
+import DoctorCaseInsights from "./pages/doctor/DoctorCaseInsights";
 import DoctorChats from "./pages/doctor/DoctorChats";
 import DoctorCalendar from "./pages/doctor/DoctorCalendar";
 import DoctorSettings from "./pages/doctor/DoctorSettings";
@@ -113,6 +115,8 @@ function AnimatedRoutes() {
           <Route path="reports" element={<Reports />} />
           <Route path="cases" element={<PatientCases />} />
           <Route path="case" element={<PatientCases />} />
+          <Route path="cases/insights" element={<PatientCaseInsights />} />
+          <Route path="case/insights" element={<PatientCaseInsights />} />
           <Route path="chats" element={<PatientChats />} />
           <Route path="chat" element={<PatientChats />} />
           <Route path="settings" element={<Settings />} />
@@ -131,6 +135,7 @@ function AnimatedRoutes() {
           <Route path="dashboard" element={<DoctorDashboard />} />
           <Route path="cases" element={<DoctorCases />} />
           <Route path="case/:id" element={<DoctorCaseView />} />
+          <Route path="case/:id/insights" element={<DoctorCaseInsights />} />
           <Route path="archived" element={<Navigate to="/doctor/cases" replace />} />
           <Route path="chats" element={<DoctorChats />} />
           <Route path="calendar" element={<DoctorCalendar />} />

@@ -43,8 +43,34 @@ export async function exportAiHealthSummary() {
   }, 1000);
 }
 
+export async function exportSingleReportPdf(reportId, mode = "ai") {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    throw new Error("Export is only available in the browser.");
+  }
+
+  const response = await reportService.exportReportPdf(reportId, mode);
+  const filename = parseFilename(response.headers?.["content-disposition"]);
+  const blob = response.blob instanceof Blob
+    ? response.blob
+    : new Blob([response.data], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+
+  window.setTimeout(() => {
+    window.URL.revokeObjectURL(url);
+  }, 1000);
+}
+
 export const ExportService = {
   exportAiHealthSummary,
+  exportSingleReportPdf,
 };
 
 export default ExportService;

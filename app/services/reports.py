@@ -14,6 +14,7 @@ from app.models.patient import Patient
 from app.models.report import Report
 from app.models.user import User
 from app.schemas.report import DebugProcessReportResponse, ReportProcessingResponse
+from app.services.export.pdf_generator import SingleReportPdfExportService
 from app.services.processing.orchestrator import ReportProcessingOrchestrator
 
 
@@ -50,8 +51,14 @@ class ReportService:
             doctor = (await self.db.execute(select(Doctor).where(Doctor.user_id == current_user.id))).scalar_one_or_none()
             if not doctor:
                 raise AuthorizationError("Doctor profile not found for this account.")
-            doctor_case_ids = list((await self.db.scalars(select(Case.id).where(Case.doctor_id == doctor.id))).all())
-            if report.case_id not in doctor_case_ids:
+            access_state = await self.db.scalar(
+                select(Case.report_access_status).where(
+                    Case.doctor_id == doctor.id,
+                    Case.patient_id == report.patient_id,
+                    Case.report_access_status == "granted",
+                ).limit(1)
+            )
+            if access_state is None:
                 raise AuthorizationError("You do not have access to this report.")
         return report
 
@@ -80,6 +87,18 @@ class ReportService:
             except OSError:
                 # Keep the DB delete successful even if local cleanup fails.
                 pass
+
+    async def export_report_pdf(self, report_id: UUID, current_user: User, mode: str = "ai") -> tuple[bytes, str]:
+        report = await self.get_report(report_id, current_user)
+        exporter = SingleReportPdfExportService()
+        return exporter.generate_report_pdf(report, mode)
+
+    async def get_report_file(self, report_id: UUID, current_user: User) -> tuple[Report, Path]:
+        report = await self.get_report(report_id, current_user)
+        file_path = Path(report.file_path) if report.file_path else None
+        if not file_path or not file_path.exists():
+            raise NotFoundError("Original uploaded report file was not found.")
+        return report, file_path
 
     async def _get_patient_by_user_id(self, user_id) -> Patient:
         patient = (await self.db.execute(select(Patient).where(Patient.user_id == user_id))).scalar_one_or_none()

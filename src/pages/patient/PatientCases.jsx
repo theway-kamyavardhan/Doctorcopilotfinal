@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -8,6 +9,7 @@ import {
   RefreshCcw,
   ShieldX,
   Stethoscope,
+  X,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import appointmentService from "../../services/appointment.service";
@@ -52,11 +54,126 @@ function DoctorOption({ doctor, selected, onSelect, isDark }) {
             {[doctor.hospital, doctor.location].filter(Boolean).join(" • ") || "Hospital details pending"}
           </div>
         </div>
-        <div className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${selected ? "bg-cyan-500 text-slate-950" : isDark ? "bg-white/10 text-slate-300" : "bg-white text-slate-500"}`}>
+        <div
+          className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${
+            selected ? "bg-cyan-500 text-slate-950" : isDark ? "bg-white/10 text-slate-300" : "bg-white text-slate-500"
+          }`}
+        >
           {selected ? "Selected" : doctor.license_number}
         </div>
       </div>
     </button>
+  );
+}
+
+function RequestConsultationOverlay({
+  doctors,
+  selectedDoctor,
+  selectedDoctorId,
+  setSelectedDoctorId,
+  activeCases,
+  sameDoctorActiveCase,
+  requesting,
+  onClose,
+  onSubmit,
+  isDark,
+}) {
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 px-4 py-8">
+      <div
+        className={`w-full max-w-5xl rounded-[2rem] border shadow-2xl ${
+          isDark ? "border-white/10 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-900"
+        }`}
+      >
+        <div className={`flex items-start justify-between gap-4 border-b px-6 py-5 ${isDark ? "border-white/10" : "border-slate-200"}`}>
+          <div className="flex items-start gap-4">
+            <div className={`rounded-2xl p-3 ${isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-50 text-blue-700"}`}>
+              <ClipboardPlus size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black">New Consultation Request</h2>
+              <p className={`mt-2 max-w-2xl text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                Choose a doctor and send your request. A consultation with the same doctor cannot be created again until the current one is closed.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className={`inline-flex items-center justify-center rounded-2xl p-3 transition-colors ${
+              isDark ? "bg-white/5 text-slate-300 hover:bg-white/10" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+            aria-label="Close consultation request overlay"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="grid gap-8 px-6 py-6 xl:grid-cols-[0.9fr,1.1fr]">
+          <div className="space-y-5">
+            <div className={`rounded-2xl p-5 ${isDark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
+              <div className={`text-xs font-black uppercase tracking-[0.2em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>Selected Doctor</div>
+              <div className="mt-3 text-xl font-black">{selectedDoctor?.full_name || "Choose a doctor"}</div>
+              <div className={`mt-1 ${isDark ? "text-cyan-300" : "text-blue-700"}`}>{selectedDoctor?.specialization || "Specialization pending"}</div>
+              <div className={`mt-3 text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                {[selectedDoctor?.hospital, selectedDoctor?.location].filter(Boolean).join(" • ") || "Hospital/location will appear here."}
+              </div>
+            </div>
+
+            {sameDoctorActiveCase ? (
+              <div className={`rounded-2xl px-4 py-4 text-sm ${isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-800"}`}>
+                You already have an active consultation with {selectedDoctor?.full_name || "this doctor"}. Please wait until that case is closed before creating another request with the same doctor.
+              </div>
+            ) : activeCases.length ? (
+              <div className={`rounded-2xl px-4 py-4 text-sm ${isDark ? "bg-emerald-500/10 text-emerald-200" : "bg-emerald-50 text-emerald-800"}`}>
+                You currently have {activeCases.length} active consultation {activeCases.length > 1 ? "cases" : "case"}. You can still request a different doctor for another review.
+              </div>
+            ) : null}
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={onSubmit}
+                disabled={requesting || !selectedDoctorId || Boolean(sameDoctorActiveCase)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+              >
+                {requesting ? "Sending request..." : "Send Consultation Request"}
+                <ArrowRight size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 font-bold transition-colors ${
+                  isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className={`text-xs font-black uppercase tracking-[0.2em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>Available Doctors</div>
+            {doctors.length ? (
+              doctors.map((doctor) => (
+                <DoctorOption
+                  key={doctor.id}
+                  doctor={doctor}
+                  selected={doctor.id === selectedDoctorId}
+                  onSelect={setSelectedDoctorId}
+                  isDark={isDark}
+                />
+              ))
+            ) : (
+              <div className={`rounded-2xl border border-dashed px-4 py-10 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
+                No doctors are available right now.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -66,6 +183,7 @@ export default function PatientCases() {
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
+  const [showRequestOverlay, setShowRequestOverlay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const [cancellingId, setCancellingId] = useState("");
@@ -117,9 +235,23 @@ export default function PatientCases() {
     [doctors, selectedDoctorId]
   );
 
+  const sameDoctorActiveCase = useMemo(
+    () =>
+      activeCases.find(
+        (item) =>
+          item.doctor_id === selectedDoctorId &&
+          (item.status === "pending" || item.status === "open" || item.status === "in_review")
+      ) || null,
+    [activeCases, selectedDoctorId]
+  );
+
   const handleRequestConsultation = async () => {
     if (!selectedDoctorId) {
       setError("Please select a doctor before sending the consultation request.");
+      return;
+    }
+    if (sameDoctorActiveCase) {
+      setError("You already have an active consultation with this doctor. Please wait until it is closed.");
       return;
     }
     setRequesting(true);
@@ -133,6 +265,7 @@ export default function PatientCases() {
         description: `Patient requested a consultation with ${selectedDoctor?.full_name || "the selected doctor"}.`,
       });
       await loadCases();
+      setShowRequestOverlay(false);
       setMessage(`Consultation request sent to ${selectedDoctor?.full_name || "the selected doctor"}.`);
     } catch (requestError) {
       setError(requestError.message || "Failed to request consultation.");
@@ -170,19 +303,38 @@ export default function PatientCases() {
         <div>
           <h1 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Consultation Cases</h1>
           <p className={`mt-2 text-lg ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-            Choose a doctor, send a consultation request, and track the request until the consultation starts.
+            Track your requests, appointments, and live consultations in one place.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={loadCases}
-          className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
-            isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          <RefreshCcw size={16} />
-          Refresh
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/patient/cases/insights"
+            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
+              isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            <Stethoscope size={16} />
+            Insights
+          </Link>
+          <button
+            type="button"
+            onClick={() => setShowRequestOverlay(true)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500"
+          >
+            <ClipboardPlus size={16} />
+            New Consultation Request
+          </button>
+          <button
+            type="button"
+            onClick={loadCases}
+            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
+              isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            <RefreshCcw size={16} />
+            Refresh
+          </button>
+        </div>
       </section>
 
       {message ? (
@@ -195,70 +347,6 @@ export default function PatientCases() {
           {error}
         </div>
       ) : null}
-
-      <section className={`rounded-[2rem] border p-8 ${isDark ? "border-white/10 bg-slate-900" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
-        <div className="grid gap-8 xl:grid-cols-[0.9fr,1.1fr]">
-          <div className="space-y-5">
-            <div className="flex items-start gap-4">
-              <div className={`rounded-2xl p-4 ${isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-50 text-blue-700"}`}>
-                <ClipboardPlus size={28} />
-              </div>
-              <div>
-                <h2 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>New consultation request</h2>
-                <p className={`mt-2 max-w-xl ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  You can send a new consultation request at any time. Each request goes directly to the doctor you choose.
-                </p>
-              </div>
-            </div>
-
-            <div className={`rounded-2xl p-5 ${isDark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
-              <div className={`text-xs font-black uppercase tracking-[0.2em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>Selected Doctor</div>
-              <div className={`mt-3 text-xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
-                {selectedDoctor?.full_name || "Choose a doctor"}
-              </div>
-              <div className={`mt-1 ${isDark ? "text-cyan-300" : "text-blue-700"}`}>{selectedDoctor?.specialization || "Specialization pending"}</div>
-              <div className={`mt-3 text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                {[selectedDoctor?.hospital, selectedDoctor?.location].filter(Boolean).join(" • ") || "Hospital/location will appear here."}
-              </div>
-            </div>
-
-            {activeCases.length ? (
-              <div className={`rounded-2xl px-4 py-4 text-sm ${isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-800"}`}>
-                You currently have {activeCases.length} active consultation {activeCases.length > 1 ? "cases" : "case"}. You can still create another request if you want a different doctor to review your reports.
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={handleRequestConsultation}
-              disabled={requesting || !selectedDoctorId}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
-            >
-              {requesting ? "Sending request..." : "Send Consultation Request"}
-              <ArrowRight size={16} />
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            <div className={`text-xs font-black uppercase tracking-[0.2em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>Available Doctors</div>
-            {doctors.length ? (
-              doctors.map((doctor) => (
-                <DoctorOption
-                  key={doctor.id}
-                  doctor={doctor}
-                  selected={doctor.id === selectedDoctorId}
-                  onSelect={setSelectedDoctorId}
-                  isDark={isDark}
-                />
-              ))
-            ) : (
-              <div className={`rounded-2xl border border-dashed px-4 py-10 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
-                No doctors are available right now.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {activeCases.length ? (
         <section className={`rounded-[2rem] border p-8 ${isDark ? "border-white/10 bg-slate-900" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
@@ -340,13 +428,15 @@ export default function PatientCases() {
                         {appointment.doctor_name || "Assigned doctor pending"} {appointment.location ? `• ${appointment.location}` : ""}
                       </div>
                     </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${
-                      appointment.status === "completed"
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : appointment.status === "cancelled"
-                          ? "bg-red-500/10 text-red-500"
-                          : "bg-amber-500/10 text-amber-500"
-                    }`}>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        appointment.status === "completed"
+                          ? "bg-emerald-500/10 text-emerald-500"
+                          : appointment.status === "cancelled"
+                            ? "bg-red-500/10 text-red-500"
+                            : "bg-amber-500/10 text-amber-500"
+                      }`}
+                    >
                       {appointment.status}
                     </span>
                   </div>
@@ -384,7 +474,9 @@ export default function PatientCases() {
                         type="button"
                         onClick={() => handleCancelConsultation(item.id)}
                         disabled={cancellingId === item.id}
-                        className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${isDark ? "bg-red-500/10 text-red-300 hover:bg-red-500/15" : "bg-red-50 text-red-700 hover:bg-red-100"}`}
+                        className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${
+                          isDark ? "bg-red-500/10 text-red-300 hover:bg-red-500/15" : "bg-red-50 text-red-700 hover:bg-red-100"
+                        }`}
                       >
                         <ShieldX size={14} />
                         Cancel
@@ -392,7 +484,9 @@ export default function PatientCases() {
                     ) : null}
                     <Link
                       to="/patient/chat"
-                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-white text-slate-700 hover:bg-slate-200"}`}
+                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${
+                        isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-white text-slate-700 hover:bg-slate-200"
+                      }`}
                     >
                       <Stethoscope size={14} />
                       Open Chat
@@ -408,6 +502,21 @@ export default function PatientCases() {
           )}
         </div>
       </section>
+
+      {showRequestOverlay ? (
+        <RequestConsultationOverlay
+          doctors={doctors}
+          selectedDoctor={selectedDoctor}
+          selectedDoctorId={selectedDoctorId}
+          setSelectedDoctorId={setSelectedDoctorId}
+          activeCases={activeCases}
+          sameDoctorActiveCase={sameDoctorActiveCase}
+          requesting={requesting}
+          onClose={() => setShowRequestOverlay(false)}
+          onSubmit={handleRequestConsultation}
+          isDark={isDark}
+        />
+      ) : null}
     </div>
   );
 }

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.appointment import AppointmentRead
 from app.schemas.case import CaseRead
-from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorRead, DoctorUpdate
+from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorPasswordUpdate, DoctorRead, DoctorUpdate
 from app.services.appointments import AppointmentService
 from app.services.cases import CaseService
 from app.services.doctors import DoctorService
@@ -36,6 +36,15 @@ async def update_doctor_profile(
     db: AsyncSession = Depends(get_db),
 ) -> DoctorRead:
     return await DoctorService(db).update_profile(current_user.id, payload)
+
+
+@router.patch("/me/password", response_model=DoctorRead)
+async def update_doctor_password(
+    payload: DoctorPasswordUpdate,
+    current_user=Depends(get_current_active_role_user("doctor")),
+    db: AsyncSession = Depends(get_db),
+) -> DoctorRead:
+    return await DoctorService(db).change_password(current_user.id, payload)
 
 
 @router.get("/me/cases", response_model=list[CaseRead])

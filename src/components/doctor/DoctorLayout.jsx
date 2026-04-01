@@ -37,7 +37,7 @@ export default function DoctorLayout() {
         if (!mounted) return;
         setDoctorName(profile?.user?.full_name || "Doctor Workspace");
         setDoctorMeta(
-          [profile?.specialization, profile?.hospital].filter(Boolean).join(" • ") ||
+          [profile?.specialization, profile?.hospital].filter(Boolean).join(" | ") ||
             "Authenticated doctor session"
         );
       })

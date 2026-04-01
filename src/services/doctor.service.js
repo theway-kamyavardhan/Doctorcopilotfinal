@@ -58,6 +58,15 @@ export async function getPatientTrendOverview(patientId) {
   }
 }
 
+export async function getPatientInsights(patientId) {
+  try {
+    const response = await api.get(`/api/v1/patients/${patientId}/insights`);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to fetch patient insights."));
+  }
+}
+
 export async function acceptDoctorCase(caseId) {
   try {
     const response = await api.patch(`/api/v1/cases/${caseId}/status`, {
@@ -145,6 +154,7 @@ export const doctorService = {
   getDoctorCases,
   getDoctorCase,
   getPatientTrendOverview,
+  getPatientInsights,
   acceptDoctorCase,
   rejectDoctorCase,
   referDoctorCase,

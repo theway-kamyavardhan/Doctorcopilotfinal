@@ -60,9 +60,13 @@ class CaseDoctorSummary(BaseModel):
 
 class CaseReportSummary(BaseModel):
     id: UUID
+    file_name: str | None = None
+    mime_type: str | None = None
     report_date: str | None = None
     report_type: str | None = None
     report_category: str | None = None
+    report_keywords: list[str] = Field(default_factory=list)
+    report_metadata: dict[str, Any] = Field(default_factory=dict)
     lab_name: str | None = None
     summary: str | None = None
     parameters: list[dict[str, Any]] = Field(default_factory=list)

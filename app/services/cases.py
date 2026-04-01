@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import AuthorizationError, NotFoundError
+from app.core.exceptions import AuthorizationError, NotFoundError, ValidationAppError
 from app.models.case import Case
 from app.models.doctor import Doctor
 from app.models.enums import CaseStatus, SenderType, UserRole
@@ -58,6 +58,17 @@ class CaseService:
                 selected_doctor = await self.db.get(Doctor, payload.doctor_id)
                 if not selected_doctor:
                     raise NotFoundError("Selected doctor not found.")
+                existing_case = await self.db.scalar(
+                    select(Case.id).where(
+                        Case.patient_id == patient.id,
+                        Case.doctor_id == selected_doctor.id,
+                        Case.status.in_([CaseStatus.PENDING, CaseStatus.OPEN, CaseStatus.IN_REVIEW]),
+                    ).limit(1)
+                )
+                if existing_case:
+                    raise ValidationAppError(
+                        "You already have an active consultation with this doctor. Please wait for it to close before creating another one."
+                    )
             case = Case(
                 patient_id=patient.id,
                 doctor_id=selected_doctor.id if selected_doctor else None,
@@ -96,7 +107,24 @@ class CaseService:
     async def get_case_for_user(self, case_id: UUID, user: User) -> CaseRead:
         case = await self._get_case(case_id)
         await self.ensure_case_membership(case_id, user)
-        return await self._get_case_read(case_id)
+        case_read = await self._get_case_read(case_id)
+        if user.role == UserRole.DOCTOR and case_read.report_access_status != "granted":
+            case_read.reports = [
+                report.model_copy(
+                    update={
+                        "summary": None,
+                        "parameters": [],
+                        "insights": [],
+                        "raw_text": None,
+                    }
+                )
+                for report in case_read.reports
+            ]
+        elif user.role == UserRole.DOCTOR and case_read.report_access_status == "granted":
+            patient_reports = await self._get_patient_reports(case.patient_id)
+            case_read.reports = self._serialize_report_summaries(patient_reports)
+            case_read.report_count = len(case_read.reports)
+        return case_read
 
     async def update_status(self, case_id: UUID, doctor_user_id, payload: CaseStatusUpdate) -> CaseRead:
         doctor = await self._get_doctor_by_user_id(doctor_user_id)
@@ -393,6 +421,8 @@ class CaseService:
         )
         notes = sorted(case.clinical_notes or [], key=lambda item: item.created_at, reverse=True)
 
+        serialized_reports = self._serialize_report_summaries(ordered_reports)
+
         return CaseRead(
             id=case.id,
             created_at=case.created_at,
@@ -415,28 +445,14 @@ class CaseService:
             doctor_name=doctor_summary.full_name if doctor_summary else None,
             latest_message_at=latest_message.created_at.isoformat() if latest_message else None,
             latest_message_preview=latest_message.content if latest_message else None,
-            report_count=len(ordered_reports),
+            report_count=len(serialized_reports),
             message_count=len(ordered_messages),
             closing_note=case.closing_note,
             closed_by_doctor_id=case.closed_by_doctor_id,
             closed_at=case.closed_at.isoformat() if case.closed_at else None,
             patient=patient_summary,
             doctor=doctor_summary,
-            reports=[
-                CaseReportSummary(
-                    id=report.id,
-                    report_date=report.report_date.isoformat() if report.report_date else None,
-                    report_type=report.report_type,
-                    report_category=report.report_category,
-                    lab_name=report.lab_name,
-                    summary=report.summary,
-                    parameters=report.parameters or [],
-                    insights=[insight.description for insight in (report.insights or []) if insight.description],
-                    raw_text=report.raw_text,
-                    status=report.status,
-                )
-                for report in ordered_reports
-            ],
+            reports=serialized_reports,
             notes=[
                 CaseClinicalNoteSummary(
                     id=note.id,
@@ -450,6 +466,36 @@ class CaseService:
                 for note in notes
             ],
         )
+
+    def _serialize_report_summaries(self, reports: list[Report]) -> list[CaseReportSummary]:
+        return [
+            CaseReportSummary(
+                id=report.id,
+                file_name=report.file_name,
+                mime_type=report.mime_type,
+                report_date=report.report_date.isoformat() if report.report_date else None,
+                report_type=report.report_type,
+                report_category=report.report_category,
+                report_keywords=report.report_keywords or [],
+                report_metadata=report.report_metadata or {},
+                lab_name=report.lab_name,
+                summary=report.summary,
+                parameters=report.parameters or [],
+                insights=[insight.description for insight in (report.insights or []) if insight.description],
+                raw_text=report.raw_text,
+                status=report.status,
+            )
+            for report in reports
+        ]
+
+    async def _get_patient_reports(self, patient_id) -> list[Report]:
+        statement = (
+            select(Report)
+            .where(Report.patient_id == patient_id)
+            .options(selectinload(Report.insights))
+            .order_by(Report.report_date.desc(), Report.created_at.desc())
+        )
+        return list((await self.db.scalars(statement)).all())
 
     async def _get_doctor_by_user_id(self, user_id) -> Doctor:
         doctor = (await self.db.execute(select(Doctor).where(Doctor.user_id == user_id))).scalar_one_or_none()

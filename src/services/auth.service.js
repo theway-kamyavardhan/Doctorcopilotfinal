@@ -90,6 +90,15 @@ export async function changePatientPassword(payload) {
   }
 }
 
+export async function changeDoctorPassword(payload) {
+  try {
+    const response = await api.patch("/api/v1/doctors/me/password", payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to update password."));
+  }
+}
+
 export function logout() {
   clearAuthToken();
 }
@@ -109,6 +118,7 @@ export const authService = {
   getPatientProfile,
   updatePatientProfile,
   changePatientPassword,
+  changeDoctorPassword,
   logout,
   hasToken,
   getStoredRole,

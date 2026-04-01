@@ -2,14 +2,15 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import AuthenticationError, NotFoundError
+from app.core.security import hash_password, verify_password
 from app.models.case import Case
 from app.models.doctor import Doctor
 from app.models.enums import CaseStatus
 from app.models.patient import Patient
 from app.models.report import Report
 from app.models.user import User
-from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorUpdate
+from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorPasswordUpdate, DoctorUpdate
 
 
 class DoctorService:
@@ -33,6 +34,15 @@ class DoctorService:
             doctor.phone_number = payload.phone_number
         if payload.bio is not None:
             doctor.bio = payload.bio
+        await self.db.commit()
+        await self.db.refresh(doctor, attribute_names=["user"])
+        return doctor
+
+    async def change_password(self, user_id, payload: DoctorPasswordUpdate) -> Doctor:
+        doctor = await self._get_doctor_by_user_id(user_id)
+        if not verify_password(payload.old_password, doctor.user.hashed_password):
+            raise AuthenticationError("Current password is incorrect.")
+        doctor.user.hashed_password = hash_password(payload.new_password)
         await self.db.commit()
         await self.db.refresh(doctor, attribute_names=["user"])
         return doctor

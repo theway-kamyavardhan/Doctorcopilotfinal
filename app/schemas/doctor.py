@@ -25,6 +25,11 @@ class DoctorUpdate(BaseModel):
     bio: str | None = None
 
 
+class DoctorPasswordUpdate(BaseModel):
+    old_password: str
+    new_password: str = Field(min_length=8)
+
+
 class DoctorRead(TimestampedResponse):
     license_number: str
     specialization: str

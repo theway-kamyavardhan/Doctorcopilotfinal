@@ -320,13 +320,13 @@ export default function ExpandableReportCard({ report, isExpanded, onToggle, isD
 
                   <button
                     type="button"
-                    onClick={() => ExportService.exportAiHealthSummary({ reports: [report], selectedReport: report, trends: { summary: [], anomalies: [] }, insights: { key_findings: [] }, profile: { user: { full_name: metadata.patientName }, age: metadata.age } })}
+                    onClick={() => ExportService.exportSingleReportPdf(report.id, "ai")}
                     className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-colors ${
                       isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
                     <Download size={16} />
-                    Export AI Health Summary
+                    Export AI PDF
                   </button>
                 </div>
               </div>
