@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.models.enums import CaseStatus, ProcessingStatus, ProcessingStep, ReportStatus
 from app.schemas.common import TimestampedResponse
+from app.schemas.system import AdminAIControlResponse
 
 
 class AdminDoctorStatusUpdate(BaseModel):
@@ -55,6 +56,11 @@ class AdminPatientListItem(TimestampedResponse):
     phone_number: str | None = None
     report_count: int = 0
     active_case_count: int = 0
+    personal_api_key_enabled: bool = True
+
+
+class AdminPatientApiAccessUpdate(BaseModel):
+    personal_api_key_enabled: bool
 
 
 class AdminCaseListItem(TimestampedResponse):
@@ -103,8 +109,13 @@ class AdminSystemStatusResponse(BaseModel):
     backend_status: str
     database_status: str
     ai_engine_state: str
+    ai_enabled: bool = True
     api_latency_ms: float | None = None
     last_errors: list[str] = Field(default_factory=list)
+
+
+class AdminAIControlEnvelope(BaseModel):
+    control: AdminAIControlResponse
 
 
 class AdminPipelineResponse(BaseModel):

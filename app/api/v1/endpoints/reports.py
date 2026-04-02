@@ -2,7 +2,7 @@ from uuid import UUID
 
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Header, Response, UploadFile, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,19 +18,21 @@ router = APIRouter()
 async def upload_report(
     file: UploadFile = File(...),
     case_id: UUID | None = Form(default=None),
+    session_openai_key: str | None = Header(default=None, alias="X-Session-OpenAI-Key"),
     current_user=Depends(get_current_active_role_user("patient")),
     db: AsyncSession = Depends(get_db),
 ) -> ReportProcessingResponse:
-    return await ReportService(db).upload_and_process_report(current_user, file, case_id)
+    return await ReportService(db).upload_and_process_report(current_user, file, case_id, session_api_key=session_openai_key)
 
 
 @router.post("/debug/process-report", response_model=DebugProcessReportResponse)
 async def debug_process_report(
     file: UploadFile = File(...),
+    session_openai_key: str | None = Header(default=None, alias="X-Session-OpenAI-Key"),
     current_user=Depends(get_current_active_role_user("patient")),
     db: AsyncSession = Depends(get_db),
 ) -> DebugProcessReportResponse:
-    return await ReportService(db).debug_process_report(current_user, file)
+    return await ReportService(db).debug_process_report(current_user, file, session_api_key=session_openai_key)
 
 
 @router.get("/{report_id}", response_model=ReportRead)

@@ -54,6 +54,8 @@ def ensure_runtime_schema(connection) -> None:
             patient_additions.append("ALTER TABLE patients ADD COLUMN birth_date DATE")
         if "medical_history" not in patient_cols:
             patient_additions.append("ALTER TABLE patients ADD COLUMN medical_history TEXT")
+        if "personal_api_key_enabled" not in patient_cols:
+            patient_additions.append("ALTER TABLE patients ADD COLUMN personal_api_key_enabled BOOLEAN DEFAULT TRUE")
         
         for statement in patient_additions:
             connection.execute(text(statement))

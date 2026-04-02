@@ -10,14 +10,16 @@ from app.services.ai.schemas import StructuredMedicalReport
 
 
 class OpenAIExtractionClient:
-    def __init__(self) -> None:
-        self.client = AsyncOpenAI(api_key=settings.openai_api_key, timeout=httpx.Timeout(settings.openai_timeout_seconds))
+    async def extract(self, report_text: str, api_key: str | None = None) -> StructuredMedicalReport:
+        effective_key = (api_key or settings.openai_api_key or "").strip()
+        if not effective_key:
+            raise ProcessingError("AI processing is unavailable. No API key is configured for this request.")
 
-    async def extract(self, report_text: str) -> StructuredMedicalReport:
+        client = AsyncOpenAI(api_key=effective_key, timeout=httpx.Timeout(settings.openai_timeout_seconds))
         last_error: Exception | None = None
         for attempt in range(settings.openai_max_retries + 1):
             try:
-                response = await self.client.responses.parse(
+                response = await client.responses.parse(
                     model=settings.openai_model,
                     input=[
                         {"role": "system", "content": SYSTEM_PROMPT},

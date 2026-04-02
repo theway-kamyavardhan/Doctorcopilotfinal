@@ -17,7 +17,7 @@ export default function ThemeToggle() {
 
   return (
     <motion.div
-      className="fixed right-6 top-1/2 -translate-y-1/2 z-[10000]"
+      className="fixed right-6 top-1/2 z-[10000] hidden -translate-y-1/2 md:block"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 2, duration: 1 }}

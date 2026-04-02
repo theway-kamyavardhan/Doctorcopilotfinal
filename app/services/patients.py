@@ -70,6 +70,43 @@ class PatientService:
         patient = await self._get_patient_by_user_id(user_id)
         return await PatientPdfExportService(self.db).generate_patient_report_pdf(patient.id)
 
+    async def clear_all_data(self, user_id) -> None:
+        patient = await self._get_patient_by_user_id(user_id)
+        patient = (
+            await self.db.execute(
+                select(Patient)
+                .where(Patient.id == patient.id)
+                .options(
+                    selectinload(Patient.reports),
+                    selectinload(Patient.cases),
+                    selectinload(Patient.appointments),
+                    selectinload(Patient.user),
+                )
+            )
+        ).scalar_one()
+
+        stored_paths = [report.file_path for report in patient.reports if report.file_path]
+
+        for appointment in list(patient.appointments):
+            await self.db.delete(appointment)
+
+        for case in list(patient.cases):
+            await self.db.delete(case)
+
+        for report in list(patient.reports):
+            await self.db.delete(report)
+
+        await self.db.commit()
+
+        from app.services.storage.service import ReportFileStorage
+
+        storage = ReportFileStorage()
+        for path in stored_paths:
+            try:
+                await storage.delete_file(path)
+            except Exception:
+                continue
+
     async def _get_patient_by_user_id(self, user_id) -> Patient:
         statement = select(Patient).where(Patient.user_id == user_id).options(selectinload(Patient.user))
         patient = (await self.db.execute(statement)).scalar_one_or_none()

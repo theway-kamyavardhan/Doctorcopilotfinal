@@ -39,6 +39,9 @@ That design keeps the product faster, cheaper, and easier to reason about than a
 - Monitor platform activity
 - Manage doctors, patients, cases, and reports
 - Maintain operational visibility across the system
+- Turn platform AI on or off to control cost
+- Re-enable platform AI with an admin password gate
+- Allow or block personal API key usage for specific patients
 
 ## Tech Stack
 
@@ -96,6 +99,24 @@ flowchart LR
 8. Structured results are saved to the database.
 9. Patient and doctor portals reuse those stored results for dashboards, trends, and case review.
 10. A doctor can accept the consultation, request report access, open linked reports, chat, and schedule appointments.
+
+## AI Cost Control And Demo Mode
+
+DoctorCopilot now supports a cost-control mode designed for demos and low-cost deployments.
+
+- Admin can disable platform AI from the admin dashboard.
+- When platform AI is disabled, the app enters demo mode.
+- In demo mode, users can optionally provide their own OpenAI API key for the current browser session only.
+- The session API key is never written to the database and is removed automatically on logout.
+- Demo patient `P-10005` is blocked from using a personal API key and must create a new patient profile first.
+- Admin can allow or block personal API key usage per patient account.
+- If platform AI is enabled and the backend has a valid `OPENAI_API_KEY`, users do not need to enter any personal key.
+
+### Patient Data Controls
+
+- Patients can clear all of their stored reports, consultations, chats, appointments, and derived trend/insight data from the patient settings page.
+- The patient account and login remain active after a data clear.
+- Reports can also be deleted individually from the reports area.
 
 ## Repository Layout
 
@@ -207,6 +228,15 @@ Important notes:
 - You can switch to PostgreSQL later by updating `DATABASE_URL`.
 - `VITE_API_BASE_URL` should point to your backend URL.
 - Supabase variables are optional unless you want remote storage.
+
+Production or demo-mode related variables:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET`
+- `ADMIN_SEED_CODE`
+- `ADMIN_SEED_EMAIL`
+- `ADMIN_SEED_PASSWORD`
 
 ## Recommended Local `.env`
 
@@ -352,6 +382,7 @@ pytest
 - `GET /api/v1/patients/me/trends`
 - `GET /api/v1/patients/me/insights`
 - `GET /api/v1/patients/me/appointments`
+- `DELETE /api/v1/patients/me/data`
 
 ### Doctor
 
@@ -359,6 +390,16 @@ pytest
 - `GET /api/v1/doctors/dashboard`
 - `GET /api/v1/doctors/cases`
 - `GET /api/v1/doctors/cases/{case_id}`
+
+### Admin
+
+- `GET /api/v1/admin/ai-control`
+- `PATCH /api/v1/admin/ai-control`
+- `PATCH /api/v1/admin/patients/{patient_id}/ai-access`
+
+### System
+
+- `GET /api/v1/system/ai-access`
 
 ### Cases And Chat
 

@@ -68,6 +68,17 @@ export async function deletePatient(patientId) {
   }
 }
 
+export async function updatePatientAiAccess(patientId, personalApiKeyEnabled) {
+  try {
+    const response = await api.patch(`/api/v1/admin/patients/${patientId}/ai-access`, {
+      personal_api_key_enabled: personalApiKeyEnabled,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to update patient API access."));
+  }
+}
+
 export async function getCases() {
   try {
     const response = await api.get("/api/v1/admin/cases");
@@ -113,6 +124,24 @@ export async function getPipeline() {
   }
 }
 
+export async function getAiControl() {
+  try {
+    const response = await api.get("/api/v1/admin/ai-control");
+    return response.data?.control;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to load AI control state."));
+  }
+}
+
+export async function updateAiControl(payload) {
+  try {
+    const response = await api.patch("/api/v1/admin/ai-control", payload);
+    return response.data?.control;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to update AI control state."));
+  }
+}
+
 export async function pingHealth() {
   const startedAt = performance.now();
   try {
@@ -134,11 +163,14 @@ export const adminService = {
   resetDoctorPassword,
   getPatients,
   deletePatient,
+  updatePatientAiAccess,
   getCases,
   updateCase,
   getReports,
   getSystemStatus,
   getPipeline,
+  getAiControl,
+  updateAiControl,
   pingHealth,
 };
 

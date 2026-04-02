@@ -15,6 +15,7 @@ from app.models.patient import Patient
 from app.models.processing import ProcessingLog
 from app.models.report import ExtractedData, Report
 from app.schemas.admin import (
+    AdminPatientApiAccessUpdate,
     AdminCaseListItem,
     AdminCaseUpdate,
     AdminDashboardResponse,
@@ -28,6 +29,8 @@ from app.schemas.admin import (
     AdminReportListItem,
     AdminSystemStatusResponse,
 )
+from app.schemas.system import AdminAIControlResponse
+from app.services.ai_control import AIControlService
 
 
 class AdminService:
@@ -71,6 +74,7 @@ class AdminService:
             system_health = "degraded"
         else:
             system_health = "healthy"
+        ai_control = await AIControlService(self.db).get_admin_status()
 
         return AdminDashboardResponse(
             total_patients=total_patients,
@@ -80,7 +84,7 @@ class AdminService:
             system_health=system_health,
             backend_status="online",
             frontend_status="connected",
-            ai_processing_state="processing" if processing_reports else "idle",
+            ai_processing_state="disabled" if not ai_control.ai_enabled else ("processing" if processing_reports else "idle"),
             pipeline_success_rate=success_rate,
             abnormal_reports=abnormal_reports,
         )
@@ -164,9 +168,46 @@ class AdminService:
                 phone_number=patient.phone_number,
                 report_count=int(report_counts.get(patient.id, 0)),
                 active_case_count=int(active_case_counts.get(patient.id, 0)),
+                personal_api_key_enabled=patient.personal_api_key_enabled,
             )
             for patient in patients
         ]
+
+    async def update_patient_api_access(
+        self, patient_id: UUID, payload: AdminPatientApiAccessUpdate
+    ) -> AdminPatientListItem:
+        patient = await self._get_patient(patient_id)
+        patient.personal_api_key_enabled = payload.personal_api_key_enabled
+        await self.db.commit()
+        await self.db.refresh(patient, attribute_names=["user"])
+
+        report_count = int((await self.db.scalar(select(func.count(Report.id)).where(Report.patient_id == patient.id))) or 0)
+        active_case_count = int(
+            (
+                await self.db.scalar(
+                    select(func.count(Case.id))
+                    .where(Case.patient_id == patient.id)
+                    .where(Case.status.in_([CaseStatus.PENDING, CaseStatus.OPEN, CaseStatus.IN_REVIEW]))
+                )
+            )
+            or 0
+        )
+
+        return AdminPatientListItem(
+            id=patient.id,
+            created_at=patient.created_at,
+            updated_at=patient.updated_at,
+            patient_id=patient.patient_id,
+            full_name=patient.user.full_name,
+            email=patient.user.email,
+            gender=patient.gender,
+            age=patient.age,
+            blood_group=patient.blood_group,
+            phone_number=patient.phone_number,
+            report_count=report_count,
+            active_case_count=active_case_count,
+            personal_api_key_enabled=patient.personal_api_key_enabled,
+        )
 
     async def delete_patient(self, patient_id: UUID) -> None:
         patient = await self._get_patient(patient_id)
@@ -288,7 +329,11 @@ class AdminService:
             (await self.db.scalar(select(func.count(ProcessingLog.id)).where(ProcessingLog.status == ProcessingStatus.FAILED))) or 0
         )
 
-        if failure_count > 0:
+        ai_control = await AIControlService(self.db).get_admin_status()
+
+        if not ai_control.ai_enabled:
+            ai_state = "disabled"
+        elif failure_count > 0:
             ai_state = "degraded"
         elif processing_count > 0:
             ai_state = "busy"
@@ -299,8 +344,15 @@ class AdminService:
             backend_status="online",
             database_status=database_status,
             ai_engine_state=ai_state,
+            ai_enabled=ai_control.ai_enabled,
             last_errors=last_errors,
         )
+
+    async def get_ai_control(self) -> AdminAIControlResponse:
+        return await AIControlService(self.db).get_admin_status()
+
+    async def update_ai_control(self, ai_enabled: bool, enable_password: str | None = None) -> AdminAIControlResponse:
+        return await AIControlService(self.db).set_enabled(ai_enabled=ai_enabled, enable_password=enable_password)
 
     async def get_pipeline(self) -> AdminPipelineResponse:
         reports_in_processing = int(

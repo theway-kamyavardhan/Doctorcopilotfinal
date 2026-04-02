@@ -8,8 +8,8 @@ export default function AdminShell({ sidebar, children }) {
 
   return (
     <div className={theme.shell}>
-      <div className="mx-auto grid max-w-[1600px] gap-6 xl:grid-cols-[280px_1fr]">
-        <aside className={`${theme.surface} p-4`}>
+      <div className="mx-auto grid max-w-[1600px] gap-4 md:gap-6 xl:grid-cols-[280px_1fr]">
+        <aside className={`${theme.surface} p-3 sm:p-4`}>
           {sidebar}
         </aside>
         <main className="space-y-6">{children}</main>

@@ -131,22 +131,22 @@ export default function Landing() {
       />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="fixed top-0 left-0 right-0 z-50 px-6 py-6">
+        <header className="fixed left-0 right-0 top-0 z-50 px-4 py-4 sm:px-6 sm:py-6">
           <div className="mx-auto max-w-7xl">
             <GlassSurface
               width="100%"
-              height="68px"
-              borderRadius={34}
+              height="auto"
+              borderRadius={28}
               backgroundOpacity={isDark ? 0.4 : 0.15}
               blur={28}
               brightness={isDark ? 90 : 110}
               saturation={2.5}
-              className={`px-8 border transition-all duration-700 ${isDark ? "border-[var(--cyan-primary)]/20 shadow-[0_4px_30px_rgba(6,182,212,0.1),inset_0_1px_0_rgba(6,182,212,0.2)]" : "border-white/50 shadow-[0_4px_30px_rgba(255,255,255,0.3),inset_0_1px_0_rgba(255,255,255,0.7)]"}`}
+              className={`border px-4 py-4 transition-all duration-700 sm:px-6 ${isDark ? "border-[var(--cyan-primary)]/20 shadow-[0_4px_30px_rgba(6,182,212,0.1),inset_0_1px_0_rgba(6,182,212,0.2)]" : "border-white/50 shadow-[0_4px_30px_rgba(255,255,255,0.3),inset_0_1px_0_rgba(255,255,255,0.7)]"}`}
             >
-              <div className="flex w-full items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex w-full items-center justify-between gap-4">
+                <div className="min-w-0 flex items-center gap-3">
                   <div className={`h-7 w-7 rounded-full bg-gradient-to-tr ${isDark ? "from-[var(--gold-primary)] via-amber-200 to-[var(--gold-soft)] shadow-[0_0_20px_var(--gold-primary)]" : "from-blue-400 via-violet-400 to-rose-400 shadow-[0_0_16px_rgba(30,58,138,0.2)]"}`} />
-                  <span className={`text-xl font-black tracking-tight ${isDark ? "text-transparent bg-clip-text bg-[var(--gold-metallic)]" : "text-slate-800"}`}>
+                  <span className={`truncate text-lg font-black tracking-tight sm:text-xl ${isDark ? "text-transparent bg-clip-text bg-[var(--gold-metallic)]" : "text-slate-800"}`}>
                     DoctorCopilot
                   </span>
                 </div>
@@ -161,17 +161,19 @@ export default function Landing() {
                   </GlassButton>
                 </nav>
 
-                <button className="md:hidden p-2 rounded-xl text-slate-500 hover:text-slate-800 bg-white/20 border border-white/40 backdrop-blur-md">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                  </svg>
-                </button>
+                <GlassButton
+                  onClick={handleEnter}
+                  primary
+                  className={`px-4 py-2 !rounded-full text-[11px] sm:hidden ${isDark ? "shadow-[0_0_20px_rgba(6,182,212,0.2)]" : ""}`}
+                >
+                  Enter
+                </GlassButton>
               </div>
             </GlassSurface>
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center px-6 pt-40 pb-20">
+        <main className="flex flex-1 flex-col items-center justify-center px-4 pb-16 pt-32 sm:px-6 sm:pb-20 sm:pt-40">
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -188,17 +190,17 @@ export default function Landing() {
             </motion.div>
 
             <motion.div variants={itemVariants} className="w-full">
-              <GlassText className="px-10 py-12 md:px-20 md:py-16 !rounded-[40px] border-white/60 dark:border-[var(--gold-primary)]/20 relative overflow-hidden group">
+              <GlassText className="relative overflow-hidden !rounded-[32px] border-white/60 px-5 py-8 dark:border-[var(--gold-primary)]/20 group sm:px-8 sm:py-10 md:!rounded-[40px] md:px-20 md:py-16">
                 <div className={`scanner-line opacity-0 group-hover:opacity-100 transition-opacity duration-1000 ${isDark ? "!background-[var(--gold-primary)] !box-shadow-[0_0_15px_var(--gold-primary)]" : ""}`} />
                 <div className={`corner-bracket corner-tl ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
                 <div className={`corner-bracket corner-tr ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
                 <div className={`corner-bracket corner-bl ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
                 <div className={`corner-bracket corner-br ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
 
-                <div className={`absolute top-4 left-10 system-text-precise opacity-70 transition-colors duration-700 ${isDark ? "text-[var(--cyan-primary)] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" : "text-[var(--text-secondary)]"}`}>
+                <div className={`absolute left-5 top-4 hidden system-text-precise opacity-70 transition-colors duration-700 sm:block md:left-10 ${isDark ? "text-[var(--cyan-primary)] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" : "text-[var(--text-secondary)]"}`}>
                   Diagnostic Source: {isDark ? "GEN-CYAN-X1" : "Neural-V4"}
                 </div>
-                <div className={`absolute bottom-4 right-10 system-text-precise opacity-70 transition-colors duration-700 ${isDark ? "text-[var(--cyan-primary)] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" : "text-[var(--text-secondary)]"}`}>
+                <div className={`absolute bottom-4 right-5 hidden system-text-precise opacity-70 transition-colors duration-700 sm:block md:right-10 ${isDark ? "text-[var(--cyan-primary)] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" : "text-[var(--text-secondary)]"}`}>
                   System Integrity: {isDark ? "99.9% GOLD" : "98.4%"}
                 </div>
 
@@ -225,7 +227,7 @@ export default function Landing() {
             </motion.div>
 
             <motion.div variants={itemVariants} className="w-full max-w-3xl">
-              <GlassText className="px-10 py-7 !rounded-3xl">
+              <GlassText className="!rounded-3xl px-5 py-6 sm:px-8 sm:py-7 md:px-10">
                 <p className={`text-lg md:text-xl leading-[1.65] font-medium tracking-tight transition-colors duration-700 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                   DoctorCopilot transforms complex medical reports into beautiful,
                   <br className="hidden md:block" />
@@ -245,13 +247,13 @@ export default function Landing() {
           </motion.div>
         </main>
 
-        <footer className="mt-auto px-12 py-12">
-          <GlassText className="px-10 py-6 !rounded-2xl">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        <footer className="mt-auto px-4 py-8 sm:px-8 sm:py-10 md:px-12 md:py-12">
+          <GlassText className="!rounded-2xl px-5 py-5 sm:px-8 md:px-10 md:py-6">
+            <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:gap-6">
               <span className={`text-[0.65rem] font-black uppercase tracking-[0.4em] transition-colors duration-700 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                 DoctorCopilot © 2026 · <span className={isDark ? "text-[var(--gold-primary)] opacity-60" : ""}>Futuristic Clinical Intelligence</span>
               </span>
-              <div className="flex gap-8">
+              <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8">
                 {["Terms", "Privacy", "Support"].map((item) => (
                   <a
                     key={item}

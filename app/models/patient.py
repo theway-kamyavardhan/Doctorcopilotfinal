@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, Index, Integer, String, Text, Uuid
+from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String, Text, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -23,6 +23,7 @@ class Patient(UUIDTimestampMixin, Base):
     phone_number: Mapped[str | None] = mapped_column(String(32), nullable=True)
     emergency_contact: Mapped[str | None] = mapped_column(String(255), nullable=True)
     medical_history: Mapped[str | None] = mapped_column(Text, nullable=True)
+    personal_api_key_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("true"))
 
     user = relationship("User", back_populates="patient_profile")
     reports = relationship("Report", back_populates="patient", cascade="all, delete-orphan")

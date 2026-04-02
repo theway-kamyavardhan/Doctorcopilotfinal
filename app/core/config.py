@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     admin_seed_email: str = Field(default="admin001@doctorcopilot.in", alias="ADMIN_SEED_EMAIL")
     admin_seed_password: str = Field(default="demo123", alias="ADMIN_SEED_PASSWORD")
     admin_seed_full_name: str = Field(default="DoctorCopilot Admin", alias="ADMIN_SEED_FULL_NAME")
+    ai_toggle_password: str = Field(default="api123", alias="AI_TOGGLE_PASSWORD")
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
@@ -40,8 +41,6 @@ class Settings(BaseSettings):
         missing = []
         if not self.secret_key:
             missing.append("SECRET_KEY")
-        if not self.openai_api_key:
-            missing.append("OPENAI_API_KEY")
         if missing:
             raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 

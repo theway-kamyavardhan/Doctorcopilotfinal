@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.responses import StreamingResponse
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,6 +42,15 @@ async def update_patient_password(
     db: AsyncSession = Depends(get_db),
 ) -> PatientRead:
     return await PatientService(db).change_password(current_user.id, payload)
+
+
+@router.delete("/me/data", response_class=Response, status_code=status.HTTP_204_NO_CONTENT)
+async def clear_my_patient_data(
+    current_user=Depends(get_current_active_role_user("patient")),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    await PatientService(db).clear_all_data(current_user.id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/me/reports", response_model=list[ReportRead])

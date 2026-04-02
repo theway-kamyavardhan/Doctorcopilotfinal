@@ -10,6 +10,7 @@ from app.models.patient import Patient
 from app.models.processing import ProcessingLog
 from app.models.report import ExtractedData, Report, ReportInsight
 from app.services.ai.client import OpenAIExtractionClient
+from app.services.ai_control import AIControlService
 from app.services.clinical_normalization.service import ClinicalNormalizer
 from app.services.insights.normalization import clean_numeric_value, extract_numeric_value_from_text, normalize_parameter_name
 from app.services.processing.metadata_extractor import clean_ocr_text, extract_metadata_bundle
@@ -27,7 +28,7 @@ class ReportProcessingOrchestrator:
         self.clinical_normalizer = ClinicalNormalizer()
         self.report_classifier = ReportClassifier()
 
-    async def process_upload(self, patient: Patient, file: UploadFile, case_id: UUID | None) -> Report:
+    async def process_upload(self, patient: Patient, file: UploadFile, case_id: UUID | None, session_api_key: str | None = None) -> Report:
         stored_upload = await self.storage.save_upload(file)
         report = Report(
             patient_id=patient.id,
@@ -88,7 +89,11 @@ class ReportProcessingOrchestrator:
 
             report.status = ReportStatus.PROCESSING
             await self._log(report.id, ProcessingStep.AI_PROCESSING, ProcessingStatus.STARTED, detail="Structured extraction started.")
-            structured = await self.ai_client.extract(cleaned_text)
+            effective_api_key = await AIControlService(self.db).assert_processing_allowed(
+                session_api_key=session_api_key,
+                patient_id=patient.patient_id,
+            )
+            structured = await self.ai_client.extract(cleaned_text, api_key=effective_api_key)
             repaired_items, value_extraction_fixed, invalid_values_detected = self._repair_numeric_values(cleaned_text, structured.key_values)
             structured.key_values = repaired_items
             await self._log(
@@ -220,7 +225,7 @@ class ReportProcessingOrchestrator:
         await self.db.refresh(report, attribute_names=["extracted_data", "insights"])
         return report
 
-    async def debug_process(self, patient: Patient, file: UploadFile) -> dict:
+    async def debug_process(self, patient: Patient, file: UploadFile, session_api_key: str | None = None) -> dict:
         stored_upload = await self.storage.save_upload(file)
         report = Report(
             patient_id=patient.id,
@@ -260,7 +265,11 @@ class ReportProcessingOrchestrator:
                 payload=metadata_result.metadata,
             )
 
-            structured = await self.ai_client.extract(cleaned_text)
+            effective_api_key = await AIControlService(self.db).assert_processing_allowed(
+                session_api_key=session_api_key,
+                patient_id=patient.patient_id,
+            )
+            structured = await self.ai_client.extract(cleaned_text, api_key=effective_api_key)
             repaired_items, value_extraction_fixed, invalid_values_detected = self._repair_numeric_values(cleaned_text, structured.key_values)
             structured.key_values = repaired_items
             clinical_result = self.clinical_normalizer.normalize(structured.key_values)

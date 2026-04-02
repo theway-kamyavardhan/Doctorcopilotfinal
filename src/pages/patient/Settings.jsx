@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, LogOut, MoonStar, Save, ShieldCheck, SunMedium } from "lucide-react";
+import { AlertTriangle, Bell, Eraser, LogOut, MoonStar, Save, ShieldCheck, SunMedium } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { authService } from "../../services/auth.service";
 
@@ -56,6 +56,8 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [profileSaving, setProfileSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [clearingData, setClearingData] = useState(false);
+  const [clearConfirmation, setClearConfirmation] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -137,6 +139,22 @@ export default function Settings() {
     if ((nextTheme === "dark" && !isDark) || (nextTheme === "light" && isDark)) {
       toggleTheme();
       setMessage("Theme updated.");
+    }
+  };
+
+  const handleClearAllData = async () => {
+    if (clearConfirmation.trim().toLowerCase() !== "clear") return;
+    setClearingData(true);
+    setError("");
+    setMessage("");
+    try {
+      await authService.clearPatientData();
+      setClearConfirmation("");
+      setMessage("All patient reports, cases, appointments, and derived data were cleared. Your account profile is still active.");
+    } catch (clearError) {
+      setError(clearError.message || "Failed to clear patient data.");
+    } finally {
+      setClearingData(false);
     }
   };
 
@@ -269,6 +287,38 @@ export default function Settings() {
                   </button>
                 </div>
               </div>
+            </div>
+          </SettingsCard>
+
+          <SettingsCard title="Data Control" subtitle="Remove your stored medical data while keeping your patient account active." isDark={isDark}>
+            <div className={`rounded-2xl px-4 py-4 ${isDark ? "bg-rose-500/10 text-rose-100" : "bg-rose-50 text-rose-700"}`}>
+              <div className="flex items-start gap-3">
+                <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+                <div className="text-sm leading-6">
+                  This clears all your uploaded reports, generated insights, trends, consultations, chats, and appointments. Your login and profile stay active.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              <Field label="Confirmation" isDark={isDark}>
+                <input
+                  value={clearConfirmation}
+                  onChange={(event) => setClearConfirmation(event.target.value)}
+                  placeholder='Type "clear" to remove all data'
+                  className={`w-full rounded-2xl border px-4 py-3 outline-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                />
+              </Field>
+
+              <button
+                type="button"
+                onClick={handleClearAllData}
+                disabled={clearingData || clearConfirmation.trim().toLowerCase() !== "clear"}
+                className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
+              >
+                <Eraser size={16} />
+                {clearingData ? "Clearing..." : "Clear All Patient Data"}
+              </button>
             </div>
           </SettingsCard>
         </div>

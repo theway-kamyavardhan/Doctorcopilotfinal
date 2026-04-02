@@ -7,6 +7,7 @@ import {
   HeartPulse,
   LoaderCircle,
   LogOut,
+  LockKeyhole,
   RefreshCcw,
   ShieldCheck,
   Stethoscope,
@@ -195,6 +196,8 @@ export default function AdminDashboard() {
   const [confirmState, setConfirmState] = useState(null);
   const [caseDrafts, setCaseDrafts] = useState({});
   const [copiedEndpoint, setCopiedEndpoint] = useState("");
+  const [aiControl, setAiControl] = useState(null);
+  const [aiEnablePassword, setAiEnablePassword] = useState("");
 
   const loadAdminData = async () => {
     setError("");
@@ -202,7 +205,7 @@ export default function AdminDashboard() {
     setAuthUser(currentUser);
     if (String(currentUser?.role).toLowerCase() !== "admin") return;
 
-    const [dashboardData, doctorData, patientData, caseData, reportData, systemData, pipelineData, pingData] =
+    const [dashboardData, doctorData, patientData, caseData, reportData, systemData, pipelineData, pingData, aiControlData] =
       await Promise.all([
         adminService.getAdminDashboard(),
         adminService.getDoctors(),
@@ -212,6 +215,7 @@ export default function AdminDashboard() {
         adminService.getSystemStatus(),
         adminService.getPipeline(),
         adminService.pingHealth(),
+        adminService.getAiControl(),
       ]);
 
     setSummary(dashboardData);
@@ -222,6 +226,7 @@ export default function AdminDashboard() {
     setSystemStatus(systemData);
     setPipeline(pipelineData);
     setHealthPing(pingData);
+    setAiControl(aiControlData);
     setCaseDrafts(
       Object.fromEntries(
         caseData.map((item) => [
@@ -462,6 +467,41 @@ export default function AdminDashboard() {
     navigate("/login", { replace: true });
   };
 
+  const handleAiToggle = async (nextEnabled) => {
+    setBusy(true);
+    setError("");
+    setSuccess("");
+    try {
+      const updated = await adminService.updateAiControl({
+        ai_enabled: nextEnabled,
+        enable_password: nextEnabled ? aiEnablePassword : undefined,
+      });
+      setAiControl(updated);
+      setAiEnablePassword("");
+      await loadAdminData();
+      setSuccess(nextEnabled ? "Platform AI enabled." : "Platform AI disabled. The project is now in demo mode.");
+    } catch (toggleError) {
+      setError(toggleError.message || "Failed to update AI control.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePatientAiAccessToggle = async (patientId, nextEnabled) => {
+    setBusy(true);
+    setError("");
+    setSuccess("");
+    try {
+      await adminService.updatePatientAiAccess(patientId, nextEnabled);
+      await loadAdminData();
+      setSuccess(nextEnabled ? "Personal API key access enabled for patient." : "Personal API key access disabled for patient.");
+    } catch (toggleError) {
+      setError(toggleError.message || "Failed to update patient API access.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={`flex min-h-screen items-center justify-center ${theme.shell}`}>
@@ -590,6 +630,54 @@ export default function AdminDashboard() {
                       <div className={theme.eyebrow}>Latency</div>
                       <div className={`mt-2 text-2xl font-bold ${theme.title}`}>{healthPing?.latencyMs ?? "--"} ms</div>
                     </div>
+                  </div>
+                </AdminSectionCard>
+
+                <AdminSectionCard
+                  title="AI Cost Control"
+                  subtitle="Turn platform AI on or off from the main dashboard. Re-enabling requires the admin password."
+                >
+                  <div className="space-y-4">
+                    <div className={`${theme.insetSurface} px-5 py-4`}>
+                      <div className={theme.eyebrow}>Current Mode</div>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <AdminStatusBadge value={aiControl?.ai_enabled ? "enabled" : "demo_mode"} />
+                        <span className={`text-sm ${isDark ? "text-gray-300" : "text-slate-600"}`}>
+                          {aiControl?.message || "Loading AI mode..."}
+                        </span>
+                      </div>
+                    </div>
+
+                    {!aiControl?.ai_enabled ? (
+                      <div className="space-y-3">
+                        <input
+                          type="password"
+                          value={aiEnablePassword}
+                          onChange={(event) => setAiEnablePassword(event.target.value)}
+                          placeholder="Enter admin AI password"
+                          className={theme.input}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAiToggle(true)}
+                          disabled={busy || !aiEnablePassword.trim()}
+                          className={`${theme.accentButton} disabled:opacity-50`}
+                        >
+                          <LockKeyhole size={16} />
+                          Re-enable Platform AI
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleAiToggle(false)}
+                        disabled={busy}
+                        className={`${theme.ghostButton} border-amber-400/20 text-amber-100 hover:bg-amber-500/12 disabled:opacity-50`}
+                      >
+                        <Cpu size={16} />
+                        Turn Off Platform AI
+                      </button>
+                    )}
                   </div>
                 </AdminSectionCard>
               </div>
@@ -755,7 +843,7 @@ export default function AdminDashboard() {
             }
           >
             <AdminTable
-              columns={["Patient", "Clinical Profile", "Volume", "Actions"]}
+              columns={["Patient", "Clinical Profile", "Volume", "AI Access", "Actions"]}
               rows={filteredPatients.map((patient) => ({
                 key: patient.id,
                 cells: [
@@ -773,7 +861,29 @@ export default function AdminDashboard() {
                     <div className={`${isDark ? "text-white" : "text-slate-900"}`}>{patient.report_count} reports</div>
                     <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>{patient.active_case_count} active cases</div>
                   </div>,
+                  <div className="space-y-2">
+                    <AdminStatusBadge value={patient.personal_api_key_enabled ? "allowed" : "blocked"} />
+                    <div className={`text-xs ${isDark ? "text-gray-400" : "text-slate-500"}`}>
+                      {patient.personal_api_key_enabled ? "Can use personal API key in demo mode" : "Personal API key blocked by admin"}
+                    </div>
+                  </div>,
                   <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handlePatientAiAccessToggle(patient.id, !patient.personal_api_key_enabled)}
+                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${
+                        patient.personal_api_key_enabled
+                          ? isDark
+                            ? "bg-amber-500/12 text-amber-100 hover:bg-amber-500/18"
+                            : "border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 shadow-sm"
+                          : isDark
+                            ? "bg-emerald-500/12 text-emerald-100 hover:bg-emerald-500/18"
+                            : "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 shadow-sm"
+                      }`}
+                    >
+                      <LockKeyhole size={14} />
+                      {patient.personal_api_key_enabled ? "Block Personal Key" : "Allow Personal Key"}
+                    </button>
                     <button
                       type="button"
                       onClick={() =>
@@ -892,6 +1002,52 @@ export default function AdminDashboard() {
                   <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>API Latency</div>
                   <div className={`mt-3 text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{healthPing?.latencyMs ?? "--"} ms</div>
                 </div>
+              </div>
+            </AdminSectionCard>
+
+            <AdminSectionCard title="AI Cost Control" subtitle="Disable platform AI to keep the app in demo mode, or re-enable it with the admin password.">
+              <div className="space-y-4">
+                <div className={`${theme.insetSurface} p-5`}>
+                  <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Current Mode</div>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <AdminStatusBadge value={aiControl?.ai_enabled ? "enabled" : "demo_mode"} />
+                    <span className={`text-sm ${isDark ? "text-gray-300" : "text-slate-600"}`}>{aiControl?.message || "Loading AI mode..."}</span>
+                  </div>
+                </div>
+
+                {!aiControl?.ai_enabled ? (
+                  <div className="space-y-3">
+                    <label className="space-y-2">
+                      <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-gray-400" : "text-slate-500"}`}>Enable Password</div>
+                      <input
+                        type="password"
+                        value={aiEnablePassword}
+                        onChange={(event) => setAiEnablePassword(event.target.value)}
+                        placeholder="Enter admin AI password"
+                        className={theme.input}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleAiToggle(true)}
+                      disabled={busy || !aiEnablePassword.trim()}
+                      className={`${theme.accentButton} disabled:opacity-50`}
+                    >
+                      <LockKeyhole size={16} />
+                      Re-enable Platform AI
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleAiToggle(false)}
+                    disabled={busy}
+                    className={`${theme.ghostButton} border-amber-400/20 text-amber-100 hover:bg-amber-500/12 disabled:opacity-50`}
+                  >
+                    <Cpu size={16} />
+                    Turn Off Platform AI
+                  </button>
+                )}
               </div>
             </AdminSectionCard>
 

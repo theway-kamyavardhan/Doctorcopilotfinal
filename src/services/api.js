@@ -2,6 +2,7 @@ import axios from "axios";
 
 const TOKEN_STORAGE_KEY = "token";
 const ROLE_STORAGE_KEY = "role";
+const SESSION_OPENAI_KEY = "session_openai_key";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 const api = axios.create({
@@ -13,6 +14,11 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const sessionApiKey = sessionStorage.getItem(SESSION_OPENAI_KEY);
+  if (sessionApiKey) {
+    config.headers = config.headers || {};
+    config.headers["X-Session-OpenAI-Key"] = sessionApiKey;
   }
   return config;
 });
@@ -38,6 +44,23 @@ export function getAuthRole() {
 export function clearAuthToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(ROLE_STORAGE_KEY);
+  sessionStorage.removeItem(SESSION_OPENAI_KEY);
+}
+
+export function setSessionOpenAiKey(value) {
+  if (!value) {
+    sessionStorage.removeItem(SESSION_OPENAI_KEY);
+    return;
+  }
+  sessionStorage.setItem(SESSION_OPENAI_KEY, value.trim());
+}
+
+export function getSessionOpenAiKey() {
+  return sessionStorage.getItem(SESSION_OPENAI_KEY);
+}
+
+export function clearSessionOpenAiKey() {
+  sessionStorage.removeItem(SESSION_OPENAI_KEY);
 }
 
 export async function processReport(file, token) {

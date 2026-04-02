@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.schemas.admin import (
+    AdminAIControlEnvelope,
     AdminCaseListItem,
     AdminCaseUpdate,
     AdminDashboardResponse,
@@ -12,10 +13,12 @@ from app.schemas.admin import (
     AdminDoctorPasswordResetResponse,
     AdminDoctorStatusUpdate,
     AdminPatientListItem,
+    AdminPatientApiAccessUpdate,
     AdminPipelineResponse,
     AdminReportListItem,
     AdminSystemStatusResponse,
 )
+from app.schemas.system import AdminAIControlUpdate
 from app.schemas.doctor import DoctorCreate, DoctorRead
 from app.services.admin import AdminService
 from app.services.auth import AuthService
@@ -76,6 +79,16 @@ async def list_admin_patients(
     return await AdminService(db).list_patients()
 
 
+@router.patch("/patients/{patient_id}/ai-access", response_model=AdminPatientListItem)
+async def update_admin_patient_ai_access(
+    patient_id: UUID,
+    payload: AdminPatientApiAccessUpdate,
+    current_user=Depends(get_current_active_role_user("admin")),
+    db: AsyncSession = Depends(get_db),
+) -> AdminPatientListItem:
+    return await AdminService(db).update_patient_api_access(patient_id, payload)
+
+
 @router.delete("/patients/{patient_id}", response_class=Response, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_admin_patient(
     patient_id: UUID,
@@ -126,3 +139,25 @@ async def get_admin_pipeline(
     db: AsyncSession = Depends(get_db),
 ) -> AdminPipelineResponse:
     return await AdminService(db).get_pipeline()
+
+
+@router.get("/ai-control", response_model=AdminAIControlEnvelope)
+async def get_admin_ai_control(
+    current_user=Depends(get_current_active_role_user("admin")),
+    db: AsyncSession = Depends(get_db),
+) -> AdminAIControlEnvelope:
+    return AdminAIControlEnvelope(control=await AdminService(db).get_ai_control())
+
+
+@router.patch("/ai-control", response_model=AdminAIControlEnvelope)
+async def update_admin_ai_control(
+    payload: AdminAIControlUpdate,
+    current_user=Depends(get_current_active_role_user("admin")),
+    db: AsyncSession = Depends(get_db),
+) -> AdminAIControlEnvelope:
+    return AdminAIControlEnvelope(
+        control=await AdminService(db).update_ai_control(
+            ai_enabled=payload.ai_enabled,
+            enable_password=payload.enable_password,
+        )
+    )

@@ -123,6 +123,14 @@ export async function changePatientPassword(payload) {
   }
 }
 
+export async function clearPatientData() {
+  try {
+    await api.delete("/api/v1/patients/me/data");
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to clear patient data."));
+  }
+}
+
 export async function changeDoctorPassword(payload) {
   try {
     const response = await api.patch("/api/v1/doctors/me/password", payload);
@@ -151,6 +159,7 @@ export const authService = {
   getPatientProfile,
   updatePatientProfile,
   changePatientPassword,
+  clearPatientData,
   changeDoctorPassword,
   logout,
   hasToken,

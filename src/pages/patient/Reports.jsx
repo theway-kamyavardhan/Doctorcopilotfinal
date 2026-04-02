@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatParameterLabel, isAbnormalStatus } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
+import systemService from "../../services/system.service";
 
 const CATEGORY_TABS = [
   { key: "all", label: "All" },
@@ -140,6 +141,7 @@ export default function Reports() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [aiStatus, setAiStatus] = useState(null);
 
   const sortedReports = useMemo(() => {
     return [...reports].sort((a, b) => {
@@ -175,6 +177,8 @@ export default function Reports() {
     const loadReports = async () => {
       try {
         await refreshWorkflow();
+        const status = await systemService.getAiAccessStatus();
+        setAiStatus(status);
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to load reports.");
@@ -352,6 +356,11 @@ export default function Reports() {
         <p className={`mt-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
           Supports single or multiple PDF and image reports.
         </p>
+        {aiStatus?.demo_mode ? (
+          <p className="mt-3 text-sm font-semibold text-amber-500">
+            Demo mode is active. If you want real AI processing, save your own API key for this session from the banner above.
+          </p>
+        ) : null}
       </section>
 
       <section className={`rounded-[2rem] border p-6 ${isDark ? "bg-slate-900 border-white/10" : "bg-white border-slate-100"}`}>

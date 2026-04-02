@@ -24,7 +24,13 @@ class ReportService:
         self.db = db
         self.storage = ReportFileStorage()
 
-    async def upload_and_process_report(self, current_user: User, file: UploadFile, case_id: UUID | None) -> ReportProcessingResponse:
+    async def upload_and_process_report(
+        self,
+        current_user: User,
+        file: UploadFile,
+        case_id: UUID | None,
+        session_api_key: str | None = None,
+    ) -> ReportProcessingResponse:
         patient = await self._get_patient_by_user_id(current_user.id)
         if case_id is not None:
             case = await self.db.get(Case, case_id)
@@ -32,7 +38,7 @@ class ReportService:
                 raise AuthorizationError("You can only attach reports to your own cases.")
 
         orchestrator = ReportProcessingOrchestrator(self.db)
-        report = await orchestrator.process_upload(patient, file, case_id)
+        report = await orchestrator.process_upload(patient, file, case_id, session_api_key=session_api_key)
         return ReportProcessingResponse(report=report, processing_state=report.status)
 
     async def get_report(self, report_id: UUID, current_user: User) -> Report:
@@ -64,10 +70,10 @@ class ReportService:
                 raise AuthorizationError("You do not have access to this report.")
         return report
 
-    async def debug_process_report(self, current_user: User, file: UploadFile) -> DebugProcessReportResponse:
+    async def debug_process_report(self, current_user: User, file: UploadFile, session_api_key: str | None = None) -> DebugProcessReportResponse:
         patient = await self._get_patient_by_user_id(current_user.id)
         orchestrator = ReportProcessingOrchestrator(self.db)
-        result = await orchestrator.debug_process(patient, file)
+        result = await orchestrator.debug_process(patient, file, session_api_key=session_api_key)
         return DebugProcessReportResponse(**result)
 
     async def delete_report(self, report_id: UUID, current_user: User) -> None:
