@@ -6,7 +6,7 @@ from app.core.exceptions import AuthenticationError, NotFoundError
 from app.core.security import hash_password, verify_password
 from app.models.patient import Patient
 from app.models.report import Report, ReportInsight
-from app.schemas.patient import PatientPasswordUpdate, PatientUpdate
+from app.schemas.patient import PatientDataClearRequest, PatientPasswordUpdate, PatientUpdate
 from app.schemas.insights import PatientInsightsResponse
 from app.schemas.trends import PatientTrendsResponse
 from app.services.export.pdf_generator import PatientPdfExportService
@@ -70,8 +70,12 @@ class PatientService:
         patient = await self._get_patient_by_user_id(user_id)
         return await PatientPdfExportService(self.db).generate_patient_report_pdf(patient.id)
 
-    async def clear_all_data(self, user_id) -> None:
+    async def clear_all_data_with_password(self, user_id, payload: PatientDataClearRequest) -> None:
         patient = await self._get_patient_by_user_id(user_id)
+        if patient.patient_id == "P-10005":
+            raise AuthenticationError("Demo account P-10005 cannot clear its data. Create your own patient profile to manage personal records.")
+        if not verify_password(payload.current_password, patient.user.hashed_password):
+            raise AuthenticationError("Current password is incorrect.")
         patient = (
             await self.db.execute(
                 select(Patient)

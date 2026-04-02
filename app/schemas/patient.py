@@ -35,6 +35,10 @@ class PatientPasswordUpdate(BaseModel):
     new_password: str = Field(min_length=8)
 
 
+class PatientDataClearRequest(BaseModel):
+    current_password: str
+
+
 class PatientRead(TimestampedResponse):
     patient_id: str
     gender: str | None

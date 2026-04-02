@@ -58,6 +58,7 @@ export default function Settings() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [clearingData, setClearingData] = useState(false);
   const [clearConfirmation, setClearConfirmation] = useState("");
+  const [clearPassword, setClearPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -148,8 +149,9 @@ export default function Settings() {
     setError("");
     setMessage("");
     try {
-      await authService.clearPatientData();
+      await authService.clearPatientData({ current_password: clearPassword });
       setClearConfirmation("");
+      setClearPassword("");
       setMessage("All patient reports, cases, appointments, and derived data were cleared. Your account profile is still active.");
     } catch (clearError) {
       setError(clearError.message || "Failed to clear patient data.");
@@ -296,6 +298,7 @@ export default function Settings() {
                 <AlertTriangle size={18} className="mt-0.5 shrink-0" />
                 <div className="text-sm leading-6">
                   This clears all your uploaded reports, generated insights, trends, consultations, chats, and appointments. Your login and profile stay active.
+                  {profile?.patient_id === "P-10005" ? " The shared demo account cannot clear its data." : " To continue, type clear and confirm with your current password."}
                 </div>
               </div>
             </div>
@@ -310,14 +313,29 @@ export default function Settings() {
                 />
               </Field>
 
+              <Field label="Current Password" isDark={isDark}>
+                <input
+                  type="password"
+                  value={clearPassword}
+                  onChange={(event) => setClearPassword(event.target.value)}
+                  placeholder="Enter your current password"
+                  className={`w-full rounded-2xl border px-4 py-3 outline-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                />
+              </Field>
+
               <button
                 type="button"
                 onClick={handleClearAllData}
-                disabled={clearingData || clearConfirmation.trim().toLowerCase() !== "clear"}
+                disabled={
+                  clearingData ||
+                  profile?.patient_id === "P-10005" ||
+                  clearConfirmation.trim().toLowerCase() !== "clear" ||
+                  !clearPassword.trim()
+                }
                 className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
               >
                 <Eraser size={16} />
-                {clearingData ? "Clearing..." : "Clear All Patient Data"}
+                {profile?.patient_id === "P-10005" ? "Disabled For Demo Account" : clearingData ? "Clearing..." : "Clear All Patient Data"}
               </button>
             </div>
           </SettingsCard>

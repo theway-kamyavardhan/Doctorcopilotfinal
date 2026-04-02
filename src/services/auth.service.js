@@ -123,9 +123,9 @@ export async function changePatientPassword(payload) {
   }
 }
 
-export async function clearPatientData() {
+export async function clearPatientData(payload) {
   try {
-    await api.delete("/api/v1/patients/me/data");
+    await api.delete("/api/v1/patients/me/data", { data: payload });
   } catch (error) {
     throw new Error(getErrorMessage(error, "Failed to clear patient data."));
   }

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.appointment import AppointmentRead
 from app.schemas.insights import PatientInsightsResponse
-from app.schemas.patient import PatientPasswordUpdate, PatientRead, PatientUpdate
+from app.schemas.patient import PatientDataClearRequest, PatientPasswordUpdate, PatientRead, PatientUpdate
 from app.schemas.report import ReportRead
 from app.schemas.trends import PatientTrendsResponse
 from app.services.patients import PatientService
@@ -46,10 +46,11 @@ async def update_patient_password(
 
 @router.delete("/me/data", response_class=Response, status_code=status.HTTP_204_NO_CONTENT)
 async def clear_my_patient_data(
+    payload: PatientDataClearRequest,
     current_user=Depends(get_current_active_role_user("patient")),
     db: AsyncSession = Depends(get_db),
 ) -> Response:
-    await PatientService(db).clear_all_data(current_user.id)
+    await PatientService(db).clear_all_data_with_password(current_user.id, payload)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
