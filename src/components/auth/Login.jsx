@@ -16,6 +16,16 @@ const ROLES = [
   { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#f59e0b' },
 ];
 
+function getRoleMismatchMessage(selectedRole) {
+  if (selectedRole === "doctor") {
+    return "These credentials belong to a patient account. Select Patient to continue.";
+  }
+  if (selectedRole === "patient") {
+    return "These credentials belong to a doctor account. Select Doctor to continue.";
+  }
+  return "These credentials do not match the selected role.";
+}
+
 export default function Login() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
@@ -24,23 +34,32 @@ export default function Login() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   const activeRoleData = ROLES.find(r => r.id === role);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsAuthenticating(true);
+    setLoginError("");
     try {
       const normalizedIdentifier =
         role === "admin" ? identifier.trim().toUpperCase() : identifier.trim();
 
       await authService.loginUser({ username: normalizedIdentifier, password });
       const currentUser = await authService.getMe();
+      const actualRole = authService.normalizeRole(currentUser.role);
+
+      if (actualRole !== role) {
+        authService.logout();
+        throw new Error(getRoleMismatchMessage(role));
+      }
+
       const targetPath = authService.getDashboardPathForRole(currentUser.role || role);
       navigate(targetPath, { replace: true });
     } catch (err) {
       console.error(err);
-      alert(err.message || 'Verification failed. Neural link rejected.');
+      setLoginError(err.message || "Verification failed. Neural link rejected.");
     } finally {
       setIsAuthenticating(false);
     }
@@ -187,6 +206,12 @@ export default function Login() {
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">
+              {loginError ? (
+                <div className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${isDark ? 'border-red-400/20 bg-red-500/10 text-red-200' : 'border-red-200 bg-red-50 text-red-700'}`}>
+                  {loginError}
+                </div>
+              ) : null}
+
               <div className="space-y-4">
                 <GlassSurface
                   width="100%"

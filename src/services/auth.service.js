@@ -2,8 +2,41 @@ import api, { clearAuthToken, getAuthRole, getAuthToken, setAuthRole, setAuthTok
 
 const AUTH_BASE_PATH = "/api/v1/auth";
 
+function stringifyErrorValue(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => stringifyErrorValue(item))
+      .filter(Boolean)
+      .join(" ");
+  }
+  if (typeof value === "object") {
+    if (typeof value.message === "string" && value.message.trim()) {
+      return value.message.trim();
+    }
+    if (typeof value.detail === "string" && value.detail.trim()) {
+      return value.detail.trim();
+    }
+
+    return Object.entries(value)
+      .map(([key, entryValue]) => {
+        const text = stringifyErrorValue(entryValue);
+        return text ? `${key}: ${text}` : "";
+      })
+      .filter(Boolean)
+      .join(" ");
+  }
+  return String(value);
+}
+
 function getErrorMessage(error, fallbackMessage) {
-  return error?.response?.data?.detail || error?.message || fallbackMessage;
+  return (
+    stringifyErrorValue(error?.response?.data?.detail) ||
+    stringifyErrorValue(error?.response?.data) ||
+    stringifyErrorValue(error?.message) ||
+    fallbackMessage
+  );
 }
 
 export function normalizeRole(role) {
