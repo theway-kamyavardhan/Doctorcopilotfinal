@@ -1,0 +1,328 @@
+DOCTORCOPILOT STEP-BY-STEP SYSTEM WALKTHROUGH
+
+Goal
+- Explain what the system does from both product and technical sides.
+- Help a student, reviewer, or new developer understand the full flow.
+
+PART 1 - WHAT DOCTORCOPILOT IS
+
+DoctorCopilot is a healthcare platform with three main user groups:
+
+- patient
+- doctor
+- admin
+
+It takes uploaded medical reports and converts them into:
+
+- structured lab values
+- summaries
+- trends
+- anomalies
+- doctor-review workflows
+
+Core rule:
+- report is processed once
+- result is stored
+- stored result is reused across the product
+
+PART 2 - THE THREE MAIN PORTALS
+
+Patient portal:
+- upload reports
+- track trends
+- request doctor consultation
+- chat with doctor
+- manage reports and settings
+
+Doctor portal:
+- review pending requests
+- open case workspace
+- inspect trends and anomalies
+- access linked reports
+- chat and schedule appointments
+
+Admin portal:
+- monitor operations
+- manage users
+- manage cases and reports
+- control AI cost and personal-key permissions
+
+PART 3 - WHAT HAPPENS WHEN A PATIENT UPLOADS A REPORT
+
+Step 1
+- patient logs in
+
+Step 2
+- patient uploads a report file
+
+Step 3
+- backend stores the original file
+
+Step 4
+- backend extracts report text
+  - direct PDF text when possible
+  - OCR fallback when needed
+
+Step 5
+- backend extracts metadata
+  - patient name
+  - lab name
+  - dates
+  - doctor name
+
+Step 6
+- backend sends cleaned report text to AI extraction
+
+Step 7
+- AI returns structured medical output
+  - report type
+  - summary
+  - parameters
+  - insights
+
+Step 8
+- backend normalizes the values
+  - fixes names
+  - fixes units
+  - cleans invalid numbers
+
+Step 9
+- backend stores:
+  - report
+  - extracted data
+  - report insights
+  - processing logs
+
+Step 10
+- frontend later reads stored values for dashboard, trends, and doctor review
+
+PART 4 - WHY THIS DESIGN IS IMPORTANT
+
+This design avoids:
+
+- repeated AI cost
+- repeated OCR cost
+- repeated extraction bugs on every page load
+
+Instead:
+
+- upload does the expensive work
+- viewing pages reuses saved data
+
+PART 5 - PATIENT WORKFLOW
+
+Step 1
+- patient logs in
+
+Step 2
+- patient uploads reports
+
+Step 3
+- patient sees dashboard, timeline, and trends
+
+Step 4
+- patient selects a doctor and sends consultation request
+
+Step 5
+- if request is still pending, patient may cancel it
+
+Step 6
+- doctor accepts
+
+Step 7
+- patient gets chat-based acceptance and consultation flow
+
+Step 8
+- doctor requests report access if needed
+
+Step 9
+- patient approves or denies
+
+Step 10
+- patient attends appointment and continues chat/case flow
+
+PART 6 - DOCTOR WORKFLOW
+
+Step 1
+- doctor logs in
+
+Step 2
+- doctor views pending and active cases
+
+Step 3
+- doctor opens overview before accepting
+
+Step 4
+- doctor accepts, rejects, or refers
+
+Step 5
+- doctor opens `/doctor/case/:id`
+
+Step 6
+- doctor reviews:
+  - patient snapshot
+  - alerts
+  - linked reports
+  - insights preview
+  - appointments
+
+Step 7
+- doctor opens full insights route if needed
+
+Step 8
+- doctor chats with patient
+
+Step 9
+- doctor schedules appointment
+
+Step 10
+- doctor closes case
+
+PART 7 - ADMIN WORKFLOW
+
+Step 1
+- admin logs in with `ADMIN-001`
+
+Step 2
+- admin opens control dashboard
+
+Step 3
+- admin monitors:
+  - patients
+  - doctors
+  - cases
+  - reports
+  - pipeline
+  - system status
+
+Step 4
+- admin turns platform AI on or off
+
+Step 5
+- admin can allow or block personal API key usage per patient
+
+PART 8 - DEMO MODE AND AI COST CONTROL
+
+This is one of the most important product controls.
+
+Global mode:
+- platform AI on
+- platform AI off
+
+If platform AI is on:
+- user does not need to provide their own key
+
+If platform AI is off:
+- app enters demo mode
+- users may provide personal session API keys if allowed
+
+Important rules:
+- session API key is not stored in the database
+- session API key is removed on logout
+- demo patient `P-10005` cannot use a personal API key
+- admin can block personal API key use for specific patients
+
+PART 9 - REPORT ACCESS CONTROL
+
+Doctors do not automatically see patient reports in every case.
+
+Flow:
+- doctor requests report access
+- patient approves or denies
+- if approved, linked reports unlock
+- if denied, doctor is informed and may request again
+
+PART 10 - CHAT SYSTEM
+
+Chat belongs to a case.
+
+Technology:
+- WebSocket
+
+Meaning:
+- messages are pushed live instead of only being reloaded manually
+
+Chat is used for:
+- acceptance notice
+- report-access request
+- permission response
+- normal conversation
+
+PART 11 - APPOINTMENT SYSTEM
+
+Appointments are linked to accepted cases.
+
+Doctor can:
+- open calendar
+- select case
+- book appointment
+
+Patient can:
+- see appointment on dashboard/calendar
+
+PART 12 - EXPORT SYSTEM
+
+Exports provide formal PDFs from saved data.
+
+Examples:
+- patient health summary PDF
+- doctor AI report PDF
+- source PDF export
+
+Reports should appear professionally formatted and clinically readable.
+
+PART 13 - MAIN TECH STACK IN SIMPLE TERMS
+
+Frontend:
+- React
+- Vite
+- Tailwind CSS
+- Framer Motion
+
+Backend:
+- FastAPI
+- SQLAlchemy
+- Pydantic
+- JWT auth
+
+Database and storage:
+- Supabase PostgreSQL
+- Supabase Storage
+
+Deployment:
+- Railway backend
+- Vercel frontend
+
+PART 14 - MOST IMPORTANT CODE AREAS TO READ
+
+If you want to learn the codebase, read in this order:
+
+1. `README.md`
+2. `vocabulary.txt`
+3. `app/main.py`
+4. `app/api/v1/router.py`
+5. `app/services/processing/orchestrator.py`
+6. `app/services/ai_control.py`
+7. `src/App.jsx`
+8. patient layout and pages
+9. doctor layout and pages
+10. admin dashboard
+
+PART 15 - FINAL TAKEAWAY
+
+DoctorCopilot is a complete healthcare workflow platform.
+
+It combines:
+
+- authentication
+- report processing
+- AI extraction
+- trend tracking
+- doctor review
+- case chat
+- appointment workflow
+- admin control
+- cloud deployment
+
+In one line:
+- it turns raw medical reports into a reusable long-term digital clinical workflow.

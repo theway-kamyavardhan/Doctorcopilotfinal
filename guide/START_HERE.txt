@@ -1,0 +1,77 @@
+DOCTORCOPILOT GUIDE PACK - START HERE
+
+Purpose
+- This file tells you which guide to read first.
+- It turns the scattered text files in the guide folder into a practical step-by-step reading order.
+
+Best Reading Order
+
+1. If you are completely new
+- Read `vocabulary.txt`
+- Then read `introduction.txt`
+- Then read `STEP_BY_STEP_SYSTEM_WALKTHROUGH.txt`
+
+2. If you want to run the project locally
+- Read `STEP_BY_STEP_LOCAL_RUN.txt`
+
+3. If you want to deploy the project online
+- Read `STEP_BY_STEP_DEPLOYMENT.txt`
+
+4. If you want to understand doctor-side architecture in more detail
+- Read `doctor.txt`
+
+5. If you want the architecture summary
+- Read `DoctorCopilot_Architecture.txt`
+- Then read `moon.txt`
+
+6. If you want migration help
+- Read `supabase_migration.txt`
+
+Important Reference Files
+
+- `admin_credentials.txt`
+  Admin login reference
+
+- `doctors_credentials.txt`
+  Seeded doctor login references
+
+- `sample_patient_credentials.txt`
+  Seeded patient login references
+
+- `requirements.txt`
+  Backend dependency reference copy
+
+What Each Major New Guide Does
+
+- `STEP_BY_STEP_LOCAL_RUN.txt`
+  Explains how to set up and run the app on your own machine
+
+- `STEP_BY_STEP_DEPLOYMENT.txt`
+  Explains how to deploy backend, frontend, database, and storage
+
+- `STEP_BY_STEP_SYSTEM_WALKTHROUGH.txt`
+  Explains the system as a product and technical workflow from upload to doctor review
+
+Recommended Paths
+
+For a beginner:
+- `vocabulary.txt`
+- `introduction.txt`
+- `STEP_BY_STEP_SYSTEM_WALKTHROUGH.txt`
+
+For a developer:
+- `README.md`
+- `STEP_BY_STEP_LOCAL_RUN.txt`
+- `DoctorCopilot_Architecture.txt`
+- `moon.txt`
+
+For deployment:
+- `STEP_BY_STEP_DEPLOYMENT.txt`
+- `supabase_migration.txt`
+
+Simple Summary
+- Want to understand words: read `vocabulary.txt`
+- Want to understand project idea: read `introduction.txt`
+- Want to understand flow: read `STEP_BY_STEP_SYSTEM_WALKTHROUGH.txt`
+- Want to run locally: read `STEP_BY_STEP_LOCAL_RUN.txt`
+- Want to deploy: read `STEP_BY_STEP_DEPLOYMENT.txt`

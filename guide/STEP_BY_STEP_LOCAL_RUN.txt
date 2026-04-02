@@ -1,0 +1,212 @@
+DOCTORCOPILOT STEP-BY-STEP LOCAL RUN GUIDE
+
+Goal
+- Help a beginner run DoctorCopilot on a local machine without guessing.
+
+What You Need Before Starting
+
+- Windows PowerShell
+- Python installed
+- Node.js installed
+- Git installed
+- OCR tools recommended for scanned PDFs:
+  - Tesseract OCR
+  - Poppler
+
+Project Folder
+- `C:\Users\thewa\Desktop\Doctorcopilot_finale`
+
+STEP 1 - Open The Project Folder
+
+Open PowerShell in:
+- `C:\Users\thewa\Desktop\Doctorcopilot_finale`
+
+STEP 2 - Create The Python Virtual Environment
+
+Run:
+
+```powershell
+python -m venv venv
+```
+
+If `venv` already exists, you can reuse it.
+
+STEP 3 - Activate The Virtual Environment
+
+Run:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+You should now see `(venv)` in the terminal.
+
+STEP 4 - Install Backend Dependencies
+
+Run:
+
+```powershell
+pip install -r requirements.txt
+```
+
+STEP 5 - Install Frontend Dependencies
+
+Open a second PowerShell window in the same project folder and run:
+
+```powershell
+npm install
+```
+
+STEP 6 - Create The Environment File
+
+Copy `.env.example` to `.env`.
+
+If using PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+STEP 7 - Edit The Main Environment Values
+
+At minimum, make sure `.env` includes:
+
+- `ENVIRONMENT=development`
+- `API_V1_PREFIX=/api/v1`
+- `DATABASE_URL=sqlite+aiosqlite:///./doctorcopilot.db`
+- `SECRET_KEY=your-secret`
+- `OPENAI_API_KEY=your-openai-key`
+- `OPENAI_MODEL=gpt-4o-2024-08-06`
+- `UPLOAD_DIR=storage/uploads`
+- `CORS_ORIGINS=["http://localhost:5173"]`
+
+If you do not have a real OpenAI API key, some AI upload features will not work unless admin demo mode and session-key flow are used.
+
+STEP 8 - Start The Backend
+
+In the backend terminal, run:
+
+```powershell
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Expected URLs:
+- Backend health: `http://127.0.0.1:8000/health`
+- Swagger docs: `http://127.0.0.1:8000/docs`
+
+STEP 9 - Start The Frontend
+
+In the frontend terminal, run:
+
+```powershell
+npm run dev
+```
+
+Expected frontend URL:
+- `http://localhost:5173`
+
+STEP 10 - Seed Demo Data
+
+If you want ready-made patients, doctors, reports, and cases, run:
+
+```powershell
+python -m app.scripts.seed_sample_cases
+```
+
+Doctor credentials reference:
+- `doctors_credentials.txt`
+
+Patient credentials reference:
+- `sample_patient_credentials.txt`
+
+Admin credentials reference:
+- `admin_credentials.txt`
+
+STEP 11 - Test Login
+
+Try:
+
+- Admin:
+  - `ADMIN-001`
+  - `demo123`
+
+- Doctor:
+  - `D-10001`
+  - `demo123`
+
+- Patient:
+  - a patient ID from `sample_patient_credentials.txt`
+
+STEP 12 - Test The Core Product Flow
+
+Patient flow:
+- log in
+- upload report
+- open dashboard
+- open trends
+- request consultation
+
+Doctor flow:
+- log in
+- open dashboard
+- accept case
+- open case
+- request report access
+- open linked reports
+
+Admin flow:
+- log in
+- open admin dashboard
+- review AI control
+- inspect users and system health
+
+Common Problems
+
+Problem: backend does not start
+- check `.env`
+- check Python packages installed
+- run `python -m compileall app`
+
+Problem: frontend loads but backend calls fail
+- check backend is running
+- check `VITE_API_BASE_URL` if you use one
+- check CORS
+
+Problem: scanned PDF upload fails
+- install Tesseract OCR
+- install Poppler
+
+Problem: login fails
+- use seeded credentials
+- verify database exists
+
+Quick Command Summary
+
+Backend:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Frontend:
+
+```powershell
+npm install
+npm run dev
+```
+
+Seed data:
+
+```powershell
+python -m app.scripts.seed_sample_cases
+```
+
+Simple Summary
+- activate backend env
+- install dependencies
+- set `.env`
+- run backend
+- run frontend
+- seed demo data
+- login and test

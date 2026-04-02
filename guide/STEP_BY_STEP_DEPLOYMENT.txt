@@ -1,0 +1,199 @@
+DOCTORCOPILOT STEP-BY-STEP DEPLOYMENT GUIDE
+
+Goal
+- Deploy DoctorCopilot online with:
+  - frontend on Vercel
+  - backend on Railway
+  - database on Supabase PostgreSQL
+  - file storage on Supabase Storage
+
+Recommended Deployment Order
+
+1. Prepare Supabase
+2. Prepare Railway backend
+3. Deploy backend
+4. Prepare Vercel frontend
+5. Deploy frontend
+6. Update backend CORS
+7. Test the live system
+
+STEP 1 - Prepare Supabase
+
+In Supabase:
+- create project
+- create PostgreSQL database
+- create storage bucket named `reports`
+
+You will need:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- session pooler `DATABASE_URL`
+
+Important:
+- use FastAPI auth only
+- do not use Supabase Auth for this project
+
+STEP 2 - Prepare The Database URL
+
+Use the session pooler format for Railway:
+
+```text
+postgresql+asyncpg://username:password@pooler-host:5432/postgres
+```
+
+Important:
+- if password contains `@`, encode it as `%40`
+
+STEP 3 - Prepare Railway Backend Variables
+
+Add these in Railway Variables:
+
+- `ENVIRONMENT=production`
+- `API_V1_PREFIX=/api/v1`
+- `DATABASE_URL=your-supabase-pooler-url`
+- `SECRET_KEY=your-secret`
+- `ACCESS_TOKEN_EXPIRE_MINUTES=120`
+- `OPENAI_API_KEY=your-openai-key`
+- `OPENAI_MODEL=gpt-4o-2024-08-06`
+- `UPLOAD_DIR=storage/uploads`
+- `MAX_UPLOAD_SIZE_MB=25`
+- `SUPABASE_URL=your-supabase-url`
+- `SUPABASE_SERVICE_ROLE_KEY=your-service-role-key`
+- `SUPABASE_STORAGE_BUCKET=reports`
+- `ADMIN_SEED_CODE=ADMIN-001`
+- `ADMIN_SEED_EMAIL=admin001@doctorcopilot.in`
+- `ADMIN_SEED_PASSWORD=your-admin-password`
+- `ADMIN_SEED_FULL_NAME=DoctorCopilot Admin`
+
+At first, CORS can be:
+
+```text
+CORS_ORIGINS=["http://localhost:5173"]
+```
+
+STEP 4 - Deploy Backend To Railway
+
+This repo already includes:
+- `Dockerfile`
+- `railway.toml`
+
+In Railway:
+- create project from GitHub repo
+- let Railway build from `Dockerfile`
+- keep custom build command empty
+- keep custom start command empty
+- set healthcheck path to `/health`
+- keep serverless off
+- generate public domain
+
+Expected backend URL example:
+- `https://your-backend.up.railway.app`
+
+STEP 5 - Test Backend First
+
+Open:
+- `/health`
+
+Then test:
+- login
+- patient route
+- doctor route
+- admin route
+
+STEP 6 - Prepare Vercel Frontend Variables
+
+In Vercel add:
+
+- `VITE_API_BASE_URL=https://your-backend.up.railway.app`
+
+STEP 7 - Deploy Frontend To Vercel
+
+Import the same GitHub repo in Vercel.
+
+Use:
+- framework preset: `Vite`
+- build command: `npm run build`
+- output directory: `dist`
+
+This repo already includes:
+- `vercel.json`
+
+That allows SPA routes like:
+- `/login`
+- `/patient/dashboard`
+- `/doctor/dashboard`
+
+STEP 8 - Update Railway CORS
+
+After Vercel gives you the frontend domain, update Railway:
+
+```text
+CORS_ORIGINS=["http://localhost:5173","https://your-vercel-domain.vercel.app","https://doctorcopilot.app","https://www.doctorcopilot.app"]
+```
+
+Then redeploy Railway.
+
+STEP 9 - Migrate Existing Local Data To Supabase
+
+If you want to preserve local reports and users:
+- read `supabase_migration.txt`
+
+Main script:
+- `app/scripts/migrate_local_to_supabase.py`
+
+Purpose:
+- move local SQLite data to Supabase Postgres
+- move report files to Supabase Storage
+- preserve extracted data and AI output
+- avoid recomputation
+
+STEP 10 - Final Live Test
+
+Test in production:
+
+Patient:
+- login
+- upload report
+- open dashboard
+- open trends
+
+Doctor:
+- login
+- accept consultation
+- open case
+- request report access
+- open report
+
+Admin:
+- login
+- open dashboard
+- use AI control
+- test patient-level API key toggle
+
+STEP 11 - AI Cost Control After Deployment
+
+Admin can:
+- turn platform AI off
+- re-enable it using password `api123`
+
+When platform AI is off:
+- stored reports still work
+- users may use personal session API keys if allowed
+- demo patient `P-10005` cannot do that
+
+STEP 12 - Security Checklist
+
+Before calling deployment complete:
+
+- rotate leaked secrets if any were ever exposed
+- set strong `SECRET_KEY`
+- set strong admin password
+- verify `SUPABASE_SERVICE_ROLE_KEY` is backend-only
+- verify Vercel does not contain backend secrets
+
+Simple Summary
+- Supabase first
+- Railway backend second
+- Vercel frontend third
+- update CORS
+- test all three roles
