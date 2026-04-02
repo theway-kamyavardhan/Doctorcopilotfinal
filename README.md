@@ -1,252 +1,599 @@
 # DoctorCopilot
 
-AI-assisted healthcare platform for patients, doctors, and administrators. DoctorCopilot turns uploaded medical reports into structured health data, trend summaries, case workflows, report access controls, real-time chat, and appointment-ready clinical context.
+DoctorCopilot is a full-stack healthcare AI platform that helps patients upload medical reports, helps doctors review clinical cases, and helps admins control the system safely and cost-effectively.
 
-Live product: [doctorcopilot.app](https://www.doctorcopilot.app/)
+Live product:
+- [doctorcopilot.app](https://doctorcopilot.app)
+- [www.doctorcopilot.app](https://www.doctorcopilot.app)
 
-## What This Project Does
+## 1. Project In One Simple Paragraph
 
-DoctorCopilot is built around one core idea:
+This project takes a medical report uploaded by a patient, extracts useful information from it, stores the structured medical data, and then reuses that stored data across dashboards, trends, doctor review, chats, appointments, and PDF exports. The important idea is this:
 
-- Upload a report once.
-- Process it once.
-- Store the extracted medical intelligence.
-- Reuse that stored data across dashboards, trends, insights, exports, and case review.
+- process once
+- store once
+- reuse everywhere
 
-That design keeps the product faster, cheaper, and easier to reason about than a system that reruns AI on every page load.
+That makes the platform faster, cheaper, and easier to maintain than a system that asks AI to regenerate everything on every screen.
 
-## Product Surfaces
+## 2. Who This Project Is For
 
-### Patient Portal
+This README is written for:
 
-- Upload medical reports
-- View dashboard, timeline, trends, cases, chats, calendar, and settings
-- Request consultation with a doctor
-- Approve or deny report access requests
-- Export AI health summaries
+- beginners who want to understand the full project
+- viva or presentation use
+- developers who want to run the project locally
+- contributors who want to know where code lives
+- deployers who want to understand production setup
 
-### Doctor Portal
+If you are completely new, also read:
+- [vocabulary.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\vocabulary.txt)
+- [introduction.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\introduction.txt)
 
-- Review pending consultation requests
-- Accept, reject, refer, or open cases
-- Inspect patient-wide trends and anomalies
-- Request access to linked reports
-- Open AI summaries and original files
-- Chat with patients and schedule appointments
+## 3. Main Goals Of DoctorCopilot
 
-### Admin Portal
+- help patients understand their medical data better
+- help doctors review patient history faster
+- reduce repeated AI cost by reusing stored results
+- support consultations, chats, appointments, and exports
+- support real deployment with Railway, Vercel, and Supabase
+- support demo mode when platform AI is turned off
 
-- Monitor platform activity
-- Manage doctors, patients, cases, and reports
-- Maintain operational visibility across the system
-- Turn platform AI on or off to control cost
-- Re-enable platform AI with an admin password gate
-- Allow or block personal API key usage for specific patients
+## 4. Main User Roles
 
-## Tech Stack
+### Patient
 
-### Frontend
+Patients can:
 
-- React
-- Vite
-- Tailwind CSS
-- Framer Motion
-- SWR
+- register and log in
+- upload reports
+- view dashboard, trends, timeline, reports, cases, chats, calendar, and settings
+- request a consultation with a selected doctor
+- approve or deny report-access requests from doctors
+- export health summaries
+- delete individual reports
+- clear their own stored medical data from settings
 
-### Backend
+### Doctor
 
-- FastAPI
-- Async SQLAlchemy
-- JWT authentication
-- WebSocket case chat
-- Pydantic
+Doctors can:
 
-### AI And Processing
+- log in using doctor credentials
+- review pending consultation requests
+- accept, reject, refer, or open cases
+- request access to patient reports
+- read patient insights and trends
+- view linked reports
+- export AI and source PDFs
+- chat with patients
+- schedule appointments
 
-- OCR with `pypdf`, `pdfplumber`, `pdf2image`, `pypdfium2`, `pytesseract`
-- OpenAI structured extraction
-- Clinical normalization and report classification
-- Trend and anomaly generation
+### Admin
 
-### Storage And Deployment
+Admins can:
 
-- Local SQLite or PostgreSQL
-- Local uploads and optional Supabase storage support
-- Vercel for frontend deployment
-- Railway for backend deployment
+- manage doctors
+- manage patients
+- manage cases
+- monitor reports and processing logs
+- monitor system status
+- turn platform AI on or off
+- require password `api123` to re-enable platform AI
+- allow or block personal API key usage for individual patients
 
-## Architecture
+## 5. High-Level Product Architecture
 
 ```mermaid
 flowchart LR
-    A["Patient / Doctor / Admin Frontend<br/>React + Vite"] --> B["FastAPI API Layer<br/>JWT auth, cases, reports, exports"]
-    B --> C["Processing Orchestrator<br/>upload -> OCR -> metadata -> OpenAI -> normalization"]
-    C --> D["Structured Persistence<br/>reports, extracted data, insights, cases, messages"]
-    D --> E["Product Experiences<br/>dashboards, trends, case insights, chat, calendar"]
-    D --> F["Original Report Storage<br/>local uploads or Supabase bucket"]
-    E --> G["Doctor Review Workflow<br/>report access, linked reports, appointments"]
+    A["Frontend (React + Vite)"] --> B["FastAPI Backend"]
+    B --> C["Authentication Layer (JWT)"]
+    B --> D["Report Processing Orchestrator"]
+    D --> E["OCR + Metadata Extraction"]
+    D --> F["OpenAI Structured Extraction"]
+    D --> G["Clinical Normalization"]
+    B --> H["PostgreSQL / SQLite Database"]
+    B --> I["File Storage (Local or Supabase Storage)"]
+    H --> J["Dashboards, Trends, Cases, Chats, Exports"]
+    I --> J
 ```
 
-## End-To-End Flow
+## 6. What Happens When A Patient Uploads A Report
 
-1. A patient logs in with a public ID.
-2. The patient uploads a report.
-3. The backend stores the file and starts processing.
-4. OCR or direct extraction reads report text.
-5. Metadata is extracted from the raw report.
-6. OpenAI converts the report into structured medical JSON.
-7. Clinical normalization repairs and standardizes values.
-8. Structured results are saved to the database.
-9. Patient and doctor portals reuse those stored results for dashboards, trends, and case review.
-10. A doctor can accept the consultation, request report access, open linked reports, chat, and schedule appointments.
+This is the most important project flow.
 
-## AI Cost Control And Demo Mode
+1. Patient logs in.
+2. Patient uploads a PDF or image report.
+3. Backend stores the original file.
+4. OCR or direct PDF text extraction reads the report.
+5. Metadata like lab name, patient name, dates, and doctor name is extracted.
+6. OpenAI converts raw report text into structured medical JSON.
+7. Clinical normalization cleans values and standardizes parameters.
+8. Structured output is saved in the database.
+9. Trends and insights read that stored data later.
+10. Doctors can review the same stored output inside cases.
 
-DoctorCopilot now supports a cost-control mode designed for demos and low-cost deployments.
+This means:
 
-- Admin can disable platform AI from the admin dashboard.
-- When platform AI is disabled, the app enters demo mode.
-- In demo mode, users can optionally provide their own OpenAI API key for the current browser session only.
-- The session API key is never written to the database and is removed automatically on logout.
-- Demo patient `P-10005` is blocked from using a personal API key and must create a new patient profile first.
-- Admin can allow or block personal API key usage per patient account.
-- If platform AI is enabled and the backend has a valid `OPENAI_API_KEY`, users do not need to enter any personal key.
+- no repeated AI cost for old reports
+- no repeated OCR cost for old reports
+- dashboards and trends are generated from stored data
 
-### Patient Data Controls
+## 7. Core Design Principle
 
-- Patients can clear all of their stored reports, consultations, chats, appointments, and derived trend/insight data from the patient settings page.
-- The patient account and login remain active after a data clear.
-- Reports can also be deleted individually from the reports area.
+DoctorCopilot is designed around this rule:
 
-## Repository Layout
+- AI processing should happen only when a new report is uploaded
+
+Everything after that should reuse stored data:
+
+- patient dashboard
+- patient trends
+- patient timeline
+- doctor case view
+- doctor insights
+- report exports
+
+## 8. Full Functional Areas
+
+### Patient Area
+
+- dashboard
+- reports
+- timeline
+- trends
+- consultations / cases
+- chats
+- calendar
+- settings
+
+### Doctor Area
+
+- dashboard
+- cases
+- case view
+- case insights
+- chats
+- calendar
+- settings
+
+### Admin Area
+
+- operational dashboard
+- doctor management
+- patient management
+- case management
+- reports monitor
+- system status
+- AI cost control
+
+## 9. Repository Structure
 
 ```text
 Doctorcopilot_finale
-├─ app/                     FastAPI backend
-│  ├─ api/                  REST endpoints
-│  ├─ core/                 config, security, exceptions
-│  ├─ db/                   database setup and schema helpers
-│  ├─ models/               SQLAlchemy models
-│  ├─ schemas/              request and response schemas
-│  ├─ scripts/              seed and migration scripts
-│  ├─ services/             AI, OCR, cases, reports, storage
-│  └─ websockets/           real-time chat handling
-├─ src/                     React frontend
-├─ guide/                   project notes, credentials, architecture docs
-├─ storage/                 uploaded files and local storage paths
-├─ tests/                   backend tests
-├─ package.json             frontend scripts
-├─ requirements.txt         backend dependencies
-├─ .env.example             sample environment configuration
-├─ vercel.json              frontend deployment config
-└─ railway.toml             backend deployment config
+├─ app/                         FastAPI backend
+│  ├─ api/                      REST endpoints
+│  │  └─ v1/endpoints/          route handlers
+│  ├─ core/                     config, security, exceptions, debug logging
+│  ├─ db/                       DB engine, schema helpers, base models
+│  ├─ models/                   SQLAlchemy models
+│  ├─ schemas/                  Pydantic request/response models
+│  ├─ scripts/                  seeding, migration, validation scripts
+│  ├─ services/                 business logic
+│  │  ├─ ai/                    OpenAI integration
+│  │  ├─ export/                PDF exports
+│  │  ├─ insights/              trends and insights logic
+│  │  ├─ processing/            OCR and report pipeline
+│  │  └─ storage/               local or Supabase storage logic
+│  └─ websockets/               real-time support
+├─ src/                         React frontend
+│  ├─ components/               reusable UI pieces
+│  ├─ pages/                    route-level pages
+│  ├─ services/                 frontend API clients
+│  ├─ hooks/                    reusable frontend logic
+│  ├─ context/                  theme and shared state
+│  └─ lib/                      small frontend helpers
+├─ guide/                       all project text guides
+├─ tests/                       backend tests
+├─ storage/                     local uploaded files in development
+├─ Dockerfile                   Railway container deployment
+├─ railway.toml                 Railway config
+├─ vercel.json                  Vercel SPA routing config
+├─ package.json                 frontend deps/scripts
+├─ requirements.txt             backend deps
+└─ .env.example                 sample environment values
 ```
 
-## Quick Start
+## 10. Important Backend Concepts
 
-### 1. Clone The Project
+### `app/api`
+
+This is where URLs are defined. Example:
+
+- login endpoint
+- patient routes
+- doctor routes
+- admin routes
+- reports routes
+
+### `app/models`
+
+These are database tables represented in Python code.
+
+Important models include:
+
+- `User`
+- `Patient`
+- `Doctor`
+- `Case`
+- `Message`
+- `Report`
+- `ExtractedData`
+- `ReportInsight`
+- `Appointment`
+- `AppSetting`
+
+### `app/schemas`
+
+These define request and response shapes.
+
+Example:
+
+- what fields are allowed when creating a patient
+- what fields are returned when reading a report
+
+### `app/services`
+
+This is the real business logic layer.
+
+Examples:
+
+- authenticate user
+- process report
+- build patient trends
+- create PDF exports
+- manage AI control
+
+### `app/core`
+
+This contains system-level code:
+
+- env config
+- password hashing
+- JWT token helpers
+- custom exceptions
+- debug logger
+
+## 11. Important Frontend Concepts
+
+### `src/pages`
+
+These are route-level screens.
+
+Examples:
+
+- patient dashboard
+- doctor cases
+- admin dashboard
+
+### `src/components`
+
+These are reusable UI pieces.
+
+Examples:
+
+- cards
+- modals
+- layout shells
+- banners
+- charts
+
+### `src/services`
+
+These connect the frontend to the backend.
+
+Examples:
+
+- login API calls
+- report upload
+- admin management
+- doctor APIs
+
+### `src/hooks`
+
+These help share reusable frontend logic.
+
+Examples:
+
+- chat stream hook
+- cached patient dashboard hook
+
+## 12. Main Database Entities
+
+Here is the simple relationship view.
+
+```mermaid
+erDiagram
+    USER ||--o| PATIENT : has
+    USER ||--o| DOCTOR : has
+    PATIENT ||--o{ REPORT : uploads
+    PATIENT ||--o{ CASE : owns
+    DOCTOR ||--o{ CASE : handles
+    CASE ||--o{ MESSAGE : contains
+    CASE ||--o{ APPOINTMENT : schedules
+    REPORT ||--o| EXTRACTED_DATA : produces
+    REPORT ||--o{ REPORT_INSIGHT : produces
+```
+
+### Key tables
+
+- `users`: login identity, password hash, role
+- `patients`: patient-specific profile
+- `doctors`: doctor-specific profile
+- `reports`: uploaded reports and metadata
+- `extracted_data`: structured result from report processing
+- `report_insights`: stored AI findings for a report
+- `cases`: consultations between patient and doctor
+- `messages`: chat messages inside a case
+- `appointments`: scheduled appointments
+- `app_settings`: system-wide settings like AI on/off
+
+## 13. Authentication System
+
+Authentication is handled only by FastAPI.
+
+This project does not use Supabase Auth.
+
+### Login flow
+
+1. user sends ID and password
+2. backend verifies password hash
+3. backend returns JWT token
+4. frontend stores token locally
+5. future requests use `Authorization: Bearer <token>`
+
+### Public IDs
+
+Examples:
+
+- patient: `P-10005`
+- doctor: `D-10001`
+- admin: `ADMIN-001`
+
+### Roles
+
+- `patient`
+- `doctor`
+- `admin`
+
+## 14. AI Pipeline
+
+The AI pipeline is triggered mainly on report upload.
+
+### Processing steps
+
+- upload file
+- extract text
+- clean OCR output
+- extract metadata
+- send report text to OpenAI
+- normalize parameters
+- save structured output
+- store insights
+- reuse later
+
+### Why this matters
+
+This makes:
+
+- trends cheaper
+- dashboards faster
+- doctor case review cheaper
+- exports consistent
+
+## 15. AI Cost Control And Demo Mode
+
+This project includes a special cost-control system.
+
+### Global AI control
+
+Admin can:
+
+- turn platform AI off
+- turn platform AI back on
+
+Re-enabling requires:
+
+- password `api123`
+
+### What happens when AI is off
+
+- app enters demo mode
+- existing stored reports still work
+- existing trends and insights still work
+- new AI-required processing needs a key
+
+### Personal API key mode
+
+When platform AI is off:
+
+- a user can provide their own API key for the current browser session
+- that key is sent as a request header
+- that key is not stored in the database
+- that key is removed automatically on logout
+
+### Demo patient restriction
+
+Demo patient:
+
+- `P-10005`
+
+This account:
+
+- cannot use a personal API key
+- cannot clear all data
+- should create a real personal profile first
+
+### Per-patient personal key control
+
+Admin can also:
+
+- allow personal API key usage for a specific patient
+- block personal API key usage for a specific patient
+
+## 16. Patient Data Clearing
+
+Patients have a strong delete option in settings.
+
+### What it deletes
+
+- uploaded reports
+- derived insights
+- trends data that depends on reports
+- consultations / cases
+- chats
+- appointments
+
+### What it does not delete
+
+- the user login itself
+- the patient profile record
+
+### Safety requirements
+
+To clear all patient data:
+
+- user must type `clear`
+- user must enter their current password
+
+The shared demo account cannot do this.
+
+## 17. Doctor Workflow
+
+Simple doctor flow:
+
+1. doctor logs in
+2. doctor sees pending consultation requests
+3. doctor accepts, rejects, or refers a case
+4. doctor opens the case workspace
+5. doctor requests report access if needed
+6. patient approves or denies
+7. doctor reviews linked reports, insights, and trends
+8. doctor chats with patient
+9. doctor books appointment
+10. doctor closes case when done
+
+## 18. Chat System
+
+The project includes case-based chat.
+
+### Rules
+
+- chat belongs to a case
+- both patient and assigned doctor can use it
+- WebSocket is used for live updates
+- session-based updates are preferred over polling
+
+## 19. Export System
+
+The platform supports multiple export flows.
+
+Examples:
+
+- patient AI health summary PDF
+- doctor AI PDF
+- source PDF export
+
+The export system was upgraded to create more professional clinical-style documents.
+
+## 20. Deployment Architecture
+
+Production deployment uses:
+
+- frontend: Vercel
+- backend: Railway
+- database: Supabase PostgreSQL
+- storage: Supabase Storage
+
+### Recommended production flow
+
+1. Supabase database and bucket
+2. Railway backend
+3. Vercel frontend
+4. set CORS
+5. test live flows
+
+## 21. Local Development Setup
+
+### Step 1: clone the repo
 
 ```bash
 git clone <your-repo-url>
 cd Doctorcopilot_finale
 ```
 
-### 2. Frontend Setup
-
-Install frontend dependencies:
+### Step 2: install frontend dependencies
 
 ```bash
 npm install
 ```
 
-Run the Vite frontend:
-
-```bash
-npm run dev
-```
-
-Frontend default URL:
-
-```text
-http://localhost:5173
-```
-
-### 3. Backend Setup
-
-Create and activate a Python virtual environment:
+### Step 3: create Python virtual environment
 
 ```bash
 python -m venv .venv
 ```
 
-Windows PowerShell:
+PowerShell:
 
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
-Install backend dependencies:
+### Step 4: install backend dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run the FastAPI backend:
+### Step 5: create `.env`
 
-```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-Backend default URL:
-
-```text
-http://127.0.0.1:8000
-```
-
-Health check:
-
-```text
-http://127.0.0.1:8000/health
-```
-
-## Environment Setup
-
-Copy the sample file:
+Copy:
 
 ```bash
 copy .env.example .env
 ```
 
-Minimum variables you must set:
+### Step 6: start backend
+
+```bash
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+### Step 7: start frontend
+
+```bash
+npm run dev
+```
+
+### Step 8: open app
+
+- frontend: `http://localhost:5173`
+- backend health: `http://127.0.0.1:8000/health`
+
+## 22. Minimum Environment Variables
+
+### Local development minimum
 
 - `SECRET_KEY`
 - `OPENAI_API_KEY`
+- `DATABASE_URL`
 
-Important notes:
-
-- The repo supports SQLite for the easiest local setup.
-- You can switch to PostgreSQL later by updating `DATABASE_URL`.
-- `VITE_API_BASE_URL` should point to your backend URL.
-- Supabase variables are optional unless you want remote storage.
-
-Production or demo-mode related variables:
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_STORAGE_BUCKET`
-- `ADMIN_SEED_CODE`
-- `ADMIN_SEED_EMAIL`
-- `ADMIN_SEED_PASSWORD`
-
-## Recommended Local `.env`
-
-For the smoothest first run, use SQLite locally:
+### Example local `.env`
 
 ```env
 APP_NAME=DoctorCopilot Backend
 ENVIRONMENT=development
 API_V1_PREFIX=/api/v1
-VITE_API_BASE_URL=http://127.0.0.1:8000
 DATABASE_URL=sqlite+aiosqlite:///./doctorcopilot.db
 SECRET_KEY=replace-with-a-long-random-string
 ACCESS_TOKEN_EXPIRE_MINUTES=120
@@ -257,66 +604,81 @@ MAX_UPLOAD_SIZE_MB=25
 CORS_ORIGINS=["http://localhost:3000","http://localhost:5173"]
 ```
 
-## Demo Data For Local Development
+### Production-related variables
 
-Seed doctors:
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET`
+- `SECRET_KEY`
+- `OPENAI_API_KEY`
+- `CORS_ORIGINS`
+- `ADMIN_SEED_CODE`
+- `ADMIN_SEED_EMAIL`
+- `ADMIN_SEED_PASSWORD`
 
-```bash
-python -m app.scripts.seed_doctors
-```
+## 23. Seed Data And Demo Data
 
-Seed patients, sample cases, messages, and sample reports:
+Useful scripts:
 
-```bash
-python -m app.scripts.seed_sample_cases
-```
+- `python -m app.scripts.seed_doctors`
+- `python -m app.scripts.seed_sample_cases`
 
-Seeded local patient credentials currently created by the script:
+Useful reference files:
 
-- `P-20001` / `demo123`
-- `P-20002` / `demo123`
+- [sample_patient_credentials.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\sample_patient_credentials.txt)
+- [doctors_credentials.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\doctors_credentials.txt)
+- [admin_credentials.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\admin_credentials.txt)
 
-Seeded doctor credentials:
+## 24. Important API Areas
 
-- `D-10001` / `demo123`
-- `D-10002` / `demo123`
-- `D-10003` / `demo123`
-- `D-10004` / `demo123`
-- `D-10005` / `demo123`
-- `D-10006` / `demo123`
+### Auth
 
-Credential reference files are also written to:
+- `POST /api/v1/auth/register/patient`
+- `POST /api/v1/auth/register/doctor`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
 
-- `guide/sample_patient_credentials.txt`
-- `guide/doctors_credentials.txt`
+### Patient
 
-## Newcomer Run Guide
+- `GET /api/v1/patients/me`
+- `PATCH /api/v1/patients/me`
+- `PATCH /api/v1/patients/me/password`
+- `DELETE /api/v1/patients/me/data`
+- `GET /api/v1/patients/me/reports`
+- `GET /api/v1/patients/me/insights`
+- `GET /api/v1/patients/me/trends`
+- `GET /api/v1/patients/me/export`
 
-If you are opening this project for the first time, use this order:
+### Reports
 
-1. Clone the repository.
-2. Copy `.env.example` to `.env`.
-3. Change `DATABASE_URL` to SQLite for the easiest start.
-4. Add your `SECRET_KEY` and `OPENAI_API_KEY`.
-5. Install backend requirements.
-6. Install frontend dependencies with `npm install`.
-7. Start the backend with `uvicorn app.main:app --reload`.
-8. In a second terminal, start the frontend with `npm run dev`.
-9. Seed demo data with `python -m app.scripts.seed_sample_cases`.
-10. Open `http://localhost:5173`.
+- `POST /api/v1/reports/upload`
+- `GET /api/v1/reports/{report_id}`
+- `GET /api/v1/reports/{report_id}/file`
+- `GET /api/v1/reports/{report_id}/original`
+- `GET /api/v1/reports/{report_id}/export`
 
-## OCR Requirements
+### Cases And Chat
 
-DoctorCopilot can read text directly from PDFs, but OCR fallback relies on external tooling.
+- `POST /api/v1/cases`
+- `GET /api/v1/cases/{id}`
+- `POST /api/v1/cases/{id}/messages`
+- `GET /api/v1/cases/{id}/messages`
+- `WS /ws/cases/{case_id}`
 
-Recommended local installs:
+### Admin
 
-- Tesseract OCR
-- Poppler
+- `GET /api/v1/admin/dashboard`
+- `GET /api/v1/admin/patients`
+- `PATCH /api/v1/admin/patients/{patient_id}/ai-access`
+- `GET /api/v1/admin/ai-control`
+- `PATCH /api/v1/admin/ai-control`
 
-If OCR is unavailable, scanned PDF extraction may fail even though direct text PDFs still work.
+### System
 
-## Common Commands
+- `GET /api/v1/system/ai-access`
+
+## 25. Common Commands
 
 Frontend dev:
 
@@ -330,112 +692,99 @@ Frontend build:
 npm run build
 ```
 
-Frontend preview:
-
-```bash
-npm run preview
-```
-
-Run backend:
+Backend run:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Seed doctors:
-
-```bash
-python -m app.scripts.seed_doctors
-```
-
-Seed sample patients and cases:
-
-```bash
-python -m app.scripts.seed_sample_cases
-```
-
-Run tests:
+Tests:
 
 ```bash
 pytest
 ```
 
-## API Highlights
+Compile backend:
 
-### Auth
+```bash
+python -m compileall app
+```
 
-- `POST /api/v1/auth/register/patient`
-- `POST /api/v1/auth/register/doctor`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/auth/me`
+## 26. Troubleshooting
 
-### Reports
+### Problem: upload fails
 
-- `POST /api/v1/reports/upload`
-- `GET /api/v1/reports/{report_id}`
-- `GET /api/v1/reports/{report_id}/original`
-- `POST /api/v1/reports/{report_id}/export`
+Check:
 
-### Patient
+- Railway env vars
+- Supabase storage key
+- OCR dependencies
+- OpenAI key
 
-- `GET /api/v1/patients/me/profile`
-- `GET /api/v1/patients/me/trends`
-- `GET /api/v1/patients/me/insights`
-- `GET /api/v1/patients/me/appointments`
-- `DELETE /api/v1/patients/me/data`
+### Problem: login works locally but not online
 
-### Doctor
+Check:
 
-- `GET /api/v1/doctors/me/profile`
-- `GET /api/v1/doctors/dashboard`
-- `GET /api/v1/doctors/cases`
-- `GET /api/v1/doctors/cases/{case_id}`
+- `VITE_API_BASE_URL`
+- Railway backend health
+- `CORS_ORIGINS`
 
-### Admin
+### Problem: direct route shows 404 on Vercel
 
-- `GET /api/v1/admin/ai-control`
-- `PATCH /api/v1/admin/ai-control`
-- `PATCH /api/v1/admin/patients/{patient_id}/ai-access`
+Check:
 
-### System
+- `vercel.json` SPA rewrite
 
-- `GET /api/v1/system/ai-access`
+### Problem: app is slow
 
-### Cases And Chat
+Possible reasons:
 
-- `POST /api/v1/cases`
-- `PATCH /api/v1/cases/{case_id}`
-- `GET /api/v1/cases/{case_id}/messages`
-- `WS /ws/cases/{case_id}`
+- small Railway instance
+- heavy patient/doctor UI pages
+- large PDF/chart bundles
+- OCR/report processing load
 
-## Deployment Notes
+## 27. Learning Path For Beginners
 
-### Frontend
+If you are new and want to understand this codebase in order:
 
-- Built with Vite
-- Configured for Vercel deployment
+1. read this README
+2. read [vocabulary.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\vocabulary.txt)
+3. read [introduction.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\introduction.txt)
+4. open `app/main.py`
+5. open `app/api/v1/router.py`
+6. open `app/services/processing/orchestrator.py`
+7. open `src/App.jsx`
+8. open patient, doctor, and admin layouts
 
-### Backend
+## 28. Related Guide Files
 
-- Built with FastAPI
-- Configured for Railway deployment
+- [moon.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\moon.txt)
+- [DoctorCopilot_Architecture.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\DoctorCopilot_Architecture.txt)
+- [doctor.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\doctor.txt)
+- [supabase_migration.txt](C:\Users\thewa\Desktop\Doctorcopilot_finale\guide\supabase_migration.txt)
 
-### Storage
+## 29. Final Summary
 
-- Local file storage works in development
-- Supabase storage can be enabled for production-like report storage
+DoctorCopilot is not just a report uploader.
 
-## Why This Project Matters
+It is a complete healthcare workflow system that combines:
 
-DoctorCopilot is not just an OCR demo and not just a dashboard skin.
+- authentication
+- report processing
+- structured medical storage
+- patient insights
+- doctor review tools
+- case-based chat
+- appointments
+- PDF exports
+- admin cost control
+- production deployment
 
-It combines:
+In simple words:
 
-- full-stack product engineering
-- AI-assisted medical data extraction
-- structured persistence
-- doctor and patient workflow design
-- realtime communication
-- cloud deployment thinking
-
-In practical terms, it turns raw medical reports into a reusable health workflow system.
+- patients upload reports
+- AI structures them once
+- the system stores that intelligence
+- doctors and patients reuse it everywhere
+- admin controls cost and access safely

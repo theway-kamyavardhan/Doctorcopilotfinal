@@ -1,0 +1,502 @@
+DOCTORCOPILOT VOCABULARY
+
+This file explains the main technical words used in the project in very simple language.
+
+1. Frontend
+
+Meaning:
+The part of the project the user can see and click.
+
+In this project:
+- login page
+- dashboard
+- buttons
+- charts
+- forms
+
+Simple way to think:
+Frontend is the "screen side" of the app.
+
+2. Backend
+
+Meaning:
+The hidden server logic that does the real work.
+
+In this project:
+- checks login
+- saves reports
+- processes files
+- returns data to the frontend
+
+Simple way to think:
+Backend is the "brain behind the screen".
+
+3. React
+
+Meaning:
+A JavaScript library used to build user interfaces.
+
+In this project:
+React builds pages like:
+- patient dashboard
+- doctor case view
+- admin panel
+
+Simple way to think:
+React helps us build the website in reusable pieces.
+
+4. Vite
+
+Meaning:
+A tool that runs and builds the frontend.
+
+In this project:
+- starts the React app quickly
+- builds the production frontend for Vercel
+
+Simple way to think:
+Vite is the fast machine that prepares the frontend.
+
+5. Tailwind CSS
+
+Meaning:
+A styling system that lets us design pages using utility classes.
+
+In this project:
+- colors
+- spacing
+- layout
+- responsiveness
+
+Simple way to think:
+Tailwind is a shortcut-based design system.
+
+6. Framer Motion
+
+Meaning:
+A React animation library.
+
+In this project:
+- smooth transitions
+- animated cards
+- hover effects
+
+Simple way to think:
+Framer Motion makes the UI feel alive.
+
+7. FastAPI
+
+Meaning:
+A Python backend framework used to create APIs.
+
+In this project:
+- login API
+- patient APIs
+- doctor APIs
+- admin APIs
+- report APIs
+
+Simple way to think:
+FastAPI is the main backend engine.
+
+8. API
+
+Meaning:
+A way for frontend and backend to talk to each other.
+
+Example:
+- frontend asks for patient reports
+- backend sends report data back
+
+Simple way to think:
+API is the messenger between screen and server.
+
+9. REST API
+
+Meaning:
+A common style of API where endpoints are organized by URLs and HTTP methods.
+
+Examples:
+- GET data
+- POST new data
+- PATCH update data
+- DELETE remove data
+
+Simple way to think:
+REST API is a standard format for backend routes.
+
+10. Endpoint
+
+Meaning:
+A specific API URL.
+
+Example:
+- /api/v1/auth/login
+
+Simple way to think:
+An endpoint is a door to one backend feature.
+
+11. SQLAlchemy
+
+Meaning:
+A Python library used to talk to the database.
+
+In this project:
+- defines tables
+- saves records
+- loads records
+
+Simple way to think:
+SQLAlchemy helps Python speak database language.
+
+12. Async SQLAlchemy
+
+Meaning:
+A non-blocking version of SQLAlchemy.
+
+Why used:
+It helps the backend handle work more efficiently.
+
+Simple way to think:
+It lets the backend wait smartly instead of freezing.
+
+13. PostgreSQL
+
+Meaning:
+A powerful database system.
+
+In production:
+- Supabase PostgreSQL stores project data
+
+Simple way to think:
+PostgreSQL is the main data warehouse.
+
+14. SQLite
+
+Meaning:
+A lightweight local database file.
+
+In this project:
+- useful for easy local development
+
+Simple way to think:
+SQLite is the beginner-friendly local database.
+
+15. Supabase
+
+Meaning:
+A cloud platform used here for:
+- PostgreSQL database
+- file storage
+
+Important:
+This project does not use Supabase Auth.
+
+Simple way to think:
+Supabase is the cloud home for data and files.
+
+16. Supabase Storage
+
+Meaning:
+A file storage bucket in Supabase.
+
+In this project:
+- stores uploaded reports in production
+
+Simple way to think:
+It is like cloud Google Drive for the app.
+
+17. Railway
+
+Meaning:
+A cloud platform used to deploy the backend.
+
+In this project:
+- runs the FastAPI server online
+
+Simple way to think:
+Railway keeps the backend alive on the internet.
+
+18. Vercel
+
+Meaning:
+A cloud platform used to deploy the frontend.
+
+In this project:
+- hosts the React website
+
+Simple way to think:
+Vercel keeps the website online.
+
+19. JWT
+
+Meaning:
+JSON Web Token.
+
+In this project:
+- used after login
+- proves who the user is
+
+Simple way to think:
+JWT is a digital temporary pass after login.
+
+20. Authentication
+
+Meaning:
+Checking who the user is.
+
+Example:
+- verifying ID and password
+
+Simple way to think:
+Authentication = "Are you really you?"
+
+21. Authorization
+
+Meaning:
+Checking what the user is allowed to do.
+
+Example:
+- only admin can open admin panel
+- only doctor can open doctor routes
+
+Simple way to think:
+Authorization = "What are you allowed to do?"
+
+22. OCR
+
+Meaning:
+Optical Character Recognition.
+
+In this project:
+- reads text from scanned PDFs or images
+
+Simple way to think:
+OCR turns image text into real machine-readable text.
+
+23. OpenAI Extraction
+
+Meaning:
+Using AI to convert messy medical report text into structured fields.
+
+In this project:
+- report type
+- summary
+- lab parameters
+- insights
+
+Simple way to think:
+OpenAI helps convert report text into organized medical data.
+
+24. Clinical Normalization
+
+Meaning:
+Cleaning and standardizing medical values after extraction.
+
+Example:
+- fixing units
+- fixing parameter names
+- making values usable for trends
+
+Simple way to think:
+Normalization cleans medical data so the system can trust it.
+
+25. Trend
+
+Meaning:
+How a health parameter changes over time.
+
+Example:
+- hemoglobin improving
+- vitamin B12 dropping
+
+Simple way to think:
+A trend is the story of a number over time.
+
+26. Insight
+
+Meaning:
+A meaningful conclusion built from stored data.
+
+Example:
+- persistent deficiency
+- improving platelet trend
+
+Simple way to think:
+An insight is a useful takeaway, not just raw numbers.
+
+27. WebSocket
+
+Meaning:
+A live connection between frontend and backend.
+
+In this project:
+- used for chat
+
+Simple way to think:
+WebSocket is like an always-open phone call between browser and server.
+
+28. Session
+
+Meaning:
+The current browser usage period while a user is logged in.
+
+In this project:
+- personal API key can be stored only for the current session
+
+Simple way to think:
+A session lasts while the user is actively using the app.
+
+29. Session API Key
+
+Meaning:
+A personal OpenAI API key temporarily used only in the current browser session.
+
+In this project:
+- used only when platform AI is off
+- not stored in the database
+- removed on logout
+
+Simple way to think:
+It is a temporary private key the user brings for their own work.
+
+30. Demo Mode
+
+Meaning:
+Mode where platform AI is turned off to save cost.
+
+In this project:
+- existing stored data still works
+- new processing may require a personal session key
+
+Simple way to think:
+Demo mode means the system shows saved intelligence but avoids new AI cost.
+
+31. Admin AI Control
+
+Meaning:
+A system setting in the admin panel that turns platform AI on or off.
+
+Simple way to think:
+This is the master switch for AI spending.
+
+32. Case
+
+Meaning:
+A consultation workspace between patient and doctor.
+
+In this project:
+- case contains status
+- doctor assignment
+- messages
+- reports
+- appointments
+
+Simple way to think:
+A case is one medical conversation/workspace.
+
+33. Message
+
+Meaning:
+A chat message inside a case.
+
+Simple way to think:
+A message is one line in the patient-doctor conversation.
+
+34. Appointment
+
+Meaning:
+A scheduled meeting between doctor and patient.
+
+Simple way to think:
+An appointment is the planned consultation time.
+
+35. Export
+
+Meaning:
+Creating a PDF or downloadable file from saved data.
+
+In this project:
+- patient AI health summary PDF
+- doctor report export
+
+Simple way to think:
+Export turns app data into a formal downloadable report.
+
+36. Docker
+
+Meaning:
+A way to package the backend and its dependencies in one container.
+
+In this project:
+- used for Railway deployment
+
+Simple way to think:
+Docker packs the app in a ready-to-run box.
+
+37. CORS
+
+Meaning:
+Rules that decide which frontend websites can call the backend.
+
+In this project:
+- Vercel frontend must be allowed in backend CORS settings
+
+Simple way to think:
+CORS is the guest list for websites allowed to talk to the backend.
+
+38. Environment Variable
+
+Meaning:
+A secret or setting stored outside code.
+
+Examples:
+- database URL
+- secret key
+- OpenAI API key
+
+Simple way to think:
+Environment variables are settings the app reads at runtime.
+
+39. `SECRET_KEY`
+
+Meaning:
+Backend secret used to sign JWT tokens.
+
+Simple way to think:
+This is the private stamp used to create trusted login tokens.
+
+40. Build
+
+Meaning:
+Preparing the app for production.
+
+Frontend build:
+- bundles the React app
+
+Simple way to think:
+Build means turning source code into a deployable version.
+
+41. Deploy
+
+Meaning:
+Putting the app online so others can use it.
+
+Simple way to think:
+Deploy means publishing the app to the internet.
+
+42. Why This Project Is Interesting
+
+This project is a strong full-stack system because it mixes:
+
+- frontend development
+- backend APIs
+- database design
+- cloud deployment
+- OCR
+- AI extraction
+- healthcare workflows
+- real-time chat
+
+Simple way to think:
+It is not just a website. It is a complete product system.
