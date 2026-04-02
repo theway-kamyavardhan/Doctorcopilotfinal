@@ -1,9 +1,9 @@
 import api from "./api";
 
-async function parseExportError(error) {
+async function parseApiError(error, fallbackMessage = "Request failed.") {
   const detail = error?.response?.data;
   if (!detail) {
-    return error?.message || "Failed to export health summary.";
+    return error?.message || fallbackMessage;
   }
 
   if (typeof Blob !== "undefined" && detail instanceof Blob) {
@@ -19,23 +19,34 @@ async function parseExportError(error) {
   }
 
   if (typeof detail === "object" && detail?.detail) {
-    return detail.detail;
+    if (typeof detail.detail === "string") {
+      return detail.detail;
+    }
+    return JSON.stringify(detail.detail);
   }
 
-  return error?.message || "Failed to export health summary.";
+  if (typeof detail === "string") {
+    return detail;
+  }
+
+  return error?.message || fallbackMessage;
 }
 
 export async function uploadReport(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const response = await api.post("/api/v1/reports/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+    const response = await api.post("/api/v1/reports/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    throw new Error(await parseApiError(error, "Upload failed."));
+  }
 }
 
 export async function getReports() {
@@ -92,7 +103,7 @@ export async function exportHealthSummary() {
       },
     };
   } catch (error) {
-    throw new Error(await parseExportError(error));
+    throw new Error(await parseApiError(error, "Failed to export health summary."));
   }
 }
 
@@ -113,7 +124,7 @@ export async function exportReportPdf(reportId, mode = "ai") {
       },
     };
   } catch (error) {
-    throw new Error(await parseExportError(error));
+    throw new Error(await parseApiError(error, "Failed to export report PDF."));
   }
 }
 

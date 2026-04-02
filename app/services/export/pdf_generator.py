@@ -24,7 +24,7 @@ try:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import KeepTogether, LongTable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     REPORTLAB_AVAILABLE = True
     REPORTLAB_IMPORT_ERROR: Exception | None = None
@@ -44,19 +44,23 @@ PRIORITY_PARAMETERS = [
 
 ABNORMAL_STATUSES = {"low", "high", "deficient", "insufficient", "critical"}
 THEME = {
-    "background": "#0A0F1C",
-    "surface": "#11192B",
-    "surface_soft": "#0F1728",
-    "line": "#1E293B",
-    "text": "#F8FAFC",
-    "muted": "#AFC0D7",
-    "accent": "#38BDF8",
-    "accent_soft": "#14263D",
-    "cyan": "#67E8F9",
-    "red": "#F87171",
-    "yellow": "#FBBF24",
-    "green": "#34D399",
+    "background": "#FFFFFF",
+    "surface": "#FFFFFF",
+    "surface_soft": "#F8FAFC",
+    "surface_alt": "#F1F5F9",
+    "line": "#CBD5E1",
+    "line_soft": "#E2E8F0",
+    "text": "#0F172A",
+    "muted": "#475569",
+    "accent": "#0F4C81",
+    "accent_soft": "#DBEAFE",
+    "cyan": "#0F766E",
+    "red": "#B91C1C",
+    "yellow": "#B45309",
+    "green": "#166534",
 }
+CONTENT_WIDTH_MM = 174
+NARRATIVE_WIDTH_MM = 164
 DEFAULT_NORMAL_RANGES = {
     "hemoglobin": "12.0-17.5 g/dL",
     "platelets": "150000-450000 /uL",
@@ -82,6 +86,46 @@ def _sanitize(value: Any) -> str:
     for source, target in replacements.items():
         text = text.replace(source, target)
     return " ".join(text.split())
+
+
+def _normalize_col_widths(widths: list[float], total_width_mm: float = CONTENT_WIDTH_MM) -> list[float]:
+    numeric_widths = [max(float(width), 1.0) for width in widths]
+    width_total = sum(numeric_widths) or 1.0
+    return [((width / width_total) * total_width_mm) * mm for width in numeric_widths]
+
+
+def _truncate_text(value: Any, limit: int = 120) -> str:
+    text = _sanitize(value)
+    if len(text) <= limit:
+        return text
+    return text[: limit - 3].rstrip(" ,;:-") + "..."
+
+
+def _safe_title_case(value: Any) -> str:
+    text = _sanitize(value)
+    if not text:
+        return ""
+    return " ".join(part.capitalize() if part.islower() or part.isupper() else part for part in text.split())
+
+
+def _chunk_text_blocks(value: Any, max_length: int = 750) -> list[str]:
+    text = _sanitize(value)
+    if not text:
+        return []
+
+    raw_parts = [part.strip() for part in text.replace(". ", ".\n").splitlines() if part.strip()]
+    blocks: list[str] = []
+    current = ""
+    for part in raw_parts:
+        candidate = f"{current} {part}".strip()
+        if current and len(candidate) > max_length:
+            blocks.append(current)
+            current = part
+        else:
+            current = candidate
+    if current:
+        blocks.append(current)
+    return blocks
 
 
 def _labelize(value: str | None) -> str:
@@ -121,24 +165,26 @@ def _is_abnormal_status(status: str | None) -> bool:
 
 def _severity_color_label(status: str | None, *, persistent: bool = False, extreme: bool = False) -> str:
     normalized = str(status or "").lower()
+    if normalized in {"normal", "sufficient", ""}:
+        return "Within Range"
     if extreme or normalized in {"critical", "deficient"}:
-        return "Critical / Red"
-    if persistent or normalized in {"high", "low"}:
-        return "High / Amber"
+        return "High Priority"
+    if persistent:
+        return "Persistent Abnormality"
     if normalized == "insufficient":
-        return "Moderate / Yellow"
-    return "Normal / Green"
+        return "Borderline Abnormality"
+    return "Abnormal"
 
 
 def _severity_color(value: str):
     if not REPORTLAB_AVAILABLE:
         return None
-    if value == "Critical / Red":
+    if value == "High Priority":
         return colors.HexColor(THEME["red"])
-    if value == "High / Amber":
+    if value == "Persistent Abnormality":
         return colors.HexColor(THEME["yellow"])
-    if value == "Moderate / Yellow":
-        return colors.HexColor("#FCD34D")
+    if value in {"Abnormal", "Borderline Abnormality"}:
+        return colors.HexColor("#C2410C")
     return colors.HexColor(THEME["green"])
 
 
@@ -217,25 +263,30 @@ class PatientPdfExportService:
             pagesize=A4,
             leftMargin=18 * mm,
             rightMargin=18 * mm,
-            topMargin=18 * mm,
-            bottomMargin=16 * mm,
-            title="DoctorCopilot AI Clinical Decision Support Report",
+            topMargin=24 * mm,
+            bottomMargin=18 * mm,
+            title="DoctorCopilot Clinical Summary Report",
             author="DoctorCopilot",
         )
 
         story = [
-            self._header_block(styles, "DoctorCopilot", "AI Clinical Decision Support Report"),
+            self._header_block(
+                styles,
+                "DoctorCopilot",
+                "Clinical Summary Report",
+                "Generated from previously processed patient data for longitudinal clinical review.",
+            ),
             Spacer(1, 10),
             *self._section_panel(
                 "Patient Identity",
                 [
                     self._info_grid(
                         [
-                            ("Patient Name", patient.user.full_name),
+                            ("Patient Name", _safe_title_case(patient.user.full_name)),
                             ("Age / Gender", f"{patient.age or 'Unknown'} / {patient.gender or 'Unknown'}"),
                             ("Blood Group", patient.blood_group or "Unknown"),
                             ("Generated", generated_on),
-                            ("Reports", str(len(reports))),
+                            ("Reports Reviewed", str(len(reports))),
                             ("Timeline", timeline_range),
                         ],
                         styles,
@@ -244,57 +295,70 @@ class PatientPdfExportService:
                 styles,
             ),
             Spacer(1, 12),
-            *self._section_panel("Health Score", [self._health_score_block(health_score, styles)], styles),
+            *self._section_panel("Executive Clinical Summary", [Paragraph(escape(final_summary), styles["Body"])], styles),
+            Spacer(1, 12),
+            *self._section_panel("Clinical Stability Index", [self._health_score_block(health_score, styles)], styles),
             Spacer(1, 12),
             *self._section_panel(
-                "Critical Findings",
-                self._paragraph_list(
+                "Priority Findings",
+                self._clinical_list(
                     critical_findings
                     or ["No high-priority abnormal findings were identified in the latest structured report."],
                     styles,
                 ),
                 styles,
             ),
-            Spacer(1, 12),
-            *self._section_panel("Quick Stats", [self._quick_stats_table(quick_stats, styles)], styles),
             PageBreak(),
             self._header_block(
                 styles,
                 "Clinical Data",
-                latest_report.report_type if latest_report else "Patient report history",
+                latest_report.report_type if latest_report else "Structured laboratory review",
+                "Latest normalized parameters and operational summary.",
             ),
             Spacer(1, 10),
+            *self._section_panel("Operational Snapshot", [self._quick_stats_table(quick_stats, styles)], styles),
+            Spacer(1, 12),
             *self._section_panel(
-                "Parameter Table",
-                [self._data_table(["Parameter", "Value", "Range", "Status", "Severity"], parameter_rows, [84, 76, 104, 68, 102], styles)],
+                "Structured Parameters",
+                [self._data_table(["Parameter", "Latest Result", "Reference Interval", "Current Status", "Clinical Priority"], parameter_rows, [20, 18, 24, 18, 20], styles)],
                 styles,
             ),
             Spacer(1, 12),
             *self._section_panel(
-                "Trend Analysis",
-                [self._data_table(["Parameter", "Trend", "Change", "Clinical Interpretation"], trend_rows, [82, 72, 62, 218], styles)],
+                "Longitudinal Trend Interpretation",
+                [self._data_table(["Parameter", "Trend", "Change", "Clinical Interpretation"], trend_rows, [18, 14, 12, 38], styles)],
                 styles,
             ),
-            Spacer(1, 12),
+            PageBreak(),
+            self._header_block(styles, "Longitudinal Review", "Trend review and anomaly registry", "Historical direction of high-priority markers."),
+            Spacer(1, 10),
             *self._section_panel(
                 "Trend Snapshot",
-                [self._data_table(["Parameter", "Recent Direction"], trend_snapshot_rows, [94, 340], styles)],
+                [self._data_table(["Parameter", "Recent Direction"], trend_snapshot_rows, [18, 46], styles)],
                 styles,
             ),
-            PageBreak(),
-            self._header_block(styles, "AI Interpretation", "Clinically phrased AI support summary"),
-            Spacer(1, 10),
-            *self._section_panel("AI Insights", self._paragraph_list(insight_rows, styles), styles),
-            Spacer(1, 12),
-            *self._section_panel("Recommendations", self._paragraph_list(recommendations, styles), styles),
             Spacer(1, 12),
             *self._section_panel("Anomaly Detection", self._anomaly_group_block(anomaly_groups, styles), styles),
-            Spacer(1, 12),
-            *self._section_panel("Clinical Summary", [Paragraph(escape(final_summary), styles["Body"])], styles),
             PageBreak(),
-            self._header_block(styles, "Visit Timeline", "Chronological care context across available reports"),
+            self._header_block(
+                styles,
+                "Clinical Narrative",
+                "Stored AI interpretation and recommendations",
+                "These notes reuse previously generated insights without reprocessing the source report.",
+            ),
             Spacer(1, 10),
-            *self._section_panel("Visit History", self._visit_timeline_block(visit_entries, styles), styles),
+            *self._section_panel("AI Highlights", self._clinical_list(insight_rows, styles), styles),
+            Spacer(1, 12),
+            *self._section_panel("Recommended Follow-Up", self._clinical_list(recommendations, styles), styles),
+            PageBreak(),
+            self._header_block(
+                styles,
+                "Visit Timeline",
+                "Chronological report history",
+                "Structured context across available reports and laboratories.",
+            ),
+            Spacer(1, 10),
+            *self._section_panel("Report History", self._visit_timeline_block(visit_entries, styles), styles),
         ]
 
         doc.build(story, onFirstPage=self._decorate_page, onLaterPages=self._decorate_page)
@@ -307,10 +371,12 @@ class PatientPdfExportService:
                 "Title",
                 parent=base["Heading1"],
                 fontName="Helvetica-Bold",
-                fontSize=24,
-                leading=28,
+                fontSize=22,
+                leading=26,
                 textColor=colors.HexColor(THEME["text"]),
                 spaceAfter=2,
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "Subtitle": ParagraphStyle(
                 "Subtitle",
@@ -319,15 +385,17 @@ class PatientPdfExportService:
                 fontSize=10,
                 leading=14,
                 textColor=colors.HexColor(THEME["muted"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "Section": ParagraphStyle(
                 "Section",
                 parent=base["Heading2"],
                 fontName="Helvetica-Bold",
-                fontSize=13,
-                leading=16,
-                textColor=colors.HexColor(THEME["text"]),
-                spaceAfter=8,
+                fontSize=12,
+                leading=15,
+                textColor=colors.HexColor(THEME["accent"]),
+                spaceAfter=6,
             ),
             "Label": ParagraphStyle(
                 "Label",
@@ -342,25 +410,31 @@ class PatientPdfExportService:
                 "Value",
                 parent=base["BodyText"],
                 fontName="Helvetica-Bold",
-                fontSize=12,
-                leading=15,
+                fontSize=11,
+                leading=14,
                 textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "Body": ParagraphStyle(
                 "Body",
                 parent=base["BodyText"],
                 fontName="Helvetica",
                 fontSize=10,
-                leading=15,
-                textColor=colors.HexColor(THEME["muted"]),
+                leading=14,
+                textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "BodyStrong": ParagraphStyle(
                 "BodyStrong",
                 parent=base["BodyText"],
                 fontName="Helvetica-Bold",
                 fontSize=10,
-                leading=15,
+                leading=14,
                 textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "Tiny": ParagraphStyle(
                 "Tiny",
@@ -369,6 +443,37 @@ class PatientPdfExportService:
                 fontSize=8,
                 leading=10,
                 textColor=colors.HexColor(THEME["muted"]),
+                wordWrap="CJK",
+                splitLongWords=True,
+            ),
+            "TableHeader": ParagraphStyle(
+                "TableHeader",
+                parent=base["BodyText"],
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                leading=10,
+                textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
+            ),
+            "ListIndex": ParagraphStyle(
+                "ListIndex",
+                parent=base["BodyText"],
+                fontName="Helvetica-Bold",
+                fontSize=9,
+                leading=12,
+                alignment=1,
+                textColor=colors.HexColor(THEME["accent"]),
+            ),
+            "ListBody": ParagraphStyle(
+                "ListBody",
+                parent=base["BodyText"],
+                fontName="Helvetica",
+                fontSize=10,
+                leading=14,
+                textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
         }
 
@@ -376,20 +481,24 @@ class PatientPdfExportService:
         canvas.saveState()
         canvas.setFillColor(colors.HexColor(THEME["background"]))
         canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
+        canvas.setFillColor(colors.HexColor(THEME["accent"]))
+        canvas.rect(doc.leftMargin, A4[1] - (14 * mm), A4[0] - (doc.leftMargin + doc.rightMargin), 0.8 * mm, fill=1, stroke=0)
         canvas.setFillColor(colors.HexColor(THEME["muted"]))
         canvas.setFont("Helvetica", 8)
-        canvas.drawString(doc.leftMargin, 10 * mm, "DoctorCopilot AI Clinical Decision Support Report")
+        canvas.drawString(doc.leftMargin, A4[1] - (10 * mm), "DoctorCopilot Clinical Summary Report")
+        canvas.drawString(doc.leftMargin, 10 * mm, "Confidential clinical document")
         canvas.drawRightString(A4[0] - doc.rightMargin, 10 * mm, f"Page {doc.page}")
         canvas.restoreState()
 
-    def _header_block(self, styles, eyebrow: str, title: str):
-        return KeepTogether(
-            [
-                Paragraph(f"<font color='{THEME['cyan']}'>{escape(eyebrow.upper())}</font>", styles["Label"]),
-                Spacer(1, 4),
-                Paragraph(escape(title), styles["Title"]),
-            ]
-        )
+    def _header_block(self, styles, eyebrow: str, title: str, subtitle: str | None = None):
+        flow = [
+            Paragraph(f"<font color='{THEME['cyan']}'>{escape(_sanitize(eyebrow).upper())}</font>", styles["Label"]),
+            Spacer(1, 4),
+            Paragraph(escape(_sanitize(title)), styles["Title"]),
+        ]
+        if subtitle:
+            flow.extend([Spacer(1, 3), Paragraph(escape(_sanitize(subtitle)), styles["Subtitle"])])
+        return KeepTogether(flow)
 
     def _section_panel(self, title: str, content: list[Any], styles):
         divider = Table([[""]], colWidths=[170 * mm], rowHeights=[1.2 * mm])
@@ -414,24 +523,24 @@ class PatientPdfExportService:
             for label, value in pairs[index : index + 2]:
                 current.append(
                     Paragraph(
-                        f"<font color='{THEME['muted']}'>{escape(label.upper())}</font><br/>{escape(_sanitize(value))}",
+                        f"<font color='{THEME['muted']}'>{escape(_sanitize(label).upper())}</font><br/>{escape(_sanitize(value))}",
                         styles["Value"],
                     )
                 )
             if len(current) == 1:
                 current.append("")
             rows.append(current)
-        table = Table(rows, colWidths=[82 * mm, 82 * mm], hAlign="LEFT")
+        table = Table(rows, colWidths=[84 * mm, 84 * mm], hAlign="LEFT")
         table.setStyle(
             TableStyle(
                 [
-                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_soft"])),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_alt"])),
                     ("LEFTPADDING", (0, 0), (-1, -1), 12),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-                    ("TOPPADDING", (0, 0), (-1, -1), 8),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
                     ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
-                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line_soft"])),
                 ]
             )
         )
@@ -440,15 +549,15 @@ class PatientPdfExportService:
     def _health_score_block(self, health_score: dict[str, Any], styles):
         score = health_score["score"]
         status_text = _metric_pill_status(score)
-        fill_width = max(1, min(140, round(140 * score / 100)))
-        empty_width = 140 - fill_width
+        fill_width = max(1, min(150, round(150 * score / 100)))
+        empty_width = max(1, 150 - fill_width)
         bar_color = THEME["green"] if score >= 90 else THEME["yellow"] if score >= 60 else THEME["red"]
-        bar = Table([["", ""]], colWidths=[fill_width * mm / 1.5, max(empty_width, 1) * mm / 1.5], rowHeights=[7 * mm])
+        bar = Table([["", ""]], colWidths=[fill_width * mm, empty_width * mm], rowHeights=[5 * mm])
         bar.setStyle(
             TableStyle(
                 [
                     ("BACKGROUND", (0, 0), (0, 0), colors.HexColor(bar_color)),
-                    ("BACKGROUND", (1, 0), (1, 0), colors.HexColor(THEME["accent_soft"])),
+                    ("BACKGROUND", (1, 0), (1, 0), colors.HexColor(THEME["surface_alt"])),
                     ("BOX", (0, 0), (-1, -1), 0.3, colors.HexColor(THEME["line"])),
                     ("LEFTPADDING", (0, 0), (-1, -1), 0),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 0),
@@ -460,7 +569,7 @@ class PatientPdfExportService:
         return KeepTogether(
             [
                 Paragraph(
-                    f"<font color='{THEME['muted']}'>SYSTEM INTEGRITY</font><br/><font size='22'>{score}/100</font>",
+                    f"<font color='{THEME['muted']}'>CLINICAL STABILITY INDEX</font><br/><font size='22'>{score}/100</font>",
                     styles["BodyStrong"],
                 ),
                 Spacer(1, 6),
@@ -470,61 +579,93 @@ class PatientPdfExportService:
                 Spacer(1, 6),
                 Paragraph(escape(_sanitize(health_score["explanation"])), styles["Body"]),
                 Spacer(1, 6),
-                *[Paragraph(f"&bull; {escape(_sanitize(driver))}", styles["Body"]) for driver in health_score["drivers"][:3]],
+                self._clinical_list(health_score["drivers"][:3], styles)[0] if health_score["drivers"][:3] else Paragraph("No additional drivers recorded.", styles["Body"]),
             ]
         )
 
     def _quick_stats_table(self, stats: list[tuple[str, str]], styles):
-        cells = []
-        for label, value in stats:
-            cells.append(
-                Paragraph(
-                    f"<font color='{THEME['muted']}'>{escape(label.upper())}</font><br/>{escape(_sanitize(value))}",
-                    styles["Value"],
+        rows = []
+        for index in range(0, len(stats), 2):
+            current_row = []
+            for label, value in stats[index : index + 2]:
+                current_row.append(
+                    Paragraph(
+                        f"<font color='{THEME['muted']}'>{escape(_sanitize(label).upper())}</font><br/>{escape(_sanitize(value))}",
+                        styles["Value"],
+                    )
                 )
-            )
-        table = Table([cells], colWidths=[41 * mm, 41 * mm, 41 * mm, 41 * mm], hAlign="LEFT")
+            if len(current_row) == 1:
+                current_row.append("")
+            rows.append(current_row)
+        table = Table(rows, colWidths=[84 * mm, 84 * mm], hAlign="LEFT")
         table.setStyle(
             TableStyle(
                 [
-                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_soft"])),
                     ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
-                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line_soft"])),
                     ("LEFTPADDING", (0, 0), (-1, -1), 10),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                    ("TOPPADDING", (0, 0), (-1, -1), 8),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_alt"])),
                 ]
             )
         )
         return table
 
     def _data_table(self, headers: list[str], rows: list[list[Any]], col_widths: list[float], styles):
-        header_cells = [Paragraph(f"<b>{escape(_sanitize(cell))}</b>", styles["Tiny"]) for cell in headers]
+        header_cells = [Paragraph(f"<b>{escape(_sanitize(cell))}</b>", styles["TableHeader"]) for cell in headers]
         normalized_rows = [header_cells]
         for row in rows or [["No data available."] + [""] * (len(headers) - 1)]:
             normalized_rows.append(row)
-        table = Table(normalized_rows, colWidths=[width * mm / 1.55 for width in col_widths], repeatRows=1, hAlign="LEFT")
+        table = LongTable(normalized_rows, colWidths=_normalize_col_widths(col_widths), repeatRows=1, hAlign="LEFT")
+        row_backgrounds = [("BACKGROUND", (0, row_index), (-1, row_index), colors.HexColor(THEME["surface"])) if row_index % 2 else ("BACKGROUND", (0, row_index), (-1, row_index), colors.HexColor(THEME["surface_soft"])) for row_index in range(1, len(normalized_rows))]
         table.setStyle(
             TableStyle(
                 [
                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(THEME["accent_soft"])),
                     ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor(THEME["text"])),
                     ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
-                    ("INNERGRID", (0, 0), (-1, -1), 0.2, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.2, colors.HexColor(THEME["line_soft"])),
                     ("LEFTPADDING", (0, 0), (-1, -1), 8),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 8),
                     ("TOPPADDING", (0, 0), (-1, -1), 8),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                    ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor(THEME["surface_soft"])),
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    *row_backgrounds,
                 ]
             )
         )
         return table
 
     def _paragraph_list(self, items: list[str], styles) -> list[Any]:
-        return [Paragraph(f"&bull; {escape(_sanitize(item))}", styles["Body"]) for item in items]
+        return self._clinical_list(items, styles)
+
+    def _clinical_list(self, items: list[str], styles) -> list[Any]:
+        cleaned = [_sanitize(item) for item in items if _sanitize(item)]
+        if not cleaned:
+            return [Paragraph("No narrative items are available.", styles["Body"])]
+        rows = []
+        for index, item in enumerate(cleaned, start=1):
+            rows.append(
+                [
+                    Paragraph(f"<b>{index:02d}</b>", styles["ListIndex"]),
+                    Paragraph(escape(item), styles["ListBody"]),
+                ]
+            )
+        table = Table(rows, colWidths=[10 * mm, (NARRATIVE_WIDTH_MM - 10) * mm], hAlign="LEFT")
+        table.setStyle(
+            TableStyle(
+                [
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+        return [table]
 
     def _anomaly_group_block(self, groups: dict[str, list[str]], styles) -> list[Any]:
         flow: list[Any] = []
@@ -537,7 +678,7 @@ class PatientPdfExportService:
             color_value = THEME["red"] if severity == "Critical" else THEME["yellow"]
             flow.append(Paragraph(f"<font color='{color_value}'><b>{severity.upper()}</b></font>", styles["BodyStrong"]))
             flow.append(Spacer(1, 4))
-            flow.extend(self._paragraph_list(items, styles))
+            flow.extend(self._clinical_list(items, styles))
             flow.append(Spacer(1, 6))
         if not has_any:
             flow.append(Paragraph("No persistent, sudden, or critical-value anomalies are currently detected.", styles["Body"]))
@@ -551,7 +692,7 @@ class PatientPdfExportService:
             flow.append(Paragraph(f"<font color='{THEME['cyan']}'><b>{escape(entry['title'])}</b></font>", styles["BodyStrong"]))
             flow.append(Spacer(1, 2))
             flow.append(Paragraph(escape(entry["body"]), styles["Body"]))
-            flow.append(Spacer(1, 10))
+            flow.append(Spacer(1, 8))
         return flow
 
     def _timeline_range(self, reports: list[Report]) -> str:
@@ -596,12 +737,23 @@ class PatientPdfExportService:
         return len(abnormal_points) >= 2
 
     def _severity_for_parameter(self, name: str, parameter: dict[str, Any], trends: PatientTrendsResponse) -> str:
-        status = str(parameter.get("status") or parameter.get("interpretation") or "unknown")
+        status = self._effective_status(name, parameter, trends)
         extreme = any(item.get("parameter") == name and item.get("severity") == "critical" for item in trends.anomalies)
         return _severity_color_label(status, persistent=self._persistent_abnormality(name, trends), extreme=extreme)
 
     def _clinicalize_insight_text(self, text: Any) -> str:
         sentence = _sanitize(text).lower()
+        generic_phrases = (
+            "the report contains measurements",
+            "the report includes",
+            "complete blood count",
+            "laboratory report",
+            "hematology, liver function",
+        )
+        if any(phrase in sentence for phrase in generic_phrases) and not any(
+            keyword in sentence for keyword in ("low", "high", "deficien", "abnormal", "drop", "increase", "decrease")
+        ):
+            return ""
         replacements = [
             (" remains consistently low", " remains persistently low across serial reports"),
             (" remains consistently high", " remains persistently high across serial reports"),
@@ -610,6 +762,9 @@ class PatientPdfExportService:
             (" declined from ", " declined clinically from "),
             (" low in 3 consecutive reports", " remains low across three consecutive reports"),
             (" overall blood profile improving over time", " the overall blood profile shows interval improvement"),
+            (" several values are outside their reference ranges, indicating potential issues with blood components", " several laboratory values remain outside their reference intervals"),
+            ("the patient's ", ""),
+            (" indicating a deficiency", ", consistent with deficiency"),
         ]
         for source, target in replacements:
             sentence = sentence.replace(source, target)
@@ -625,7 +780,7 @@ class PatientPdfExportService:
         drivers: list[str] = []
         for name in self._ordered_parameter_names(latest_parameters):
             parameter = latest_parameters[name]
-            status = str(parameter.get("status") or parameter.get("interpretation") or "").lower()
+            status = self._effective_status(name, parameter, trends).lower()
             if not _is_abnormal_status(status):
                 continue
             score -= 8 if status in {"low", "high"} else 11
@@ -654,15 +809,16 @@ class PatientPdfExportService:
 
     def _build_critical_findings(self, latest_parameters: dict[str, dict[str, Any]], trends: PatientTrendsResponse) -> list[str]:
         findings: list[tuple[int, str]] = []
-        severity_rank = {"Critical / Red": 3, "High / Amber": 2, "Moderate / Yellow": 1, "Normal / Green": 0}
+        severity_rank = {"High Priority": 3, "Persistent Abnormality": 2, "Abnormal": 1, "Borderline Abnormality": 1, "Within Range": 0}
         for name in self._ordered_parameter_names(latest_parameters):
             parameter = latest_parameters[name]
-            status = str(parameter.get("status") or parameter.get("interpretation") or "").lower()
+            status = self._effective_status(name, parameter, trends).lower()
             if not _is_abnormal_status(status):
                 continue
             severity = self._severity_for_parameter(name, parameter, trends)
             persistent = self._persistent_abnormality(name, trends)
-            value_text = _format_value_unit(parameter.get("value"), parameter.get("unit"))
+            value, unit = self._effective_value_unit(name, parameter, trends)
+            value_text = _format_value_unit(value, unit)
             if name == "vitamin_b12" and status in {"low", "deficient"}:
                 message = f"Vitamin B12 remains deficient at {value_text}, consistent with a deficiency pattern."
             elif name == "platelets" and status == "low":
@@ -684,12 +840,16 @@ class PatientPdfExportService:
         trends: PatientTrendsResponse,
     ) -> list[tuple[str, str]]:
         latest_report = self._latest_report(reports)
-        abnormal_count = sum(1 for parameter in latest_parameters.values() if _is_abnormal_status(parameter.get("status")))
+        abnormal_count = sum(
+            1
+            for name, parameter in latest_parameters.items()
+            if _is_abnormal_status(self._effective_status(name, parameter, trends))
+        )
         return [
             ("Reports", str(len(reports))),
-            ("Abnormal Markers", str(abnormal_count)),
-            ("Active Anomalies", str(len(trends.anomalies))),
-            ("Latest Lab", latest_report.lab_name if latest_report and latest_report.lab_name else "Unknown"),
+            ("Abnormal", str(abnormal_count)),
+            ("Alerts", str(len(trends.anomalies))),
+            ("Latest Date", latest_report.report_date.isoformat() if latest_report and latest_report.report_date else "Unknown"),
         ]
 
     def _normal_range_for_parameter(self, name: str, parameter: dict[str, Any]) -> str:
@@ -704,6 +864,8 @@ class PatientPdfExportService:
     def _severity_paragraph(self, value: str, styles):
         color_value = _severity_color(value)
         color_hex = color_value.hexval() if color_value else THEME["text"]
+        if isinstance(color_hex, str) and color_hex.startswith("0x"):
+            color_hex = "#" + color_hex[2:]
         return Paragraph(f"<font color='{color_hex}'>{escape(value)}</font>", styles["BodyStrong"])
 
     def _build_parameter_rows(self, latest_parameters: dict[str, dict[str, Any]], trends: PatientTrendsResponse, styles) -> list[list[Any]]:
@@ -711,12 +873,14 @@ class PatientPdfExportService:
         for name in self._ordered_parameter_names(latest_parameters):
             parameter = latest_parameters[name]
             severity = self._severity_for_parameter(name, parameter, trends)
+            status = self._effective_status(name, parameter, trends)
+            value, unit = self._effective_value_unit(name, parameter, trends)
             rows.append(
                 [
                     Paragraph(escape(_labelize(name)), styles["Body"]),
-                    Paragraph(escape(_format_value_unit(parameter.get("value"), parameter.get("unit"))), styles["Body"]),
+                    Paragraph(escape(_format_value_unit(value, unit)), styles["Body"]),
                     Paragraph(escape(self._normal_range_for_parameter(name, parameter)), styles["Body"]),
-                    Paragraph(escape(str(parameter.get("status") or parameter.get("interpretation") or "unknown").title()), styles["Body"]),
+                    Paragraph(escape(str(status or "unknown").title()), styles["Body"]),
                     self._severity_paragraph(severity, styles),
                 ]
             )
@@ -728,6 +892,24 @@ class PatientPdfExportService:
         if parameter:
             return str(parameter.get("status") or parameter.get("interpretation") or "unknown")
         return "unknown"
+
+    def _effective_status(self, name: str, parameter: dict[str, Any], trends: PatientTrendsResponse) -> str:
+        return self._latest_status(trends.series.get(name, []), parameter)
+
+    def _effective_value_unit(self, name: str, parameter: dict[str, Any], trends: PatientTrendsResponse) -> tuple[Any, str | None]:
+        latest_points = trends.series.get(name, [])
+        if latest_points:
+            latest_point = latest_points[-1]
+            current_value = parameter.get("value")
+            point_value = latest_point.value
+            if isinstance(current_value, (int, float)) and isinstance(point_value, (int, float)):
+                smaller = max(min(abs(float(current_value)), abs(float(point_value))), 1e-9)
+                larger = max(abs(float(current_value)), abs(float(point_value)))
+                if larger / smaller >= 50:
+                    return point_value, latest_point.unit or parameter.get("unit")
+            if current_value in {None, ""}:
+                return point_value, latest_point.unit or parameter.get("unit")
+        return parameter.get("value"), parameter.get("unit")
 
     def _clinical_trend_label(self, direction: str, status: str) -> str:
         status_lower = status.lower()
@@ -745,6 +927,8 @@ class PatientPdfExportService:
 
     def _trend_interpretation(self, name: str, status: str, direction: str, stability: str | None) -> str:
         status_lower = status.lower()
+        label = _labelize(name)
+        stable_subject = f"{label} remain" if label.lower().endswith("s") else f"{label} remains"
         if direction == "increasing" and status_lower in {"low", "deficient", "insufficient"}:
             return "Shows recovery but remains clinically relevant because previous values were below range."
         if direction == "decreasing" and status_lower in {"low", "deficient", "insufficient"}:
@@ -759,7 +943,7 @@ class PatientPdfExportService:
             return f"Currently {status_lower}, requiring interval follow-up."
         if stability == "volatile":
             return "Values fluctuate across reports and should be interpreted with caution."
-        return f"{_labelize(name)} remains clinically stable across the observed interval."
+        return f"{stable_subject} clinically stable across the observed interval."
 
     def _build_trend_rows(self, trends: PatientTrendsResponse, latest_parameters: dict[str, dict[str, Any]], styles) -> list[list[Any]]:
         rows: list[list[Any]] = []
@@ -803,9 +987,10 @@ class PatientPdfExportService:
         if not cleaned:
             for name in self._ordered_parameter_names(latest_parameters):
                 parameter = latest_parameters[name]
-                status = str(parameter.get("status") or parameter.get("interpretation") or "").lower()
+                status = self._effective_status(name, parameter, trends).lower()
                 if _is_abnormal_status(status):
-                    cleaned.append(_clean_sentence(f"{_labelize(name)} is {status} at {_format_value_unit(parameter.get('value'), parameter.get('unit'))}"))
+                    value, unit = self._effective_value_unit(name, parameter, trends)
+                    cleaned.append(_clean_sentence(f"{_labelize(name)} is {status} at {_format_value_unit(value, unit)}"))
         return list(dict.fromkeys(cleaned))[:6] or ["No high-priority clinical AI insight is currently available."]
 
     def _build_recommendations(
@@ -817,7 +1002,7 @@ class PatientPdfExportService:
         recommendations: list[str] = []
         for name in self._ordered_parameter_names(latest_parameters):
             parameter = latest_parameters[name]
-            status = str(parameter.get("status") or parameter.get("interpretation") or "").lower()
+            status = self._effective_status(name, parameter, trends).lower()
             if not _is_abnormal_status(status):
                 continue
             if name == "vitamin_b12":
@@ -853,13 +1038,15 @@ class PatientPdfExportService:
             lab = metadata.get("lab") or {}
             doctor = metadata.get("doctor") or {}
             report_date = report.report_date.isoformat() if report.report_date else (report.created_at.date().isoformat() if report.created_at else "Unknown")
-            lab_name = lab.get("lab_name") or report.lab_name or "Unknown lab"
-            doctor_name = doctor.get("doctor_name") or report.doctor_name or "Unknown doctor"
-            note = report.summary or (report.insights[0].description if report.insights else "Structured report available.")
+            lab_name = _truncate_text(lab.get("lab_name") or report.lab_name or "Unknown laboratory", 72)
+            doctor_name = _truncate_text(doctor.get("doctor_name") or report.doctor_name or "Unknown clinician", 72)
+            report_type = _truncate_text(report.report_type or "Laboratory report", 56)
+            note_source = report.summary or (report.insights[0].description if report.insights else "Structured report available.")
+            note = _truncate_text(note_source, 220)
             entries.append(
                 {
                     "title": f"{report_date}  |  {lab_name}",
-                    "body": _clean_sentence(f"Visit recorded through {lab_name} with clinician context {doctor_name}. {note}"),
+                    "body": _clean_sentence(f"{report_type}. Reviewed at {lab_name}. Clinician: {doctor_name}. {note}"),
                 }
             )
         return entries
@@ -924,6 +1111,18 @@ class SingleReportPdfExportService:
                 leading=26,
                 textColor=colors.HexColor(THEME["text"]),
                 spaceAfter=4,
+                wordWrap="CJK",
+                splitLongWords=True,
+            ),
+            "Subtitle": ParagraphStyle(
+                "SingleReportSubtitle",
+                parent=base["BodyText"],
+                fontName="Helvetica",
+                fontSize=10,
+                leading=14,
+                textColor=colors.HexColor(THEME["muted"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "Section": ParagraphStyle(
                 "SingleReportSection",
@@ -931,7 +1130,7 @@ class SingleReportPdfExportService:
                 fontName="Helvetica-Bold",
                 fontSize=12,
                 leading=15,
-                textColor=colors.HexColor(THEME["text"]),
+                textColor=colors.HexColor(THEME["accent"]),
                 spaceAfter=6,
             ),
             "Body": ParagraphStyle(
@@ -939,16 +1138,20 @@ class SingleReportPdfExportService:
                 parent=base["BodyText"],
                 fontName="Helvetica",
                 fontSize=10,
-                leading=15,
-                textColor=colors.HexColor(THEME["muted"]),
+                leading=14,
+                textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "BodyStrong": ParagraphStyle(
                 "SingleReportBodyStrong",
                 parent=base["BodyText"],
                 fontName="Helvetica-Bold",
                 fontSize=10,
-                leading=15,
+                leading=14,
                 textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
             ),
             "Label": ParagraphStyle(
                 "SingleReportLabel",
@@ -957,6 +1160,25 @@ class SingleReportPdfExportService:
                 fontSize=8,
                 leading=10,
                 textColor=colors.HexColor(THEME["muted"]),
+            ),
+            "TableHeader": ParagraphStyle(
+                "SingleReportTableHeader",
+                parent=base["BodyText"],
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                leading=10,
+                textColor=colors.HexColor(THEME["text"]),
+                wordWrap="CJK",
+                splitLongWords=True,
+            ),
+            "ListIndex": ParagraphStyle(
+                "SingleReportListIndex",
+                parent=base["BodyText"],
+                fontName="Helvetica-Bold",
+                fontSize=9,
+                leading=12,
+                alignment=1,
+                textColor=colors.HexColor(THEME["accent"]),
             ),
         }
 
@@ -968,36 +1190,36 @@ class SingleReportPdfExportService:
             pagesize=A4,
             leftMargin=18 * mm,
             rightMargin=18 * mm,
-            topMargin=18 * mm,
-            bottomMargin=16 * mm,
-            title=f"DoctorCopilot AI Report - {report.file_name}",
+            topMargin=24 * mm,
+            bottomMargin=18 * mm,
+            title=f"DoctorCopilot Clinical Report - {report.file_name}",
             author="DoctorCopilot",
         )
         interpretation = self._clinical_interpretation(report)
         findings = self._abnormal_findings(report)
         rows = self._parameter_rows(report, styles)
         story = [
-            Paragraph("DoctorCopilot AI Report Summary", styles["Title"]),
-            Paragraph(escape(_sanitize(report.file_name or "Clinical Report")), styles["Body"]),
+            Paragraph("Clinical Report Summary", styles["Title"]),
+            Paragraph("Generated from stored structured report data without reprocessing the source document.", styles["Subtitle"]),
             Spacer(1, 8),
             self._info_table(
                 [
-                    ("Patient", report.patient_name or "Unknown"),
+                    ("Patient", _safe_title_case(report.patient_name or "Unknown")),
                     ("Report Type", report.report_type or "Clinical Report"),
-                    ("Lab", report.lab_name or "Unknown"),
+                    ("Laboratory", report.lab_name or "Unknown"),
                     ("Date", report.report_date.isoformat() if report.report_date else "Unknown"),
                 ],
                 styles,
             ),
             Spacer(1, 12),
-            Paragraph("Critical Findings", styles["Section"]),
+            Paragraph("Priority Findings", styles["Section"]),
             *self._bullet_paragraphs(findings or ["No high-priority abnormal findings were extracted from this report."], styles),
             Spacer(1, 12),
-            Paragraph("AI Summary", styles["Section"]),
+            Paragraph("Clinical Impression", styles["Section"]),
             *self._bullet_paragraphs(interpretation or [report.summary or "Structured AI interpretation is not available."], styles),
             Spacer(1, 12),
             Paragraph("Structured Parameters", styles["Section"]),
-            self._data_table(["Parameter", "Value", "Range", "Status"], rows, [90 * mm, 28 * mm, 38 * mm, 22 * mm], styles),
+            self._data_table(["Parameter", "Latest Result", "Reference Interval", "Current Status"], rows, [20, 16, 20, 14], styles),
         ]
         doc.build(story, onFirstPage=self._decorate_page, onLaterPages=self._decorate_page)
         return buffer.getvalue()
@@ -1010,21 +1232,21 @@ class SingleReportPdfExportService:
             pagesize=A4,
             leftMargin=18 * mm,
             rightMargin=18 * mm,
-            topMargin=18 * mm,
-            bottomMargin=16 * mm,
+            topMargin=24 * mm,
+            bottomMargin=18 * mm,
             title=f"DoctorCopilot Source Report - {report.file_name}",
             author="DoctorCopilot",
         )
         raw_text = _sanitize(report.raw_text or "")
         story = [
-            Paragraph("DoctorCopilot Source Report Copy", styles["Title"]),
-            Paragraph(escape(_sanitize(report.file_name or "Clinical Report")), styles["Body"]),
+            Paragraph("Source Report Transcript", styles["Title"]),
+            Paragraph("This document contains the stored OCR/extracted transcript of the uploaded report.", styles["Subtitle"]),
             Spacer(1, 8),
             self._info_table(
                 [
-                    ("Patient", report.patient_name or "Unknown"),
+                    ("Patient", _safe_title_case(report.patient_name or "Unknown")),
                     ("Report Type", report.report_type or "Clinical Report"),
-                    ("Lab", report.lab_name or "Unknown"),
+                    ("Laboratory", report.lab_name or "Unknown"),
                     ("Mime Type", report.mime_type or "Unknown"),
                     ("Date", report.report_date.isoformat() if report.report_date else "Unknown"),
                     ("Stored File", report.file_name or "Unknown"),
@@ -1032,11 +1254,11 @@ class SingleReportPdfExportService:
                 styles,
             ),
             Spacer(1, 12),
-            Paragraph("Extracted Raw Report Text", styles["Section"]),
-            Paragraph(
-                escape(raw_text or "No OCR or extracted raw text is available for this report."),
-                styles["Body"],
-            ),
+            Paragraph("Transcript", styles["Section"]),
+            *[
+                Paragraph(escape(block), styles["Body"])
+                for block in (_chunk_text_blocks(raw_text) or ["No OCR or extracted raw text is available for this report."])
+            ],
         ]
         doc.build(story, onFirstPage=self._decorate_page, onLaterPages=self._decorate_page)
         return buffer.getvalue()
@@ -1045,9 +1267,12 @@ class SingleReportPdfExportService:
         canvas.saveState()
         canvas.setFillColor(colors.HexColor(THEME["background"]))
         canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
+        canvas.setFillColor(colors.HexColor(THEME["accent"]))
+        canvas.rect(doc.leftMargin, A4[1] - (14 * mm), A4[0] - (doc.leftMargin + doc.rightMargin), 0.8 * mm, fill=1, stroke=0)
         canvas.setFillColor(colors.HexColor(THEME["muted"]))
         canvas.setFont("Helvetica", 8)
-        canvas.drawString(doc.leftMargin, 10 * mm, "DoctorCopilot")
+        canvas.drawString(doc.leftMargin, A4[1] - (10 * mm), "DoctorCopilot Clinical Export")
+        canvas.drawString(doc.leftMargin, 10 * mm, "Confidential clinical document")
         canvas.drawRightString(A4[0] - doc.rightMargin, 10 * mm, f"Page {doc.page}")
         canvas.restoreState()
 
@@ -1058,56 +1283,81 @@ class SingleReportPdfExportService:
             for label, value in items[index:index + 2]:
                 cells.append(
                     Paragraph(
-                        f"<font color='{THEME['muted']}'>{escape(label.upper())}</font><br/>{escape(_sanitize(value))}",
+                        f"<font color='{THEME['muted']}'>{escape(_sanitize(label).upper())}</font><br/>{escape(_sanitize(value))}",
                         styles["BodyStrong"],
                     )
                 )
             if len(cells) == 1:
                 cells.append("")
             rows.append(cells)
-        table = Table(rows, colWidths=[82 * mm, 82 * mm], hAlign="LEFT")
+        table = Table(rows, colWidths=[84 * mm, 84 * mm], hAlign="LEFT")
         table.setStyle(
             TableStyle(
                 [
-                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_soft"])),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(THEME["surface_alt"])),
                     ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
-                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line_soft"])),
                     ("LEFTPADDING", (0, 0), (-1, -1), 10),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                    ("TOPPADDING", (0, 0), (-1, -1), 8),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
                 ]
             )
         )
         return table
 
     def _data_table(self, headers, rows, widths, styles):
-        table_rows = [[Paragraph(f"<b>{escape(header)}</b>", styles["BodyStrong"]) for header in headers]]
+        table_rows = [[Paragraph(f"<b>{escape(_sanitize(header))}</b>", styles["TableHeader"]) for header in headers]]
         table_rows.extend(rows or [[Paragraph("No structured values", styles["Body"]), "", "", ""]])
-        table = Table(table_rows, colWidths=widths, hAlign="LEFT")
+        table = LongTable(table_rows, colWidths=_normalize_col_widths(widths), hAlign="LEFT", repeatRows=1)
+        row_backgrounds = [("BACKGROUND", (0, row_index), (-1, row_index), colors.HexColor(THEME["surface"])) if row_index % 2 else ("BACKGROUND", (0, row_index), (-1, row_index), colors.HexColor(THEME["surface_soft"])) for row_index in range(1, len(table_rows))]
         table.setStyle(
             TableStyle(
                 [
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(THEME["surface_soft"])),
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(THEME["accent_soft"])),
                     ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor(THEME["text"])),
                     ("BOX", (0, 0), (-1, -1), 0.35, colors.HexColor(THEME["line"])),
-                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line"])),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor(THEME["line_soft"])),
                     ("LEFTPADDING", (0, 0), (-1, -1), 8),
                     ("RIGHTPADDING", (0, 0), (-1, -1), 8),
                     ("TOPPADDING", (0, 0), (-1, -1), 8),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    *row_backgrounds,
                 ]
             )
         )
         return table
 
     def _bullet_paragraphs(self, items: list[str], styles) -> list[Any]:
-        return [Paragraph(f"&bull; {escape(_sanitize(item))}", styles["Body"]) for item in items if item]
+        cleaned = [_sanitize(item) for item in items if _sanitize(item)]
+        rows = [
+            [
+                Paragraph(f"<b>{index:02d}</b>", styles["ListIndex"]),
+                Paragraph(escape(item), styles["Body"]),
+            ]
+            for index, item in enumerate(cleaned, start=1)
+        ]
+        if not rows:
+            return [Paragraph("No narrative items are available.", styles["Body"])]
+        table = Table(rows, colWidths=[10 * mm, (NARRATIVE_WIDTH_MM - 10) * mm], hAlign="LEFT")
+        table.setStyle(
+            TableStyle(
+                [
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+        return [table]
 
     def _clinical_interpretation(self, report: Report) -> list[str]:
         findings = self._abnormal_findings(report)
-        ai_insights = [getattr(item, "description", "") for item in (report.insights or []) if getattr(item, "description", "")]
+        loaded_insights = report.__dict__.get("insights") or []
+        ai_insights = [getattr(item, "description", "") for item in loaded_insights if getattr(item, "description", "")]
         combined = []
         for item in [*findings, *ai_insights, report.summary or ""]:
             cleaned = _clean_sentence(item)
