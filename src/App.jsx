@@ -8,6 +8,7 @@ import ThemeToggle from "./components/ui/ThemeToggle";
 import Login from "./components/auth/Login";
 import Landing from "./components/landing/Landing";
 import swrConfig from "./lib/swr";
+import useViewport from "./hooks/useViewport";
 
 // Patient Imports
 import PatientLayout from "./components/patient/PatientLayout";
@@ -176,6 +177,8 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
+  const { isMobile } = useViewport();
+
   return (
     <ThemeProvider>
       <SWRConfig value={swrConfig}>
@@ -185,7 +188,7 @@ export default function App() {
             <ThemeToggle />
 
             {/* CINEMATIC PARTICLE LAYER */}
-            <ParticleTransition />
+            {!isMobile ? <ParticleTransition /> : null}
 
             <Suspense fallback={<RouteLoader />}>
               <AnimatedRoutes />
