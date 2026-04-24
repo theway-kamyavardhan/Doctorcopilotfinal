@@ -84,6 +84,7 @@ export default function Settings() {
   }, []);
 
   const themeLabel = useMemo(() => (isDark ? "Dark" : "Light"), [isDark]);
+  const isDemoPatient = profile?.patient_id === "P-10005";
 
   const updateProfileField = (field, value) => {
     setProfileForm((current) => ({ ...current, [field]: value }));
@@ -115,6 +116,7 @@ export default function Settings() {
 
   const handlePasswordSave = async (event) => {
     event.preventDefault();
+    if (isDemoPatient) return;
     setPasswordSaving(true);
     setError("");
     setMessage("");
@@ -240,17 +242,22 @@ export default function Settings() {
         <div className="space-y-6">
           <SettingsCard title="Security" subtitle="Update your password with current-password verification." isDark={isDark}>
             <form onSubmit={handlePasswordSave} className="space-y-4">
+              {isDemoPatient ? (
+                <div className={`rounded-2xl px-4 py-3 text-sm font-semibold ${isDark ? "bg-amber-500/10 text-amber-300" : "bg-amber-50 text-amber-700"}`}>
+                  Demo patient account `P-10005` cannot change its password. Create your own patient profile for a personal account.
+                </div>
+              ) : null}
               <Field label="Current Password" isDark={isDark}>
-                <input type="password" value={passwordForm.old_password} onChange={(event) => setPasswordForm((current) => ({ ...current, old_password: event.target.value }))} className={`w-full rounded-2xl border px-4 py-3 outline-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`} />
+                <input type="password" disabled={isDemoPatient} value={passwordForm.old_password} onChange={(event) => setPasswordForm((current) => ({ ...current, old_password: event.target.value }))} className={`w-full rounded-2xl border px-4 py-3 outline-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"} ${isDemoPatient ? "opacity-60" : ""}`} />
               </Field>
               <Field label="New Password" isDark={isDark}>
-                <input type="password" value={passwordForm.new_password} onChange={(event) => setPasswordForm((current) => ({ ...current, new_password: event.target.value }))} className={`w-full rounded-2xl border px-4 py-3 outline-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`} />
+                <input type="password" disabled={isDemoPatient} value={passwordForm.new_password} onChange={(event) => setPasswordForm((current) => ({ ...current, new_password: event.target.value }))} className={`w-full rounded-2xl border px-4 py-3 outline-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"} ${isDemoPatient ? "opacity-60" : ""}`} />
               </Field>
 
               <div className="flex flex-wrap gap-3">
-                <button type="submit" disabled={passwordSaving} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white hover:bg-emerald-500 transition-colors disabled:opacity-50">
+                <button type="submit" disabled={passwordSaving || isDemoPatient} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white hover:bg-emerald-500 transition-colors disabled:opacity-50">
                   <ShieldCheck size={16} />
-                  {passwordSaving ? "Updating..." : "Change Password"}
+                  {isDemoPatient ? "Disabled For Demo Account" : passwordSaving ? "Updating..." : "Change Password"}
                 </button>
                 <button type="button" onClick={() => { authService.logout(); navigate("/login", { replace: true }); }} className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-bold ${isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
                   <LogOut size={16} />
@@ -298,7 +305,7 @@ export default function Settings() {
                 <AlertTriangle size={18} className="mt-0.5 shrink-0" />
                 <div className="text-sm leading-6">
                   This clears all your uploaded reports, generated insights, trends, consultations, chats, and appointments. Your login and profile stay active.
-                  {profile?.patient_id === "P-10005" ? " The shared demo account cannot clear its data." : " To continue, type clear and confirm with your current password."}
+                  {isDemoPatient ? " The shared demo account cannot clear its data." : " To continue, type clear and confirm with your current password."}
                 </div>
               </div>
             </div>
@@ -328,14 +335,14 @@ export default function Settings() {
                 onClick={handleClearAllData}
                 disabled={
                   clearingData ||
-                  profile?.patient_id === "P-10005" ||
+                  isDemoPatient ||
                   clearConfirmation.trim().toLowerCase() !== "clear" ||
                   !clearPassword.trim()
                 }
                 className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 font-bold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
               >
                 <Eraser size={16} />
-                {profile?.patient_id === "P-10005" ? "Disabled For Demo Account" : clearingData ? "Clearing..." : "Clear All Patient Data"}
+                {isDemoPatient ? "Disabled For Demo Account" : clearingData ? "Clearing..." : "Clear All Patient Data"}
               </button>
             </div>
           </SettingsCard>

@@ -13,6 +13,8 @@ from app.services.export.pdf_generator import PatientPdfExportService
 from app.services.insights.service import InsightsService
 from app.services.insights.trends import TrendService
 
+DEMO_PATIENT_ID = "P-10005"
+
 
 class PatientService:
     def __init__(self, db: AsyncSession) -> None:
@@ -35,6 +37,8 @@ class PatientService:
 
     async def change_password(self, user_id, payload: PatientPasswordUpdate) -> Patient:
         patient = await self._get_patient_by_user_id(user_id)
+        if patient.patient_id == DEMO_PATIENT_ID:
+            raise AuthenticationError("Demo patient account P-10005 cannot change its password. Create your own patient profile for a personal account.")
         if not verify_password(payload.old_password, patient.user.hashed_password):
             raise AuthenticationError("Current password is incorrect.")
         patient.user.hashed_password = hash_password(payload.new_password)
@@ -72,7 +76,7 @@ class PatientService:
 
     async def clear_all_data_with_password(self, user_id, payload: PatientDataClearRequest) -> None:
         patient = await self._get_patient_by_user_id(user_id)
-        if patient.patient_id == "P-10005":
+        if patient.patient_id == DEMO_PATIENT_ID:
             raise AuthenticationError("Demo account P-10005 cannot clear its data. Create your own patient profile to manage personal records.")
         if not verify_password(payload.current_password, patient.user.hashed_password):
             raise AuthenticationError("Current password is incorrect.")

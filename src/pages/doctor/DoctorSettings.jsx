@@ -60,6 +60,7 @@ export default function DoctorSettings() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const isDemoDoctor = form.license_number === "D-10001";
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -117,6 +118,7 @@ export default function DoctorSettings() {
 
   const handlePasswordSave = async (event) => {
     event.preventDefault();
+    if (isDemoDoctor) return;
     setPasswordSaving(true);
     setError("");
     setSuccess("");
@@ -242,6 +244,12 @@ export default function DoctorSettings() {
             </div>
           </div>
 
+          {isDemoDoctor ? (
+            <div className={`mt-5 rounded-2xl px-4 py-3 text-sm font-semibold ${isDark ? "bg-amber-500/10 text-amber-300" : "bg-amber-50 text-amber-700"}`}>
+              Demo doctor account `D-10001` cannot change its password.
+            </div>
+          ) : null}
+
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Field
               label="Current Password"
@@ -249,6 +257,7 @@ export default function DoctorSettings() {
               value={passwordForm.old_password}
               onChange={updatePasswordField("old_password")}
               isDark={isDark}
+              disabled={isDemoDoctor}
             />
             <Field
               label="New Password"
@@ -256,16 +265,17 @@ export default function DoctorSettings() {
               value={passwordForm.new_password}
               onChange={updatePasswordField("new_password")}
               isDark={isDark}
+              disabled={isDemoDoctor}
             />
           </div>
 
           <button
             type="submit"
-            disabled={passwordSaving}
+            disabled={passwordSaving || isDemoDoctor}
             className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-60"
           >
             {passwordSaving ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-            {passwordSaving ? "Updating..." : "Change Password"}
+            {isDemoDoctor ? "Disabled For Demo Account" : passwordSaving ? "Updating..." : "Change Password"}
           </button>
         </form>
       </div>

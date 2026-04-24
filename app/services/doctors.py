@@ -12,6 +12,8 @@ from app.models.report import Report
 from app.models.user import User
 from app.schemas.doctor import DoctorDashboard, DoctorDirectoryItem, DoctorPatientSearchItem, DoctorPasswordUpdate, DoctorUpdate
 
+DEMO_DOCTOR_ID = "D-10001"
+
 
 class DoctorService:
     def __init__(self, db: AsyncSession) -> None:
@@ -40,6 +42,8 @@ class DoctorService:
 
     async def change_password(self, user_id, payload: DoctorPasswordUpdate) -> Doctor:
         doctor = await self._get_doctor_by_user_id(user_id)
+        if doctor.license_number == DEMO_DOCTOR_ID:
+            raise AuthenticationError("Demo doctor account D-10001 cannot change its password.")
         if not verify_password(payload.old_password, doctor.user.hashed_password):
             raise AuthenticationError("Current password is incorrect.")
         doctor.user.hashed_password = hash_password(payload.new_password)
