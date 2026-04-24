@@ -147,14 +147,6 @@ function DoctorMobileLayout({
             </button>
           </div>
 
-          <div className={`mt-4 rounded-[1.35rem] border px-4 py-3 ${isDark ? "border-white/8 bg-white/[0.03]" : "border-slate-200 bg-white/70"}`}>
-            <div className={`text-[11px] font-black uppercase tracking-[0.22em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
-              Mobile Practice Flow
-            </div>
-            <p className={`mt-2 text-sm leading-6 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-              Faster phone workflow for review, cases, chats, and calendar while keeping the desktop workspace unchanged.
-            </p>
-          </div>
         </GlassSurface>
       </div>
 
