@@ -4,6 +4,7 @@ import authService from "../services/auth.service";
 import caseService from "../services/case.service";
 import reportService from "../services/report.service";
 import CACHE_KEYS from "../lib/cacheKeys";
+import { getPatientDemoDashboardSeed } from "../lib/demoData";
 
 async function fetchPatientDashboardData() {
   const [profile, reports, trends] = await Promise.all([
@@ -29,7 +30,10 @@ async function fetchPatientDashboardData() {
 }
 
 export default function usePatientDashboardData() {
+  const demoFallback = getPatientDemoDashboardSeed();
+
   return useSWR(CACHE_KEYS.patientDashboard, fetchPatientDashboardData, {
     dedupingInterval: 5 * 60_000,
+    fallbackData: demoFallback || undefined,
   });
 }

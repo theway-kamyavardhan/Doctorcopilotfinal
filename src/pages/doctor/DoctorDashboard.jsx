@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
+import { getDoctorDemoDashboardSeed } from "../../lib/demoData";
 import appointmentService from "../../services/appointment.service";
 import {
   acceptDoctorCase,
@@ -271,11 +272,12 @@ function OverviewModal({
 
 export default function DoctorDashboard() {
   const { isDark } = useTheme();
-  const [profile, setProfile] = useState(null);
-  const [dashboard, setDashboard] = useState(null);
-  const [cases, setCases] = useState([]);
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [demoSeed] = useState(() => getDoctorDemoDashboardSeed());
+  const [profile, setProfile] = useState(() => demoSeed?.profile || null);
+  const [dashboard, setDashboard] = useState(() => demoSeed?.dashboard || null);
+  const [cases, setCases] = useState(() => demoSeed?.cases || []);
+  const [appointments, setAppointments] = useState(() => demoSeed?.appointments || []);
+  const [loading, setLoading] = useState(() => !demoSeed);
   const [error, setError] = useState("");
   const [overviewCase, setOverviewCase] = useState(null);
   const [overviewTrends, setOverviewTrends] = useState(null);

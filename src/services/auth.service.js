@@ -1,4 +1,11 @@
-import api, { clearAuthToken, getAuthRole, getAuthToken, setAuthRole, setAuthToken } from "./api";
+import api, {
+  clearAuthToken,
+  getAuthRole,
+  getAuthToken,
+  setAuthRole,
+  setAuthToken,
+  setLastLoginIdentifier,
+} from "./api";
 
 const AUTH_BASE_PATH = "/api/v1/auth";
 
@@ -59,6 +66,7 @@ export async function loginUser({ username, password }) {
 
     if (response.data?.access_token) {
       setAuthToken(response.data.access_token);
+      setLastLoginIdentifier(username);
     }
 
     return response.data;

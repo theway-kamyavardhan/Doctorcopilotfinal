@@ -16,6 +16,23 @@ const ROLES = [
   { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#f59e0b' },
 ];
 
+const DEMO_ACCOUNTS = [
+  {
+    id: "patient-demo",
+    role: "patient",
+    label: "Patient Demo",
+    identifier: "P-10005",
+    password: "demo2205",
+  },
+  {
+    id: "doctor-demo",
+    role: "doctor",
+    label: "Doctor Demo",
+    identifier: "D-10001",
+    password: "demo123",
+  },
+];
+
 function getRoleMismatchMessage(selectedRole) {
   if (selectedRole === "doctor") {
     return "These credentials belong to a patient account. Select Patient to continue.";
@@ -37,6 +54,14 @@ export default function Login() {
   const [loginError, setLoginError] = useState("");
 
   const activeRoleData = ROLES.find(r => r.id === role);
+  const demoAccountsForRole = DEMO_ACCOUNTS.filter((account) => account.role === role);
+
+  const applyDemoAccount = (account) => {
+    setRole(account.role);
+    setIdentifier(account.identifier);
+    setPassword(account.password);
+    setLoginError("");
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -203,6 +228,39 @@ export default function Login() {
                 );
               })}
             </div>
+
+            {demoAccountsForRole.length ? (
+              <div className="mb-8 rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[0.65rem] font-black uppercase tracking-[0.25em] text-slate-400">Demo Access</p>
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">Use the prepared demo account for faster presentation login.</p>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-3">
+                  {demoAccountsForRole.map((account) => (
+                    <button
+                      key={account.id}
+                      type="button"
+                      onClick={() => applyDemoAccount(account)}
+                      className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${
+                        isDark
+                          ? "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+                          : "border-white/60 bg-white/40 hover:bg-white/60"
+                      }`}
+                    >
+                      <div>
+                        <div className="text-sm font-black tracking-tight">{account.label}</div>
+                        <div className="mt-1 text-xs text-slate-400">
+                          <span className="font-mono">{account.identifier}</span> / <span className="font-mono">{account.password}</span>
+                        </div>
+                      </div>
+                      <ArrowRight size={16} className="opacity-70" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">

@@ -2,6 +2,7 @@ import axios from "axios";
 
 const TOKEN_STORAGE_KEY = "token";
 const ROLE_STORAGE_KEY = "role";
+const LAST_LOGIN_IDENTIFIER_KEY = "last_login_identifier";
 const SESSION_OPENAI_KEY = "session_openai_key";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -39,6 +40,15 @@ export function setAuthRole(role) {
 
 export function getAuthRole() {
   return localStorage.getItem(ROLE_STORAGE_KEY);
+}
+
+export function setLastLoginIdentifier(identifier) {
+  if (!identifier) return;
+  localStorage.setItem(LAST_LOGIN_IDENTIFIER_KEY, String(identifier).trim());
+}
+
+export function getLastLoginIdentifier() {
+  return localStorage.getItem(LAST_LOGIN_IDENTIFIER_KEY);
 }
 
 export function clearAuthToken() {
