@@ -60,7 +60,7 @@ class AuthService:
     async def register_doctor(self, payload: DoctorCreate) -> Doctor:
         await self._ensure_unique_email(payload.email)
         for _ in range(3):
-            doctor_id = await self._generate_doctor_id()
+            doctor_id = payload.license_number or await self._generate_doctor_id()
             user = User(
                 email=payload.email,
                 hashed_password=hash_password(payload.password),

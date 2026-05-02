@@ -67,7 +67,7 @@ async def app_exception_handler(_: Request, exc: AppException) -> JSONResponse:
     elif isinstance(exc, NotFoundError):
         status_code = status.HTTP_404_NOT_FOUND
     elif isinstance(exc, ValidationAppError):
-        status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        status_code = status.HTTP_400_BAD_REQUEST
     elif isinstance(exc, ProcessingError):
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     return JSONResponse(status_code=status_code, content={"detail": str(exc)})

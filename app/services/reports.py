@@ -18,6 +18,8 @@ from app.services.export.pdf_generator import SingleReportPdfExportService
 from app.services.processing.orchestrator import ReportProcessingOrchestrator
 from app.services.storage.service import ReportFileStorage
 
+DEMO_PATIENT_ID = "P-10005"
+
 
 class ReportService:
     def __init__(self, db: AsyncSession) -> None:
@@ -78,6 +80,8 @@ class ReportService:
 
     async def delete_report(self, report_id: UUID, current_user: User) -> None:
         patient = await self._get_patient_by_user_id(current_user.id)
+        if patient.patient_id == DEMO_PATIENT_ID:
+            raise AuthorizationError("Demo patient reports cannot be deleted.")
         statement = select(Report).where(Report.id == report_id)
         report = (await self.db.execute(statement)).scalar_one_or_none()
         if not report:

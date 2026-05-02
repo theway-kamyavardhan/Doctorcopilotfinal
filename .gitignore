@@ -8,6 +8,12 @@ __pycache__/
 .DS_Store
 .vscode/
 storage/uploads/tmp/
+storage/uploads/*
+!storage/uploads/85b4b4140eb34682829e25653fb385f0.pdf
+!storage/uploads/b80f732cd0924cf2841eafde34f44f2c.pdf
+!storage/uploads/1ed546d84cf04626851998d232ae7958.pdf
+!storage/uploads/e57906ba947c4ccf83457cec245a9222.pdf
+!storage/uploads/b99fbc58171a494faaf99871a597b6f0.pdf
 vite-export-debug.log
 vite-demo*.log
 debug.txt

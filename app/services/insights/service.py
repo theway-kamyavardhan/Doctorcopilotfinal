@@ -1,4 +1,5 @@
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from uuid import UUID
 
@@ -26,6 +27,13 @@ DEFAULT_REFERENCE_HINTS = {
 }
 
 
+@dataclass
+class AIInsightPayload:
+    key_findings: list[str]
+    risk_level: str
+    summary: list[str]
+
+
 class InsightsService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
@@ -38,8 +46,9 @@ class InsightsService:
         trends = self.generate_trends(aggregated)
         findings, risk_level = self.detect_abnormal_patterns(trends)
         stored_findings = self.collect_stored_findings(reports)
-        summary = self.build_summary(trends, findings, stored_findings)
-        key_findings = self._dedupe([*stored_findings, *findings])[:8]
+        generated = await self.generate_summary(patient.id, trends, findings, risk_level)
+        summary = self._dedupe([*stored_findings[:3], *generated.summary])[:6]
+        key_findings = self._dedupe([*stored_findings, *generated.key_findings, *generated.summary])[:8]
 
         if not key_findings:
             key_findings = ["No high-risk multi-report pattern was detected from the stored report data."]
@@ -48,7 +57,7 @@ class InsightsService:
             patient_id=patient.id,
             trends=trends,
             key_findings=key_findings,
-            risk_level=self._derive_risk_level(risk_level, stored_findings),
+            risk_level=self._derive_risk_level(generated.risk_level, stored_findings),
             summary=summary,
         )
 
@@ -160,6 +169,19 @@ class InsightsService:
         if not summary:
             summary = ["Stored report data does not show a high-risk multi-report pattern right now."]
         return self._dedupe(summary)[:6]
+
+    async def generate_summary(
+        self,
+        patient_id: UUID,
+        trends: dict[str, ParameterTrend],
+        findings: list[str],
+        risk_level: str,
+    ) -> AIInsightPayload:
+        return AIInsightPayload(
+            key_findings=findings,
+            risk_level=risk_level,
+            summary=self.build_summary(trends, findings, []),
+        )
 
     async def _get_patient(self, patient_id: UUID) -> Patient:
         patient = await self.db.get(Patient, patient_id)

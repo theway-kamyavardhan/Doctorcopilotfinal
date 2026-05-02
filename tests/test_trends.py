@@ -31,7 +31,7 @@ def test_patient_trends_endpoint_aggregates_multiple_reports(monkeypatch):
         """.strip(),
     ]
 
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         if "2018" in report_text:
             return StructuredMedicalReport(
                 report_type="Complete Blood Count",
@@ -134,7 +134,7 @@ def test_patient_trends_endpoint_deduplicates_and_normalizes_units(monkeypatch):
         """.strip(),
     ]
 
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         if "2022" in report_text:
             return StructuredMedicalReport(
                 report_type="Complete Blood Count",

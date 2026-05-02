@@ -6,7 +6,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import AuthorizationError, NotFoundError
 from app.core.security import hash_password
 from app.models.case import Case
 from app.models.doctor import Doctor
@@ -31,6 +31,8 @@ from app.schemas.admin import (
 )
 from app.schemas.system import AdminAIControlResponse
 from app.services.ai_control import AIControlService
+
+DEMO_PATIENT_ID = "P-10005"
 
 
 class AdminService:
@@ -211,6 +213,8 @@ class AdminService:
 
     async def delete_patient(self, patient_id: UUID) -> None:
         patient = await self._get_patient(patient_id)
+        if patient.patient_id == DEMO_PATIENT_ID:
+            raise AuthorizationError("Demo patient account P-10005 cannot be deleted.")
         user = patient.user
         await self.db.delete(patient)
         if user is not None:

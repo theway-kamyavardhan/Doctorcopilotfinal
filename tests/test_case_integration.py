@@ -95,7 +95,7 @@ def register_doctor_and_login(client: TestClient):
 
 
 def test_case_report_and_chat_integration(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="Linked case CBC summary",
@@ -167,4 +167,4 @@ def test_case_report_and_chat_integration(monkeypatch):
         outsider_id, outsider_headers = register_patient_and_login(client)
         assert outsider_id != patient_id
         forbidden = client.get(f"/api/v1/cases/{case_id}", headers=outsider_headers)
-        assert forbidden.status_code == 400
+        assert forbidden.status_code == 403

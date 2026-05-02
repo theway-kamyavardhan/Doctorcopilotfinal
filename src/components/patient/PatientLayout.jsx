@@ -151,7 +151,7 @@ function PatientDesktopLayout({
                     <div className="min-w-0">
                       <span
                         className={`block truncate text-lg font-black tracking-tight sm:text-xl ${
-                          isDark ? "bg-[var(--cyan-primary)] bg-clip-text text-transparent" : "text-slate-800"
+                          isDark ? "text-cyan-300" : "text-slate-800"
                         }`}
                       >
                         DoctorCopilot

@@ -79,7 +79,7 @@ def build_scanned_pdf_bytes() -> bytes:
 
 
 def test_upload_and_debug_flow(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="CBC summary",
@@ -130,7 +130,7 @@ def test_empty_upload_rejected():
 
 
 def test_scanned_pdf_uses_ocr_fallback(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="OCR summary",
@@ -159,7 +159,7 @@ def test_scanned_pdf_uses_ocr_fallback(monkeypatch):
 
 
 def test_image_upload_uses_ocr(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="Image OCR summary",
@@ -187,7 +187,7 @@ def test_image_upload_uses_ocr(monkeypatch):
 
 
 def test_value_cleaning_repairs_ocr_noise(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="Value cleanup summary",
@@ -198,7 +198,10 @@ def test_value_cleaning_repairs_ocr_noise(monkeypatch):
         )
 
     monkeypatch.setattr("app.services.ai.client.OpenAIExtractionClient.extract", fake_extract)
-    monkeypatch.setattr("app.services.processing.ocr.TextExtractionEngine._extract_pdf_text", lambda self, path: "HEMOGLOBIN 14.2Â°")
+    monkeypatch.setattr(
+        "app.services.processing.ocr.TextExtractionEngine._extract_pdf_text",
+        lambda self, path: "HEMOGLOBIN 14.2 g/dL reference range 12-17 complete blood count report",
+    )
 
     with TestClient(app) as client:
         headers = auth_headers(client)
@@ -210,7 +213,7 @@ def test_value_cleaning_repairs_ocr_noise(monkeypatch):
 
 
 def test_clinical_normalization_enforces_units_and_status(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Blood Test",
             summary="Clinical normalization summary",
@@ -261,7 +264,7 @@ def test_clinical_normalization_enforces_units_and_status(monkeypatch):
 
 
 def test_vitamin_d_uses_clinical_interpretation_rule(monkeypatch):
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Vitamin Panel",
             summary="Vitamin D summary",
@@ -311,7 +314,7 @@ def test_metadata_extraction_populates_patient_and_dates(monkeypatch):
     HEMOGLOBIN 14.2 g/dL
     """.strip()
 
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="Metadata summary",
@@ -392,7 +395,7 @@ def test_metadata_cleaning_and_conflict_resolution(monkeypatch):
     HEMOGLOBIN 14.2 g/dL
     """.strip()
 
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="Noisy OCR summary",
@@ -434,7 +437,7 @@ def test_metadata_name_cleanup_removes_contamination(monkeypatch):
     HEMOGLOBIN 14.2 g/dL
     """.strip()
 
-    async def fake_extract(self, report_text: str):
+    async def fake_extract(self, report_text: str, **kwargs):
         return StructuredMedicalReport(
             report_type="Complete Blood Count",
             summary="Cleanup summary",
