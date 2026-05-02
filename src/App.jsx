@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { SWRConfig } from "swr";
@@ -45,6 +45,14 @@ function RouteLoader() {
       </div>
     </div>
   );
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
 }
 
 function ProtectedRoute({ children, roleRequired = null }) {
@@ -184,6 +192,7 @@ export default function App() {
     <ThemeProvider>
       <SWRConfig value={swrConfig}>
         <BrowserRouter>
+          <ScrollToTop />
           <div className="bg-[var(--bg-primary)] min-h-screen text-[var(--text-primary)] font-sans antialiased overflow-x-hidden transition-colors duration-700">
             <ThemeReveal />
             <ThemeToggle />

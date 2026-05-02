@@ -97,7 +97,7 @@ export default function Landing() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-700">
-      <RefractionFilter />
+      {allowFluid && <RefractionFilter />}
 
       <div className="fixed inset-0 z-0 pointer-events-none select-none">
         {allowFluid ? (
