@@ -22,6 +22,7 @@ import AiSessionBanner from "../ui/AiSessionBanner";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
 import useViewport from "../../hooks/useViewport";
+import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
 
 export default function PatientLayout() {
   const { isMobile } = useViewport();
@@ -359,45 +360,40 @@ function PatientMobileLayout({
     <div
       className={`min-h-screen main-mobile ${
         isDark
-          ? "bg-[linear-gradient(180deg,#020617,#0f172a_34%,#020617)] text-white"
-          : "bg-[linear-gradient(180deg,#f8fbff,#edf4fb_42%,#f8fbff)] text-slate-900"
+          ? "bg-[#080c18] text-white"
+          : "bg-[#f2f5f9] text-slate-900"
       }`}
     >
-      <div className="sticky top-0 z-40 px-3 pt-3">
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={28}
-          backgroundOpacity={isDark ? 0.34 : 0.66}
-          blur={24}
-          brightness={isDark ? 92 : 112}
-          saturation={1.8}
-          className={`border px-4 py-4 ${
-            isDark ? "border-white/10 shadow-[0_14px_40px_rgba(2,6,23,0.42)]" : "border-white/80 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className={`text-[10px] font-black uppercase tracking-[0.26em] ${isDark ? "text-cyan-300/80" : "text-blue-700/75"}`}>
-                Patient Workspace
-              </div>
-              <div className="mt-1 text-xl font-black tracking-tight">DoctorCopilot</div>
-              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                {activeLink.name}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              className={`inline-flex rounded-full p-2.5 ${isDark ? "bg-white/5 text-slate-100" : "bg-slate-100 text-slate-700"}`}
-              aria-label="Toggle patient menu"
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+      {/* ── Compact native-style header ── */}
+      <div
+        className={`sticky top-0 z-40 flex items-center justify-between px-4 pt-safe ${
+          isDark
+            ? "bg-[#080c18] border-b border-white/[0.06]"
+            : "bg-[#f2f5f9] border-b border-slate-200/60"
+        }`}
+        style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))`, paddingBottom: "0.75rem" }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div
+            className={`h-7 w-7 rounded-xl ${
+              isDark
+                ? "bg-gradient-to-br from-cyan-500 to-blue-600"
+                : "bg-gradient-to-br from-blue-500 to-violet-500"
+            }`}
+          />
+          <div>
+            <div className={`text-[10px] font-black uppercase tracking-[0.22em] leading-none ${
+              isDark ? "text-cyan-400/70" : "text-blue-600/70"
+            }`}>Patient</div>
+            <div className="text-base font-black tracking-tight leading-tight">DoctorCopilot</div>
           </div>
-        </GlassSurface>
+        </div>
+        <div className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+          isDark ? "bg-white/8 text-slate-300" : "bg-white text-slate-600 border border-slate-200"
+        }`}>{activeLink.name}</div>
       </div>
 
+      {/* ── Slide-up full-screen drawer ── */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -405,29 +401,36 @@ function PatientMobileLayout({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-black/60"
             />
             <motion.div
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ type: "spring", stiffness: 350, damping: 35 }}
-              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-[2.5rem] p-5 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.3)] ${
-                isDark ? "bg-slate-900 border-t border-white/10 text-white" : "bg-white border-t border-slate-200 text-slate-900"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 380, damping: 38 }}
+              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-[2rem] ${
+                isDark
+                  ? "bg-[#0f1420] border-t border-white/10"
+                  : "bg-white border-t border-slate-200"
               }`}
+              style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
             >
-              <div className="mx-auto mb-6 h-1.5 w-12 rounded-full bg-slate-400/30" />
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className={`text-[10px] font-black uppercase tracking-[0.24em] ${isDark ? "text-cyan-300/75" : "text-blue-700/75"}`}>
-                    Navigation
-                  </div>
-                  <div className="mt-1 text-lg font-black">Patient Menu</div>
-                </div>
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className={`h-1 w-10 rounded-full ${
+                  isDark ? "bg-white/20" : "bg-slate-300"
+                }`} />
               </div>
 
-              <nav className="mt-4 grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto scroll-smooth pb-4">
+              <div className="px-4 pb-2">
+                <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${
+                  isDark ? "text-slate-500" : "text-slate-400"
+                }`}>Navigate</p>
+              </div>
+
+              <nav className="grid grid-cols-2 gap-2.5 px-4 pb-3">
                 {navLinks.map((link) => {
                   const isActive = location.pathname === link.path;
                   const Icon = link.icon;
@@ -436,117 +439,115 @@ function PatientMobileLayout({
                       key={link.name}
                       to={link.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-3xl p-4 text-xs font-bold transition-all ${
+                      className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all ${
                         isActive
                           ? isDark
-                            ? "bg-cyan-500/15 text-cyan-300 border border-cyan-500/20"
-                            : "bg-blue-50 text-blue-700 border border-blue-200"
+                            ? "bg-cyan-500/15 text-cyan-300"
+                            : "bg-blue-50 text-blue-700"
                           : isDark
-                            ? "bg-white/5 text-slate-300 border border-white/5"
-                            : "bg-slate-50 text-slate-700 border border-slate-100"
+                            ? "bg-white/5 text-slate-300"
+                            : "bg-slate-50 text-slate-700"
                       }`}
                     >
-                      <Icon size={24} className="mb-1" />
+                      <Icon size={18} />
                       {link.name}
                     </NavLink>
                   );
                 })}
               </nav>
 
-              <button
-                type="button"
-                onClick={handleLogout}
-                className={`mt-2 flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-4 text-sm font-bold ${
-                  isDark ? "bg-rose-500/10 text-rose-300" : "bg-rose-50 text-rose-700"
-                }`}
-              >
-                <LogOut size={18} />
-                Sign out
-              </button>
+              <div className="px-4">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className={`w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold ${
+                    isDark ? "bg-rose-500/10 text-rose-400" : "bg-rose-50 text-rose-600"
+                  }`}
+                >
+                  <LogOut size={16} />
+                  Sign out
+                </button>
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      <main className="px-3 pt-4">
-        <div className={`rounded-[2rem] border p-3 ${isDark ? "border-white/8 bg-white/[0.03]" : "border-slate-200 bg-white/72"}`}>
-          <AiSessionBanner />
-          <div className="mt-3">
-            <Outlet />
-          </div>
-        </div>
+      {/* ── Page content ── */}
+      <main className="px-3 pt-3">
+        <AiSessionBanner />
+        <Outlet />
       </main>
 
-      <div className="fixed-bottom-safe z-40 px-3 pb-3">
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={26}
-          backgroundOpacity={isDark ? 0.56 : 0.82}
-          blur={24}
-          brightness={isDark ? 92 : 112}
-          saturation={1.8}
-          className={`border px-2 py-2 ${isDark ? "border-white/10 shadow-[0_-14px_40px_rgba(2,6,23,0.45)]" : "border-white/80 shadow-[0_-12px_28px_rgba(15,23,42,0.1)]"}`}
-        >
-          <nav className="relative grid grid-cols-5 gap-1">
-            {primaryMobileLinks.map((link) => {
-              const isActive = location.pathname === link.path;
-              const Icon = link.icon;
-              return (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  className={`relative flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold transition-all z-10 ${
-                    isActive
-                      ? isDark
-                        ? "text-cyan-200"
-                        : "text-blue-700"
-                      : isDark
-                        ? "text-slate-300"
-                        : "text-slate-600"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="mobile-patient-nav-active"
-                      className={`absolute inset-0 rounded-2xl -z-10 ${isDark ? "bg-cyan-500/20" : "bg-blue-100"}`}
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  <motion.div whileTap={{ scale: 0.85 }}>
-                    <Icon size={16} />
-                  </motion.div>
-                  <span className="truncate">{link.name}</span>
-                </NavLink>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              className={`relative flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold z-10 ${
-                mobileMenuOpen
-                  ? isDark
-                    ? "text-cyan-200"
-                    : "text-blue-700"
-                  : isDark
-                    ? "text-slate-300"
-                    : "text-slate-600"
-              }`}
-            >
-              {mobileMenuOpen && (
-                <motion.div
-                  layoutId="mobile-patient-nav-active"
-                  className={`absolute inset-0 rounded-2xl -z-10 ${isDark ? "bg-cyan-500/20" : "bg-blue-100"}`}
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-              <motion.div whileTap={{ scale: 0.85 }}>
-                {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
-              </motion.div>
-              <span>More</span>
-            </button>
-          </nav>
-        </GlassSurface>
+      {/* ── Minimal solid bottom tab bar ── */}
+      <div
+        className={`fixed-bottom-safe z-40 ${
+          isDark
+            ? "bg-[#0c1120]/95 border-t border-white/[0.07]"
+            : "bg-white/95 border-t border-slate-200"
+        }`}
+        style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
+      >
+        <nav className="relative flex items-stretch px-2" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+          {primaryMobileLinks.map((link) => {
+            const isActive = location.pathname === link.path;
+            const Icon = link.icon;
+            return (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${
+                  isActive
+                    ? isDark
+                      ? "text-cyan-400"
+                      : "text-blue-600"
+                    : isDark
+                      ? "text-slate-500"
+                      : "text-slate-400"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-patient-tab"
+                    className={`absolute top-0 inset-x-2 h-0.5 rounded-full ${
+                      isDark ? "bg-cyan-400" : "bg-blue-500"
+                    }`}
+                    transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                  />
+                )}
+                <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
+                  <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+                </motion.div>
+                <span>{link.name}</span>
+              </NavLink>
+            );
+          })}
+
+          {/* More button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${
+              mobileMenuOpen
+                ? isDark ? "text-cyan-400" : "text-blue-600"
+                : isDark ? "text-slate-500" : "text-slate-400"
+            }`}
+          >
+            {mobileMenuOpen && (
+              <motion.div
+                layoutId="mobile-patient-tab"
+                className={`absolute top-0 inset-x-2 h-0.5 rounded-full ${
+                  isDark ? "bg-cyan-400" : "bg-blue-500"
+                }`}
+                transition={{ type: "spring", stiffness: 400, damping: 34 }}
+              />
+            )}
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
+              {mobileMenuOpen ? <X size={20} strokeWidth={2.2} /> : <Menu size={20} strokeWidth={1.8} />}
+            </motion.div>
+            <span>More</span>
+          </button>
+        </nav>
       </div>
     </div>
   );
