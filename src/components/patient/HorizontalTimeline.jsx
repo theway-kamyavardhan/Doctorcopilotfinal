@@ -30,11 +30,12 @@ export default function HorizontalTimeline({ reports = [], isDark }) {
   const activeReportId = orderedReports[orderedReports.length - 1]?.id || null;
 
   useEffect(() => {
-    if (!activeRef.current) return;
-    activeRef.current.scrollIntoView({
+    if (!activeRef.current || !scrollRef.current) return;
+    const container = scrollRef.current;
+    const element = activeRef.current;
+    container.scrollTo({
+      left: element.offsetLeft - container.offsetWidth / 2 + element.offsetWidth / 2,
       behavior: "smooth",
-      inline: "center",
-      block: "nearest",
     });
   }, [activeReportId]);
 

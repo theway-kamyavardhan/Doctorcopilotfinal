@@ -35,6 +35,7 @@ function buildMilestoneLabel(report, index, total) {
 
 export default function TimelineRibbon({ reports = [], isDark }) {
   const activeRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const orderedReports = useMemo(
     () =>
@@ -49,11 +50,12 @@ export default function TimelineRibbon({ reports = [], isDark }) {
   const activeReportId = orderedReports[orderedReports.length - 1]?.id || null;
 
   useEffect(() => {
-    if (!activeRef.current) return;
-    activeRef.current.scrollIntoView({
+    if (!activeRef.current || !scrollRef.current) return;
+    const container = scrollRef.current;
+    const element = activeRef.current;
+    container.scrollTo({
+      left: element.offsetLeft - container.offsetWidth / 2 + element.offsetWidth / 2,
       behavior: "smooth",
-      inline: "center",
-      block: "nearest",
     });
   }, [activeReportId]);
 
@@ -110,7 +112,7 @@ export default function TimelineRibbon({ reports = [], isDark }) {
         <div className="relative mt-8">
           <div className={`pointer-events-none absolute left-8 right-8 top-8 h-px ${isDark ? "bg-white/10" : "bg-slate-200/80"}`} />
 
-          <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={scrollRef} className="overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div
               className="flex min-w-max gap-4"
               style={{ paddingInline: "max(1.5rem, calc(50% - 10.5rem))" }}
