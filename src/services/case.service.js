@@ -1,10 +1,22 @@
 import api from "./api";
+import {
+  addDemoCaseMessage,
+  getDemoCase,
+  getDemoCaseMessages,
+  getDemoCases,
+  isDemoSession,
+  updateDemoReportAccess,
+} from "../lib/demoData";
 
 function getErrorMessage(error, fallbackMessage) {
   return error?.response?.data?.detail || error?.message || fallbackMessage;
 }
 
 export async function getCases() {
+  if (isDemoSession()) {
+    return getDemoCases();
+  }
+
   try {
     const response = await api.get("/api/v1/cases");
     return response.data || [];
@@ -14,6 +26,10 @@ export async function getCases() {
 }
 
 export async function requestConsultation(payload = { type: "consultation_request" }) {
+  if (isDemoSession()) {
+    throw new Error("New consultations are disabled in static reviewer demo mode.");
+  }
+
   try {
     const response = await api.post("/api/v1/cases", payload);
     return response.data;
@@ -23,6 +39,10 @@ export async function requestConsultation(payload = { type: "consultation_reques
 }
 
 export async function cancelConsultation(caseId, note = "") {
+  if (isDemoSession()) {
+    throw new Error("Demo consultations cannot be cancelled.");
+  }
+
   try {
     const response = await api.patch(`/api/v1/cases/${caseId}/cancel`, {
       note: note || "Consultation request cancelled by patient.",
@@ -34,6 +54,10 @@ export async function cancelConsultation(caseId, note = "") {
 }
 
 export async function getCaseDetails(caseId) {
+  if (isDemoSession()) {
+    return getDemoCase(caseId);
+  }
+
   try {
     const response = await api.get(`/api/v1/cases/${caseId}`);
     return response.data;
@@ -43,6 +67,10 @@ export async function getCaseDetails(caseId) {
 }
 
 export async function getCaseMessages(caseId) {
+  if (isDemoSession()) {
+    return getDemoCaseMessages(caseId);
+  }
+
   try {
     const response = await api.get(`/api/v1/cases/${caseId}/messages`);
     return response.data || [];
@@ -52,6 +80,10 @@ export async function getCaseMessages(caseId) {
 }
 
 export async function sendCaseMessage(caseId, content) {
+  if (isDemoSession()) {
+    return addDemoCaseMessage(caseId, content);
+  }
+
   try {
     const response = await api.post(`/api/v1/cases/${caseId}/messages`, {
       content,
@@ -64,6 +96,16 @@ export async function sendCaseMessage(caseId, content) {
 }
 
 export async function respondReportAccess(caseId, decision) {
+  if (isDemoSession()) {
+    updateDemoReportAccess(caseId, decision);
+    return addDemoCaseMessage(
+      caseId,
+      decision === "granted"
+        ? "Patient granted report access. Doctor may now review the reports."
+        : "Patient denied report access. The case is now waiting until the doctor sends another request.",
+    );
+  }
+
   try {
     const response = await api.patch(`/api/v1/cases/${caseId}/report-access`, {
       decision,

@@ -1,4 +1,12 @@
 import api from "./api";
+import {
+  getDemoInsights,
+  getDemoReport,
+  getDemoReportFile,
+  getDemoReports,
+  getDemoTrends,
+  isDemoSession,
+} from "../lib/demoData";
 
 async function parseApiError(error, fallbackMessage = "Request failed.") {
   const detail = error?.response?.data;
@@ -33,6 +41,10 @@ async function parseApiError(error, fallbackMessage = "Request failed.") {
 }
 
 export async function uploadReport(file) {
+  if (isDemoSession()) {
+    throw new Error("Uploads are disabled in static reviewer demo mode.");
+  }
+
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -50,16 +62,28 @@ export async function uploadReport(file) {
 }
 
 export async function getReports() {
+  if (isDemoSession()) {
+    return getDemoReports();
+  }
+
   const response = await api.get("/api/v1/patients/me/reports");
   return response.data || [];
 }
 
 export async function getReport(reportId) {
+  if (isDemoSession()) {
+    return getDemoReport(reportId);
+  }
+
   const response = await api.get(`/api/v1/reports/${reportId}`);
   return response.data;
 }
 
 export async function getReportFile(reportId) {
+  if (isDemoSession()) {
+    return getDemoReportFile(reportId);
+  }
+
   const response = await api.get(`/api/v1/reports/${reportId}/file`, {
     responseType: "blob",
   });
@@ -74,20 +98,36 @@ export async function getReportFile(reportId) {
 }
 
 export async function getTrends() {
+  if (isDemoSession()) {
+    return getDemoTrends();
+  }
+
   const response = await api.get("/api/v1/patients/me/trends");
   return response.data;
 }
 
 export async function getInsights() {
+  if (isDemoSession()) {
+    return getDemoInsights();
+  }
+
   const response = await api.get("/api/v1/patients/me/insights");
   return response.data;
 }
 
 export async function deleteReport(reportId) {
+  if (isDemoSession()) {
+    throw new Error("Reports cannot be deleted in static reviewer demo mode.");
+  }
+
   await api.delete(`/api/v1/reports/${reportId}`);
 }
 
 export async function exportHealthSummary() {
+  if (isDemoSession()) {
+    throw new Error("AI health-summary export is disabled in static reviewer demo mode.");
+  }
+
   try {
     const response = await api.get("/api/v1/patients/me/export", {
       responseType: "blob",
@@ -108,6 +148,10 @@ export async function exportHealthSummary() {
 }
 
 export async function exportReportPdf(reportId, mode = "ai") {
+  if (isDemoSession()) {
+    return getDemoReportFile(reportId);
+  }
+
   try {
     const response = await api.get(`/api/v1/reports/${reportId}/export`, {
       params: { mode },

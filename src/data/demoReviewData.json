@@ -1,0 +1,2405 @@
+{
+  "exported_at": "2026-05-02T11:35:43.0531312Z",
+  "users": [
+    {
+      "email": "lakhan.bang007@gmail.com",
+      "admin_code": null,
+      "full_name": "Lakhan bang",
+      "role": "PATIENT",
+      "is_active": true,
+      "id": "3da04cbd-9487-4c47-9d26-5e64d4573c5d",
+      "created_at": "2026-03-31T20:40:33+05:30",
+      "updated_at": "2026-04-02T20:22:18.929303+05:30"
+    },
+    {
+      "email": "aarav.sharma@doctorcopilot.in",
+      "admin_code": null,
+      "full_name": "Dr. Aarav Sharma",
+      "role": "DOCTOR",
+      "is_active": true,
+      "id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "created_at": "2026-03-31T22:24:31+05:30",
+      "updated_at": "2026-04-01T04:21:05.177508+05:30"
+    }
+  ],
+  "patients": [
+    {
+      "user_id": "3da04cbd-9487-4c47-9d26-5e64d4573c5d",
+      "patient_id": "P-10005",
+      "gender": "male",
+      "birth_date": "2003-05-22",
+      "age": 22,
+      "blood_group": "B+",
+      "phone_number": "7014212413",
+      "emergency_contact": null,
+      "medical_history": null,
+      "id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "created_at": "2026-03-31T20:40:33+05:30",
+      "updated_at": "2026-04-02T21:38:47.803874+05:30",
+      "personal_api_key_enabled": false
+    }
+  ],
+  "doctors": [
+    {
+      "user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "license_number": "D-10001",
+      "specialization": "General Physician",
+      "hospital": "AIIMS Delhi",
+      "location": "Delhi",
+      "phone_number": "9810001001",
+      "bio": "General physician focused on preventive and chronic care.",
+      "id": "17412fd5-005a-43c4-9123-3a233e43ce0f",
+      "created_at": "2026-03-31T22:24:31+05:30",
+      "updated_at": "2026-03-31T22:24:31+05:30"
+    }
+  ],
+  "cases": [
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "doctor_id": "17412fd5-005a-43c4-9123-3a233e43ce0f",
+      "title": "Consultation Request for General Physician",
+      "description": "Patient requested a consultation with Dr. Aarav Sharma.",
+      "request_origin": "patient",
+      "referral_note": null,
+      "referred_by_doctor_id": null,
+      "report_access_status": "requested",
+      "report_access_requested_at": "2026-04-11T00:14:14.455461+05:30",
+      "report_access_updated_at": "2026-04-11T00:14:14.455461+05:30",
+      "report_access_requested_by_doctor_id": "17412fd5-005a-43c4-9123-3a233e43ce0f",
+      "status": "OPEN",
+      "closing_note": null,
+      "closed_by_doctor_id": null,
+      "closed_at": null,
+      "id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "created_at": "2026-04-01T15:35:26+05:30",
+      "updated_at": "2026-04-11T00:14:14.457717+05:30"
+    },
+    {
+      "patient_id": "5f8bc05c-4118-4ac2-8fde-d170fa75748a",
+      "doctor_id": "17412fd5-005a-43c4-9123-3a233e43ce0f",
+      "title": "Consultation Intake",
+      "description": "Doctor opened a direct consultation and started the conversation.",
+      "request_origin": "doctor_initiated",
+      "referral_note": null,
+      "referred_by_doctor_id": null,
+      "report_access_status": "not_requested",
+      "report_access_requested_at": null,
+      "report_access_updated_at": null,
+      "report_access_requested_by_doctor_id": null,
+      "status": "OPEN",
+      "closing_note": null,
+      "closed_by_doctor_id": null,
+      "closed_at": null,
+      "id": "af7b285d-322b-4f02-95b9-96c8bf812fc1",
+      "created_at": "2026-04-01T22:52:18.691029+05:30",
+      "updated_at": "2026-04-01T22:52:18.691029+05:30"
+    }
+  ],
+  "reports": [
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "case_id": null,
+      "file_name": "Adobe Scan Mar 27, 2026.pdf",
+      "file_path": "b80f732cd0924cf2841eafde34f44f2c.pdf",
+      "mime_type": "application/pdf",
+      "checksum": "56921cd5b41e45d02c82ea1cb7eebdbe3803557fadecdecbf5a3da1c3f6a464a",
+      "report_type": "biochemistry, hematology, immunoassay",
+      "report_category": "liver",
+      "report_keywords": [
+        "eosinophils low",
+        "mch low",
+        "mchc low",
+        "platelets high"
+      ],
+      "report_metadata": {
+        "lab": {
+          "phone": "091590245",
+          "lab_id": null,
+          "address": "Lab/Study No.",
+          "lab_name": "Lab Study No",
+          "location": "Lab/Study No.",
+          "accreditation": null,
+          "hospital_name": null
+        },
+        "admin": {
+          "barcode": null,
+          "report_id": null,
+          "registration_number": null
+        },
+        "flags": [],
+        "notes": [
+          "Ast (IFCC (without P5P) Alt(FCC (without P5P)) Alp (FCC (PNPP)"
+        ],
+        "doctor": {
+          "doctor_name": "Dr. Anjali Chimnani . . . . . . . . . . . . . . . . . . . Absolute Basophil Count . Department Of Pathology Abha",
+          "doctor_contact": null,
+          "referring_doctor": null,
+          "consulting_doctor": null,
+          "doctor_specialization": "of Biochemistry"
+        },
+        "report": {
+          "drawn_date": null,
+          "report_date": null,
+          "report_time": null,
+          "report_type": "Total Bilirubin:989262502266479",
+          "received_date": null,
+          "reported_date": null,
+          "collection_date": null,
+          "date_confidence": "low",
+          "test_panel_name": "Total Bilirubin:989262502266479",
+          "report_generation_date": null
+        },
+        "sample": {
+          "sample_id": null,
+          "sample_type": "serum",
+          "fasting_status": null,
+          "sample_condition": null
+        },
+        "machine": {
+          "test_method": "Gastroenterology",
+          "analyzer_name": null
+        },
+        "patient": {
+          "age": "22",
+          "gender": "male",
+          "full_name": "Deptunit",
+          "patient_id": null,
+          "contact_info": {
+            "email": null,
+            "phone": "091590245"
+          },
+          "accession_number": null
+        },
+        "reference": {
+          "lab_notes": [],
+          "reference_ranges": [],
+          "interpretation_hints": []
+        }
+      },
+      "parameters": [
+        {
+          "name": "albumin",
+          "unit": "g/dL",
+          "panel": "liver",
+          "value": 4.72,
+          "status": "normal",
+          "original_name": "albumin",
+          "interpretation": "normal",
+          "reference_range": "3.5-5.3",
+          "reference_range_raw": "3.5-5.3",
+          "reference_range_parsed": {
+            "max": 5.3,
+            "min": 3.5
+          }
+        },
+        {
+          "name": "alt",
+          "unit": "U/L",
+          "panel": "liver",
+          "value": 24.6,
+          "status": "normal",
+          "original_name": "alt",
+          "interpretation": "normal",
+          "reference_range": "0.0-50.0",
+          "reference_range_raw": "0-50",
+          "reference_range_parsed": {
+            "max": 50,
+            "min": 0
+          }
+        },
+        {
+          "name": "ast",
+          "unit": "U/L",
+          "panel": "liver",
+          "value": 23.9,
+          "status": "normal",
+          "original_name": "ast",
+          "interpretation": "normal",
+          "reference_range": "0.0-50.0",
+          "reference_range_raw": "0-50",
+          "reference_range_parsed": {
+            "max": 50,
+            "min": 0
+          }
+        },
+        {
+          "name": "basophils",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 0.1,
+          "status": "normal",
+          "original_name": "basophils",
+          "interpretation": "normal",
+          "reference_range": "0.0-1.0",
+          "reference_range_raw": "0-1",
+          "reference_range_parsed": {
+            "max": 1,
+            "min": 0
+          }
+        },
+        {
+          "name": "creatinine",
+          "unit": "mg/dL",
+          "panel": "kidney",
+          "value": 0.94,
+          "status": "normal",
+          "original_name": "creatinine",
+          "interpretation": "normal",
+          "reference_range": "0.7-1.2",
+          "reference_range_raw": "0.67-1.17",
+          "reference_range_parsed": {
+            "max": 1.17,
+            "min": 0.67
+          }
+        },
+        {
+          "name": "eosinophils",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 0.8,
+          "status": "low",
+          "original_name": "eosinophils",
+          "interpretation": "low",
+          "reference_range": "1.0-6.0",
+          "reference_range_raw": "1-6",
+          "reference_range_parsed": {
+            "max": 6,
+            "min": 1
+          }
+        },
+        {
+          "name": "globulin",
+          "unit": "g/dL",
+          "panel": "liver",
+          "value": 2.9,
+          "status": "normal",
+          "original_name": "globulin",
+          "interpretation": "normal",
+          "reference_range": "2.0-3.5",
+          "reference_range_raw": "2-3.5",
+          "reference_range_parsed": {
+            "max": 3.5,
+            "min": 2
+          }
+        },
+        {
+          "name": "hematocrit",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 46.9,
+          "status": "normal",
+          "original_name": "hematocrit",
+          "interpretation": "normal",
+          "reference_range": "35.0-47.0",
+          "reference_range_raw": "35-47",
+          "reference_range_parsed": {
+            "max": 47,
+            "min": 35
+          }
+        },
+        {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "panel": "cbc",
+          "value": 15,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "11.0-15.0",
+          "reference_range_raw": "11-15",
+          "reference_range_parsed": {
+            "max": 15,
+            "min": 11
+          }
+        },
+        {
+          "name": "lymphocytes",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 37.5,
+          "status": "normal",
+          "original_name": "lymphocytes",
+          "interpretation": "normal",
+          "reference_range": "20.0-40.0",
+          "reference_range_raw": "20-40",
+          "reference_range_parsed": {
+            "max": 40,
+            "min": 20
+          }
+        },
+        {
+          "name": "mch",
+          "unit": "pg",
+          "panel": "cbc",
+          "value": 26.7,
+          "status": "low",
+          "original_name": "mch",
+          "interpretation": "low",
+          "reference_range": "27.0-32.0",
+          "reference_range_raw": "27-32",
+          "reference_range_parsed": {
+            "max": 32,
+            "min": 27
+          }
+        },
+        {
+          "name": "mchc",
+          "unit": "g/dL",
+          "panel": "cbc",
+          "value": 31.9,
+          "status": "low",
+          "original_name": "mchc",
+          "interpretation": "low",
+          "reference_range": "32.0-36.0",
+          "reference_range_raw": "32-36",
+          "reference_range_parsed": {
+            "max": 36,
+            "min": 32
+          }
+        },
+        {
+          "name": "mcv",
+          "unit": "fL",
+          "panel": "cbc",
+          "value": 83.7,
+          "status": "normal",
+          "original_name": "mcv",
+          "interpretation": "normal",
+          "reference_range": "76.0-93.0",
+          "reference_range_raw": "76-93",
+          "reference_range_parsed": {
+            "max": 93,
+            "min": 76
+          }
+        },
+        {
+          "name": "monocytes",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 6.9,
+          "status": "normal",
+          "original_name": "monocytes",
+          "interpretation": "normal",
+          "reference_range": "2.0-8.0",
+          "reference_range_raw": "2-8",
+          "reference_range_parsed": {
+            "max": 8,
+            "min": 2
+          }
+        },
+        {
+          "name": "neutrophils",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 54.4,
+          "status": "normal",
+          "original_name": "neutrophils",
+          "interpretation": "normal",
+          "reference_range": "40.0-70.0",
+          "reference_range_raw": "40-70",
+          "reference_range_parsed": {
+            "max": 70,
+            "min": 40
+          }
+        },
+        {
+          "name": "platelets",
+          "unit": "/µL",
+          "panel": "cbc",
+          "value": 171000,
+          "status": "high",
+          "original_name": "platelets",
+          "interpretation": "high",
+          "reference_range": "150.0-450.0",
+          "reference_range_raw": "150-450",
+          "reference_range_parsed": {
+            "max": 450,
+            "min": 150
+          }
+        },
+        {
+          "name": "total_protein",
+          "unit": "g/dL",
+          "panel": "liver",
+          "value": 7.62,
+          "status": "normal",
+          "original_name": "total_protein",
+          "interpretation": "normal",
+          "reference_range": "6.6-8.3",
+          "reference_range_raw": "6.6-8.3",
+          "reference_range_parsed": {
+            "max": 8.3,
+            "min": 6.6
+          }
+        },
+        {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "panel": "cbc",
+          "value": 6.25,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4.0-11.0",
+          "reference_range_raw": "4-11",
+          "reference_range_parsed": {
+            "max": 11,
+            "min": 4
+          }
+        }
+      ],
+      "patient_name": "Deptunit",
+      "lab_name": "Lab Study No",
+      "doctor_name": "Dr. Anjali Chimnani . . . . . . . . . . . . . . . . . . . Absolute Basophil Count . Department Of Pathology Abha",
+      "sample_type": "serum",
+      "machine_used": null,
+      "report_date": null,
+      "sample_collection_date": null,
+      "report_generation_date": null,
+      "report_time": null,
+      "date_confidence": "low",
+      "summary": "Routine biochemistry and hematology analyses were conducted, including liver function, kidney function, complete blood count, and immunoassay for anti-tissue transglutaminase antibodies. Liver enzymes and bilirubin levels were noted. Blood cell indices were assessed. All values were within reference ranges unless specified.",
+      "status": "PROCESSED",
+      "id": "200a4233-54b2-408a-b9e9-56e7486e36f5",
+      "created_at": "2026-04-02T20:53:23.688232+05:30",
+      "updated_at": "2026-04-02T20:53:43.552777+05:30",
+      "raw_text": "Routine Biochemistry\nABHA No\nCR No\nPatient Name\nDeptUnit\nALL INDIA INsTITUTE OF MEDICAL SCIENCES, JODHPUR\nSample Type/No: Serum/091590245\nInvestigation Total Bilirubin:989262502266479\nGlobulin\nLakhan Bang\n(DIAZOTIZATION with surfactant) Direct Bilirubin (DIAZOTIZATION)\nBlood Urea: Gastroenterology\nTotal Protein (BIURET) Albumin (BCG)\nComments:\nAst (IFCC (without P5P) Alt(FCC (without P5P)) Alp (FCC (PNPP)\nSerum Creatinine\nResult\n0.86\n0.15\n7.62 4.72 2.90 24.6 23.9 55\n21.0\nDepartment of Biochemistry\n0.94\nABHA ADDRESS\nLab/Study No.\nAge/Sex\nWard/OPD\nlakhanbang02 @abdm\n091590245\n:22 Yr /M:OPD\n* END OF THE REPORT ****\nUnit\ng/dL\nmg/dL\ngldL\nmg/dL\ng/dL UL\nColl./Study Date\nUIL\nAcceptance Date\nUL\nReporting Date\nmg/dL mg/dL:15-Sep-25 09:21\n:15-Sep-25 11:36\n:15-Sep-25 13:12\nRef. Range\n0.3-1.2\n0-0.2\n6.6 -8.3 3.5 -5.3 2-3.5 0-50 0-50 30 - 120 17-43 0.67 - 1.17\nHematology\nABHA No\nCR No\nPatient Name\nDept/Unit\nP-LCR (*)\nAbsolute IG (\") Absolute NRBC (\")\n()\nALL INDIA INSTITUTE OF MEDICAL SCIENCES, JODHPUR\nSample TypeNo: Whole Blood/250915H0237 Ward/OPD\nMean Platelet Volume (\")\nPCT (\")\n:989262502266479\nPlatelet Distribution Width\nReticulocytes IRF\nLakhan Bang\nResult Method:Gastroenterology\nComments:\nReticulocyte Hemoglobin\n0.02 0.00 11.7 50.3\n28.0\nDepartment of Pathology\n0.200\nABHA ADDRESS: lakhanbang02 @abdm\nLab/Study No.\nAge/Sex: 250915H0237\n:22 Yr M:OPD\nEND OF THE REPORT\nColL/Study Date\nAcceptance Date\nReporting Date:15-Sep-25 09:21\n:15-Sep-25 12:48\n:15-Sep-25 14:51\nHematology ABHA NO\nCR No\nPatient Name\nDept/Unit\nInvestigation Hemoglobin (\")\nHematrocit (\")\nALL INDIA INSTITUTE OF MEDICAL SCIENCES, JODHPUR\nSample Type/No: Whole Blood/250915H0237 Ward/OPD\nWhite Blood Cell Count (\")\nPlatelet Count (\")\n()\nRBC Count (\")\nRdw SD (\")\nMean Cell Volume (\") Mean Cell Hemoglobin (\") Mean Cell Hb Concentration\nRDW CV ()\n:989262502266479\n: Lakhan Bang\nMonocytes (\") Eosinophils (\") Basophils (*)\n:Gastroenterology\nNeutrophils (\") Lymphocytes (\")\n(\")\nImature Granulocytes (\") Nucleated RBC (\")\n()\nAbsolute Neutrophil Count\n()\nAbsolute Lymphocyte Count\n(\")\nAbsolute Monocyte Count\nAbsolute Eosinophil Count\nResult 15.0\nValidated By: Dr Anjali Chimnani\n6.25\n171\n46.9\n5.60\n83.7 26.7\n31.9\n33.5 13.8 54.4 37.5 6.9 0.8 0.1 0.3 0.0\n3.41\n2.34\n0.43\n0.05\nAbsolute Basophil Count (\") 0.00\nDepartment of Pathology\nABHA ADDRESS: lakhanbang02@@abdm\nLab/Study No.\nAge/Sex\n250915H0237\nThis is computer generated report. Signature not required\n22 Yr IM\nOPD\nX\nUnit gm/dL\nmm\n10^3/cu.\nThousan\ncroL\nColl/Study Date\nd/MicrolL\nfL\nAcceptance Date\nMillion/Mi\nPg\nReporting Date\n%\n%\ng/dL\n%\nThousan dIMicroL Thousan d/MicroL Thousan d/MicroL Thousan d/MicroL Thousan d/MicroL\n15-Sep-25 09:21\n15-Sep-25 12:48\n15-Sep-25 14:51\nRef. Range 11 - 15\n4-11\n150-450\n4-5.5\n76-93 27 - 32\n32-36\n11 - 16 40-70 20-40 2-8 1-6 0-1\n1.5 -7\n1-3.7\n0-0.7\n0-0.40\nAll reports need clinical correlation. Kindly discuss if necessary. No part of the report can be reproduced without written permission of the department.\n0 -0.10\nPage 1 of 2\nImmunoassay\nABHA NO\nCR No\nPatient Name\nALL INDIA INSTITUTE OF MEDICAL SCIENCES, JODHPUR\nSample TypeNo\nDeptUnit\nComments:\n989262502266479\n: Lakhan Bang: Serum/091510093\n: Gastroenterology\nInvestigation Anti Tissue\nTransglutaminase\nDepartment of Biochemistry\nResult\n<0.200\nABHA ADDRESS: lakhanbang02 @abdm\nLab/Study No.\nAge/Sex\nWard/OPD:091510093\n:22 Yr IM\nOPD\n***** END OF THE REPORT ee***eos\nColl/Study Date\nAcceptance Date\nUnit\nReporting Date\nAu/mL:15-Sep-25 09:21\n:15-Sep-25 10:53\n:15-Sep-25 13:43\nRef. Range\n<8",
+      "static_file_url": "/demo-files/Adobe Scan Mar 27, 2026.pdf"
+    },
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "case_id": null,
+      "file_name": "blood test 2022.pdf",
+      "file_path": "85b4b4140eb34682829e25653fb385f0.pdf",
+      "mime_type": "application/pdf",
+      "checksum": "65a3c7855ab4f29088bd5eaff0f264b4774e34cde8ad878b8b0ef9d7d4ff86b2",
+      "report_type": "Laboratory Report",
+      "report_category": null,
+      "report_keywords": [],
+      "report_metadata": {
+        "lab": {
+          "lab_id": null,
+          "address": null,
+          "lab_name": "Immediately For Possible Remedial Action. Ch, Tyr T 0291-2972787 Page 1 Of 4",
+          "accreditation": null,
+          "hospital_name": "JODHPUR. Department of Bio-Chemistry, Dr. S. N. Medical College Jodhpur. ) COMPUTER CODE: 40155"
+        },
+        "admin": {
+          "barcode": "Ref. By",
+          "report_id": null,
+          "registration_number": null
+        },
+        "flags": [],
+        "notes": [],
+        "doctor": {
+          "doctor_name": "Dr. Mamka Magadhi Pathologist M.d. Rmc No",
+          "referring_doctor": null,
+          "consulting_doctor": null,
+          "doctor_specialization": "of Bio-Chemistry, Dr. S. N. Medical College Jodhpur. ) COMPUTER CODE: 40155"
+        },
+        "report": {
+          "drawn_date": null,
+          "report_date": "2024-09-15",
+          "report_time": null,
+          "report_type": "RBC COUNT,EDTA Electrical resistance detection HAEMOGLOBIN,EDTA MCV,EDTA Surfactant method (colorimetric method)",
+          "received_date": null,
+          "reported_date": "2024-09-15",
+          "collection_date": null,
+          "date_confidence": "low",
+          "test_panel_name": "RBC COUNT,EDTA Electrical resistance detection HAEMOGLOBIN,EDTA MCV,EDTA Surfactant method (colorimetric method)",
+          "report_generation_date": null
+        },
+        "sample": {
+          "sample_id": null,
+          "sample_type": "blood",
+          "fasting_status": null,
+          "sample_condition": null
+        },
+        "machine": {
+          "test_method": "(colorimetric",
+          "analyzer_name": "Enhanced CLIA (Vitros 3600 -Ortho Clinical Diagnostics) 2. Test are performed as per instruction manual provided with kits. L Reg. No. :19615"
+        },
+        "patient": {
+          "age": "1",
+          "gender": null,
+          "full_name": "Mr. Lakhan",
+          "patient_id": "BARCODEREFBY",
+          "contact_info": {
+            "email": "info@rognidan.org",
+            "phone": "012206280100"
+          },
+          "accession_number": null
+        },
+        "reference": {
+          "lab_notes": [],
+          "reference_ranges": [],
+          "interpretation_hints": []
+        }
+      },
+      "parameters": [
+        {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "value": 15.1,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "13.0-17.0",
+          "reference_range_raw": "13.0-17.0",
+          "reference_range_parsed": {
+            "max": 17,
+            "min": 13
+          }
+        },
+        {
+          "name": "iron",
+          "unit": "µg/dL",
+          "value": 96.3,
+          "status": "normal",
+          "original_name": "iron",
+          "interpretation": "normal",
+          "reference_range": "60.0-160.0",
+          "reference_range_raw": "60-160",
+          "reference_range_parsed": {
+            "max": 160,
+            "min": 60
+          }
+        },
+        {
+          "name": "platelets",
+          "unit": "/µL",
+          "value": 172,
+          "status": "normal",
+          "original_name": "platelets",
+          "interpretation": "normal",
+          "reference_range": "150.0-410.0",
+          "reference_range_raw": "150-410",
+          "reference_range_parsed": {
+            "max": 410,
+            "min": 150
+          }
+        },
+        {
+          "name": "vitamin_b12",
+          "unit": "pg/mL",
+          "value": 89,
+          "status": "low",
+          "original_name": "vitamin_b12",
+          "interpretation": "low",
+          "reference_range": "211.0-911.0",
+          "reference_range_raw": "211.0-911.0",
+          "reference_range_parsed": {
+            "max": 911,
+            "min": 211
+          }
+        },
+        {
+          "name": "vitamin_d",
+          "unit": "ng/mL",
+          "value": 9.77,
+          "status": "deficient",
+          "original_name": "vitamin_d",
+          "interpretation": "deficient",
+          "reference_range": "20.0-100.0",
+          "reference_range_raw": "DEFICENT:-<20.0 ng/ml",
+          "reference_range_parsed": {
+            "max": 100,
+            "min": 20
+          }
+        },
+        {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "value": 5.58,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4.0-10.0",
+          "reference_range_raw": "4.00-10.00",
+          "reference_range_parsed": {
+            "max": 10,
+            "min": 4
+          }
+        }
+      ],
+      "patient_name": "Mr. Lakhan",
+      "lab_name": "Immediately For Possible Remedial Action. Ch, Tyr T 0291-2972787 Page 1 Of 4",
+      "doctor_name": "Dr. Mamka Magadhi Pathologist M.d. Rmc No",
+      "sample_type": "blood",
+      "machine_used": "Enhanced CLIA (Vitros 3600 -Ortho Clinical Diagnostics) 2. Test are performed as per instruction manual provided with kits. L Reg. No. :19615",
+      "report_date": "2024-09-15",
+      "sample_collection_date": null,
+      "report_generation_date": "2024-09-15",
+      "report_time": null,
+      "date_confidence": "low",
+      "summary": "Complete blood count, iron profile, and vitamin levels evaluated. Several values are outside their reference ranges, indicating potential issues with blood components.",
+      "status": "PROCESSED",
+      "id": "35d6ea9e-0750-4519-b16e-be7ed8f6e0f1",
+      "created_at": "2026-03-31T21:07:43+05:30",
+      "updated_at": "2026-03-31T21:07:52.710232+05:30",
+      "raw_text": "Patient Name:Mr. LAKHAN Age/Sex Patient ID Barcode Ref. By\nTest Name\nRBC COUNT,EDTA Electrical resistance detection HAEMOGLOBIN,EDTA MCV,EDTA Surfactant method (colorimetric method)\nCalculated\nPCV/ HAEMATOCRIT,EDTA\nMCH,EDTA\nHistogram calculation\nCalculated MCHC,EDTA Calculated:19 Y/Male\nCalculated:012206280100\nRDW-SD: 10098340\nCalculated:Dr. G.L.GUPTA\nRDW (CV),EDTA\nNEUTROPHIL\nCalculated\nFlow Cytomerty LYMPHOCYTES Flow Cytomerty MONOCYTES Flow Cytomerty EOSINOPHIL Flow Cytomerty BASOPHILS Flow Cytomerty ABSCLUTE NEUTROPHL COUNT\nCaicuiated Calculated\nABSOLUTE MONOCYTES COUNT\nDIFFERENTIAL LEUCOCYTE COUNT\nABSOLUTE EOSINOPHILS COUNT\nValue\nWBC (TOTAL LEUCOCYTE COUNT) 5.58 Electrical resistance detection\nABSOLUTE BASOPHILS COUNT Calculated\n5.37 15.1 v 47.8\nEmail:info@rognidan.org\n89.00 28.1 31.6 13.2 43.50\n58.4\nABSOLUTE LYMPHOCYTES COUNT 1.92 Calculated\n34.40 4.3\nCBC, COMPLETE BLOOD COUNT,EDTA\n2.70 0.2 3.3\n0.24 0.15 0.01\nROGIDAN SEWA The Oldest Diagnostic Centre at Actual Cost\nRegistered Collection Received Panel Reported\nStatus:28/Jun/2022\nH:28/Jun/2022 10:09AM\nNOT VALID FOR MEDICO LEGAL CASES:28/Jun/2022 10:09AM: 28/Jun/2022 10:51AM: Walk-In\nUnit\nL\n10^6/uL gm/dL % fL Pg gm/dL % FL X10^3uL\n% % %\n%\nBio Ref.Jnterval\nx10^3/mn3 x10^3/mm^3 x10^3/mm^3 x10^3/mm^3 x10^3/mm^3\n4.8-5.8 13.0-17.0 36.0-46.0 76-96 27-33 31.0-35.0 11.6-14.0 40.0-57.0 4.00-10.00\n40-80 20-40 2-10 1-6 0.0-1.0 2.0 -7.0 1.0-3.0 0.2 -1.0 0.2 -0.5 0.02 -0.1\nRECENTLY INTRODUCED TEST-BLOOD CULTURE, PUS CULTURE, CSF CULTURE\nDr.Mamka Magadhi Pathologist (M.D.) RMC No. 19753\nIf test results are alarming or unexpected, patient is advised to contact the laboratory immediately for possible remedial action. ch, tyR T 0291-2972787 Page 1 of 4\nPatient Name: Mr. LAKHAN Age/Sex Patient ID Barcode Ref. By\nTest Name:19 Y/Male:012206280100\nMPV: 10098340 : Dr. G.LGUPTA\nPLATELET COUNT,EDTA Electrical resistance detection P-LCR\nValue 172\nEmail:info @rognidan.org\n51.70 13.50\nROGIDAN SEWA The Oldest Diagnostic Centre at Actual Cost\nRegistered Collection Received Panel Reported\nStatus\nH H\nNOT VALID FOR MEDICO LEGAL CASES\n28/Jun/2022 : 28/Jun/2022 10:09AM 28/Jun/2022 10:09AM 28/Jun/2022 10:51AM\nHAEMATOLOGY has been performed on fully automatic machine XNS50 NetWork\nWalk-In\nUnit x10^3/uL % FL\nBio Ref. Interval 150-410 15.0-35.0 8.0-11.5\nRECENTLY INTRODUCED TEST BLOOD CULTURE, PUS CULTURE, CSF CULTURE If test results are alarming or unexpected, patient is advised to contact the laboratory immediately for possible remedial action.\nDr.Maika Magadhi Pathologist (M.D) RMC No. 19753\nAg6Yc, ty2 0291-2972787 Page 2 of 4\nPatient Name:Mr. LAKHAN Age/Sex Patient ID Barcode Ref. By\nTest Name\nENZYMATIC UREA,Serum CREATININE,Serum\nUrease\nIRON,Serum Pyridium azo dye\n<\nUIBC:19 Y/Male:012206280100 10098340\nPyridyl azo dye: Dr. G.L.GUPTA\nTOTAL IRON BINDING CAPACITY TRANSFERRIN SATURATION Calculated\nValue 0.83\nEmail:info@rognidan.org\n15.40\n96.3 283.00 379.3\n25.39\nROG IDAN SEWA\nRegistered\nThe Oldest Diagnostic Centre at Actual Cost\nCollection Received Panel Reported\nIRON PROFILE\nStatus\nBIOCHEMISTRY has been performed on fully automatic machine AU480NEW: 28/Jun/2022\nNOT VALID FOR MEDICO LEGAL CASES:28/Jun/2022 10:09AM:28/Jun/2022 10:09AM: 28/Jun/2022 11:22AM: Walk-In\nUnit mg/dL mg/dL\nug/dL ugldL\nBio Ref.Interval 0.6-1.2 10.0-50.0\n60-160 261.0-462.0 16.0 -45.0\ntaluits.\nRECENTLY INTRODUCED TEST-BLOOD CULTURE, PUS CULTURE, CSF CULTURE lf test results are alarming or unexpected, patient is advised to contact the laboratory immediately for possible remedial action. + gia: 5,6,7,8 TeÍ TsS, ARR ứs A6 qh, y 0291-2972787\nDr.Mamka Magadhi Pathologist (M.D.) RMC No. 19753\nPage 3 of 4\nPatient Name: Mr. LAKHAN AgeSex Patient ID Barcode Ref. By\nTest Name:19 Y/Male:012206280100 : 10098340 : Dr. G.L.GUPTA\nVITAMIN B12 LEVEL,Serum Cheminumilescence\nVITAMIN D(25 OH),Serum Cheminumilescence\nValue 89.00\nEmail:info@rognidan.org\n9.77\nRegistered Collection Received\nThe Oldest Diagnostic Centre at Actual Cost\nReported Panel\nIMMUNOLOGY has ",
+      "static_file_url": "/demo-files/blood test 2022.pdf"
+    },
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "case_id": null,
+      "file_name": "989262502007791_10029_03242026031709.894PM.pdf",
+      "file_path": "1ed546d84cf04626851998d232ae7958.pdf",
+      "mime_type": "application/pdf",
+      "checksum": "c644203df3f5216838f63c7c5dbf220691286fcb92a1d30ecf975043e0ef8118",
+      "report_type": "Coronary CT Angiography",
+      "report_category": "radiology",
+      "report_keywords": [],
+      "report_metadata": {
+        "lab": {
+          "phone": "37532033304733",
+          "lab_id": null,
+          "address": "37532033304733@abdm CR No: 989262502007791 Lab/Study No. : 260319CTL0030 Coll./Study Date: 19-Mar-26 11:08",
+          "lab_name": "C T Lab",
+          "location": "37532033304733@abdm CR No: 989262502007791 Lab/Study No. : 260319CTL0030 Coll./Study Date: 19-Mar-26 11:08",
+          "accreditation": null,
+          "hospital_name": null
+        },
+        "admin": {
+          "barcode": null,
+          "report_id": null,
+          "registration_number": null
+        },
+        "flags": [],
+        "notes": [
+          "********** END OF THE REPORT **********"
+        ],
+        "doctor": {
+          "doctor_name": "Dr. Palash",
+          "doctor_contact": null,
+          "referring_doctor": null,
+          "consulting_doctor": null,
+          "doctor_specialization": "of Radiology"
+        },
+        "report": {
+          "drawn_date": null,
+          "report_date": null,
+          "report_time": null,
+          "report_type": null,
+          "received_date": null,
+          "reported_date": null,
+          "collection_date": null,
+          "date_confidence": "low",
+          "test_panel_name": null,
+          "report_generation_date": null
+        },
+        "sample": {
+          "sample_id": null,
+          "sample_type": "/No: NA Ward/OPD: OPD Reporting Date: 24-Mar-26 14:45",
+          "fasting_status": null,
+          "sample_condition": null
+        },
+        "machine": {
+          "test_method": null,
+          "analyzer_name": null
+        },
+        "patient": {
+          "age": "48",
+          "gender": "male",
+          "full_name": "Kishan Lal Bang",
+          "patient_id": null,
+          "contact_info": {
+            "email": null,
+            "phone": "37532033304733"
+          },
+          "accession_number": null
+        },
+        "reference": {
+          "lab_notes": [],
+          "reference_ranges": [],
+          "interpretation_hints": []
+        }
+      },
+      "parameters": [],
+      "patient_name": "Kishan Lal Bang",
+      "lab_name": "C T Lab",
+      "doctor_name": "Dr. Palash",
+      "sample_type": "/No: NA Ward/OPD: OPD Reporting Date: 24-Mar-26 14:45",
+      "machine_used": null,
+      "report_date": null,
+      "sample_collection_date": null,
+      "report_generation_date": null,
+      "report_time": null,
+      "date_confidence": "low",
+      "summary": "Coronary arteries show varied degrees of stenosis. Graft vessels appear patent. Cardiac function is normal with an LVEF of 78%. Post-operative changes noted in lungs without significant abnormalities.",
+      "status": "PROCESSED",
+      "id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:53:09.239057+05:30",
+      "raw_text": "CORONARY CT ANGIOGRAPHY\nClinical profile: CABG, LIMA to diagonal, LRA to OM, RSVG to PDA.\nGrafts:\nLIMA to Diagonal: Patent. Diagonal to anastomosis – faintly opacified\nLRA to OM: Patent. Normally opacified distal to anastomosis.\nRSVG to PDA: Patent. Normally opacified distal to anastomosis.\nNative vessels:\nDominance: Right\nLMCA: Normal origin and course. No significant stenosis.\nLAD: Normal origin and course. Diffuse atherocalcific plaques and severely attenuated in calibre\ncausing approx. 70-80% luminal narrowing.\nLCx: Normal origin and course. Calcified plaque at the ostioproximal segment causing 30-\n40% stenosis. Graft distal to OM appears patent.\nDiagonal: Calcified plaque seen causing moderate to severe stenosis. Distal to anastomosis is\npatent with faint opacification.\nRCA: Normal origin and course. Moderate to severe disease with multiple eccentric calcified\natherosclerotic plaques seen in proximal and distal segment causing approx. 70-80% luminal\nnarrowing.\nPDA: Normal origin and course, Calcified plaque seen causing moderate to severe stenosis.\nDistal to anastomosis patent.\nPLV: Normal origin and course, No significant stenosis.\nCardiac valves: Normal.\nCardiac chambers: LA and LV appear normal. No pericardial effusion seen.\nLVEF: 78%, LVEDV: 131 cc.\nLungs: Post op changes seen in form of sternotomy defect. Rest of the lung parenchyma appears\nnormal.\nNo significant abnormality seen.\nImpression:\nLIMA to Diagonal: Patent. Diagonal to anastomosis – faintly opacified.\nLRA to OM: Patent. Normally opacified distal to anastomosis.\nRSVG to PDA: Patent. Normally opacified distal to anastomosis.\nDepartment of Radiology\nC T Lab\nABHA NO: ABHA ADDRESS: 37532033304733@abdm\nCR No: 989262502007791 Lab/Study No. : 260319CTL0030 Coll./Study Date: 19-Mar-26 11:08\nPatient Name: Kishan Lal Bang Age/Sex: 48 Yr /M Acceptance Date: 19-Mar-26 11:08\nSample Type/No: NA Ward/OPD: OPD Reporting Date: 24-Mar-26 14:45\nDept/Unit: Cardio Thoracic And Vascular Surgery\nAll reports need clinical correlation. Kindly discuss if necessary. No part of the report can be reproduced without written\npermission of the department.\nValidated By: Dr. Vishal Gupta\nPage 1 of\n2\n<div ><table width='100%' height='5%' cellspacing='0' cellpadding='0' border='0'\n'><tr><td align='left' colspan='13'></td></tr></table></div>\nReported by: Dr. Palash (Junior Resident) / Dr. Siddhi Chawla (Assistant Professor)\nComments:\n********** END OF THE REPORT **********\nDepartment of Radiology\nC T Lab\nABHA NO: ABHA ADDRESS: 37532033304733@abdm\nCR No: 989262502007791 Lab/Study No. : 260319CTL0030 Coll./Study Date: 19-Mar-26 11:08\nPatient Name: Kishan Lal Bang Age/Sex: 48 Yr /M Acceptance Date: 19-Mar-26 11:08\nSample Type/No: NA Ward/OPD: OPD Reporting Date: 24-Mar-26 14:45\nDept/Unit: Cardio Thoracic And Vascular Surgery\nAll reports need clinical correlation. Kindly discuss if necessary. No part of the report can be reproduced without written\npermission of the department.\nValidated By: Dr. Vishal Gupta\nPage 2 of\n2\n<div ><table width='100%' height='5%' cellspacing='0' cellpadding='0' border='0'\n'><tr><td align='left' colspan='13'></td></tr></table></div>",
+      "static_file_url": "/demo-files/989262502007791_10029_03242026031709.894PM.pdf"
+    },
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "case_id": null,
+      "file_name": "blood test 2018.pdf",
+      "file_path": "e57906ba947c4ccf83457cec245a9222.pdf",
+      "mime_type": "application/pdf",
+      "checksum": "bdbd51a4215aa4b61013a311d8fad41b526e40b5055afee163bef6502d5f46a4",
+      "report_type": "Laboratory Report",
+      "report_category": null,
+      "report_keywords": [],
+      "report_metadata": {
+        "lab": {
+          "lab_id": null,
+          "address": "SRL LIMITED S.S. WELLNESS CENTRE - JODHPUR Cert. No. MC-2015 SRL,REFERENCE LAB, GP-26, MARUTI INDUSTRIAL ESTATE,UDYOG t GROUND FLOOR, VIHAR, SECTOR-18, C-22,SHASTRI NAGAR NEAR CENTRAL ACADEMY SCHOOL GURGAON, 122015 P JODHPUR 342001 HARYANA, INDIA RAJASTHAN INDIA Tel: 1800-222-000, 1800-102-8282, Fax: 0124 0291-2646000 291-2644000 U74899PB1995PLC045956 5 Email: connect@srl.in",
+          "lab_name": "Diagnostics",
+          "accreditation": null,
+          "hospital_name": null
+        },
+        "admin": {
+          "barcode": null,
+          "report_id": null,
+          "registration_number": null
+        },
+        "flags": [
+          {
+            "flag": "low",
+            "value": "125",
+            "parameter": "DERIVED PARAMETER PLATELET COUNT"
+          },
+          {
+            "flag": "high",
+            "value": "13.1",
+            "parameter": "PLATELET HISTOGRAM MEAN PLATELET VOLUME"
+          },
+          {
+            "flag": "high",
+            "value": "50",
+            "parameter": "LYMPHOCYTES"
+          },
+          {
+            "flag": "high",
+            "value": "203",
+            "parameter": "SERUM IRON"
+          },
+          {
+            "flag": "high",
+            "value": "48.1",
+            "parameter": "SATURATION"
+          },
+          {
+            "flag": "low",
+            "value": "120",
+            "parameter": "Interval Units ALKALINE PHOSPHATASE"
+          },
+          {
+            "flag": "high",
+            "value": "237",
+            "parameter": "SPECTROPHOTOMETRY LACTATE DEHYDROGENASE"
+          },
+          {
+            "flag": "low",
+            "value": "40",
+            "parameter": "SPECTROPHOTOMETRY"
+          }
+        ],
+        "notes": [
+          "TEST CANCELLED AS SPECIMEN NOT RECEIVED",
+          "(s)"
+        ],
+        "doctor": {
+          "doctor_name": "Dr. Purshotam Dan",
+          "referring_doctor": "DR. PURSHOTAM DAN CLIENT PATIENT ID",
+          "consulting_doctor": null,
+          "doctor_specialization": null
+        },
+        "report": {
+          "drawn_date": null,
+          "report_date": "2018-05-18",
+          "report_time": null,
+          "report_type": "Complete Blood Count",
+          "received_date": null,
+          "reported_date": "2018-05-18",
+          "collection_date": null,
+          "date_confidence": "low",
+          "test_panel_name": null,
+          "report_generation_date": null
+        },
+        "sample": {
+          "sample_id": null,
+          "sample_type": "serum",
+          "fasting_status": "fasting",
+          "sample_condition": null
+        },
+        "machine": {
+          "test_method": "COULTER IMPEDENCE PRINCIPLE",
+          "analyzer_name": null
+        },
+        "patient": {
+          "age": "15",
+          "gender": "male",
+          "full_name": "Lakhan",
+          "patient_id": "ACCESSIONNO00009RE038594",
+          "contact_info": {
+            "email": "connect@srl.in",
+            "phone": "000021944"
+          },
+          "accession_number": "0Q009RE038594"
+        },
+        "reference": {
+          "lab_notes": [
+            "(s)"
+          ],
+          "reference_ranges": [],
+          "interpretation_hints": [
+            "(s)"
+          ]
+        }
+      },
+      "parameters": [
+        {
+          "name": "hematocrit",
+          "unit": "%",
+          "value": 42.3,
+          "status": "normal",
+          "original_name": "hematocrit",
+          "interpretation": "normal",
+          "reference_range": "40.0-50.0",
+          "reference_range_raw": "40 - 50",
+          "reference_range_parsed": {
+            "max": 50,
+            "min": 40
+          }
+        },
+        {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "value": 14.2,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "13.0-17.0",
+          "reference_range_raw": "13.0 - 17.0",
+          "reference_range_parsed": {
+            "max": 17,
+            "min": 13
+          }
+        },
+        {
+          "name": "iron",
+          "unit": "µg/dL",
+          "value": 203,
+          "status": "high",
+          "original_name": "iron",
+          "interpretation": "high",
+          "reference_range": "65.0-175.0",
+          "reference_range_raw": "65-175",
+          "reference_range_parsed": {
+            "max": 175,
+            "min": 65
+          }
+        },
+        {
+          "name": "lymphocytes",
+          "unit": "%",
+          "value": 50,
+          "status": "high",
+          "original_name": "lymphocytes",
+          "interpretation": "high",
+          "reference_range": "20.0-40.0",
+          "reference_range_raw": "20 - 40",
+          "reference_range_parsed": {
+            "max": 40,
+            "min": 20
+          }
+        },
+        {
+          "name": "platelets",
+          "unit": "/µL",
+          "value": 125,
+          "status": "low",
+          "original_name": "platelets",
+          "interpretation": "low",
+          "reference_range": "150.0-410.0",
+          "reference_range_raw": "150 - 410",
+          "reference_range_parsed": {
+            "max": 410,
+            "min": 150
+          }
+        },
+        {
+          "name": "vitamin_b12",
+          "unit": "pg/mL",
+          "value": 185,
+          "status": "low",
+          "original_name": "vitamin_b12",
+          "interpretation": "low",
+          "reference_range": "211.0-911.0",
+          "reference_range_raw": "211.0 - 911.0",
+          "reference_range_parsed": {
+            "max": 911,
+            "min": 211
+          }
+        },
+        {
+          "name": "vitamin_d",
+          "unit": "ng/mL",
+          "value": 20.59,
+          "status": "insufficient",
+          "original_name": "vitamin_d",
+          "interpretation": "insufficient",
+          "reference_range": "20.0-100.0",
+          "reference_range_raw": "> 20.0",
+          "reference_range_parsed": {
+            "max": 100,
+            "min": 20
+          }
+        },
+        {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "value": 5,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4.0-10.0",
+          "reference_range_raw": "4.0 - 10.0",
+          "reference_range_parsed": {
+            "max": 10,
+            "min": 4
+          }
+        }
+      ],
+      "patient_name": "Lakhan",
+      "lab_name": "Diagnostics",
+      "doctor_name": "Dr. Purshotam Dan",
+      "sample_type": "serum",
+      "machine_used": null,
+      "report_date": "2018-05-18",
+      "sample_collection_date": null,
+      "report_generation_date": "2018-05-18",
+      "report_time": null,
+      "date_confidence": "low",
+      "summary": "The report includes a complete blood count, liver function tests, glucose levels, and a lipid profile with notable findings of mild lymphocytosis, mild thrombocytopenia, low platelet count, high mean platelet volume, low alkaline phosphatase, high lactate dehydrogenase, vitamin D deficiency, low vitamin B12, and high serum iron and saturation. The patient shows normal glucose and glycated hemoglobin levels.",
+      "status": "PROCESSED",
+      "id": "79ead909-4161-4007-9203-d64a1711f0b5",
+      "created_at": "2026-03-31T21:05:52+05:30",
+      "updated_at": "2026-03-31T21:06:25.987781+05:30",
+      "raw_text": "Diagnostics\nVO aeaeencs Tl\nCLIENT CODE: C000021944\nCLIENT'S NAME AND ADDRESs: SRL LIMITED\nS.S. WELLNESS CENTRE - JODHPUR\nCert. No. MC-2015\nSRL,REFERENCE LAB, GP-26, MARUTI INDUSTRIAL ESTATE,UDYOG t\nGROUND FLOOR, VIHAR, SECTOR-18,\nC-22,SHASTRI NAGAR NEAR CENTRAL ACADEMY SCHOOL GURGAON, 122015 P\nJODHPUR 342001 HARYANA, INDIA\nRAJASTHAN INDIA Tel: 1800-222-000, 1800-102-8282, Fax: 0124\n0291-2646000 291-2644000 U74899PB1995PLC045956 5\nEmail: connect@srl.in\nPATIENT NAME: LAKHAN PATIENT ID:\nACCESSION NO: OQO09REO38594 Age: 15 Years SEX: Male DATE OF BIRTH:\nDRAWN: 18-05-2018 00:00 RECEIVED: 19-05-2018 09:31 REPORTED: 19-05-2018 13:57\nREFERRING DOCTOR: DR. PURSHOTAM DAN CLIENT PATIENT ID -\nTest Report Status Final Results Biological Reference Interval Units\nCOMPLETE CARE TOTAL\nCOMPLETE BLOOD COUNT\nRED BLOOD CELL COUNT 4.98 4.5-5.5 mii/pl\nMETHOD: COULTER IMPEDENCE PRINCIPLE\nHEMOGLOBIN 14.2° 13.0 - 17.0 g/dl\nMETHOD: PHOTOMETRIC MEASUREMENT ae\nHEMATOCRIT 42.3 40 - 50 %\nMETHOD: CALCULATED PARAMETER\nMEAN CORPUSCULAR VOL 84.8 83.0 - 101.0 fl\nMETHOD: DERIVED PARAMETER\nMEAN CORPUSCULAR HGB. 28.5 27.0 - 32.0 pg 7\nMETHOD: CALCULATED PARAMETER '\nMEAN CORPUSCULAR HEMOGLOBIN 33.6 31.5 - 34.5\nCONCENTRATION\nMETHOD: CALCULATED PARAMETER\nRED CELL DISTRIBUTION WIDTH 13.9 11.6 - 14.0 %\nMETHOD: DERIVED PARAMETER\nPLATELET COUNT 125 Low 150 - 410 thou/pl\nMETHOD: IMPEDENCE / PLATELET HISTOGRAM\nMEAN PLATELET VOLUME 13.1 High 6.8 - 10.9 FL\nMETHOD: DERIVED PARAMETER\nWHITE BLOOD CELL COUNT 5.00 4.0 - 10.0 thou/ul\nMETHOD: COULTER IMPEDENCE PRINCIPLE\nWBC DIFFERENTIAL COUNT\nSEGMENTED NEUTROPHILS\n45 40 - 80 ¢\nMETHOD: vcs TECHNOLOGY\nE@SINOPHILS 02 1-6\nMETHOD: vcs. TECHNOLOGY,\nLYMPHOCYTES 50 High 20 - 40 “ :\nMETHOD: vcs TECHNOLOGY ‘\nMONOCYTES 03 2-10 Yo\nMETHOD: vcs TECHNOLOGY\nBASOPHILS 00 <1-2 %\nMETHOD: vcs TECHNOLOGY\nDIFFERENTIAL COUNT PERFORMED ON:\nPERIPHERAL SMEAR EXAM, EDTA WHOLE BLOOD\nRBC\nEDTA SMEAR\nPREDOMINANTLY NORMOCYTIC NORMOCHROMIC PICTURE.\nPage 1 Of i0\na.\nSeas Ml\nCLIENT CODE; €000021944\nCLIENT'S NAME AND ADDRESs:\nS.S. WELLNESS CENTRE - JODHPUR\nCert. No. MC-2015\nSRL LIMITED\nSRL, REFERENC.\nGROUND FLOOR, VIHAR, SECTOR IL” OP26, MARUTI I\nC-22,SHASTRI NAGAR NEAR CENTRAL ACADEMY SCHOOL GURGAON, 122015\nJODHPUR 342001 HARYANA, INDIA\nRAJASTHAN INDIA\n9291-2646000 291-2644000\nTel: 1800-222-000, 1800-\n274899PB1995PLCOqsoRG\nEmail: connect@sr\\.in\nPATIENT NAME: LAKHAN\n102-8282, Fax\n‘\nNDUSTRIAL ESTATE, UDYOG\n‘\n: 0124-4591001 CIN -\nPATIENT ID:\nACCESSION NO: O0009RE038594 AGE: 45 Years SEX: Male\nDATE OF BIRTH:\nDRAWN: 18-05-2018 00:00 RECEIVED: 19-05-2018 09:31\nREPORTED: 19-05-2018 13:57\nREFERRING DOCToR:\nDR. PURSHOTAM DAN CLIENT PATIENT ID:\nTest Report Status Final Results Biological Reference Interyai Units\nMETHOD: MICROSCOPIC EXAMINATION\nWBC MILD RELATIVE LYMPHOCYTOSIS NOTED,\nMETHOD ; MICROSCOPIC EXAMINATION\nPLATELETS MILD THROMBOCYTOPENIA NOTED.\nMETHOD: MICROSCOPIC EXAMINATION\nTOTAL IRON BINDING CAPACITY, SERUM\nIRON 203 High 65-175 g/dL\nMETHOD: SPECTROPHOTOMETRY\nTOTAL IRON BINDING CAPACITY 422 250 - 450 g/dL\nMETHOD: SPECTROPHOTOMETRY\n% SATURATION 48.1 High 13 - 45 %\nMETHOD ; SPECTROPHOTOMETRY\nGLUCOSE, FASTING, PLASMA\nGLUCOSE, FASTING, PLASMA 77 74-99 mg/dL\nMETHOD: SPECTROPHOTOMETRY\nGLYCOSYLATED HEMOGLOBIN, EDTA WHOLE BLooD\nGLYCOSYLATED HEMOGLOBIN (HBA1C) 5.1 Non-diabetic: < 5.7 %\nPre-diabetics: 5.7 - 6.4\nDiabetics: > or = 6.5\nADA Target: 7.0\nAction Suggested: > 8.0\nMEAN PLASMA GLUCOSE 99.7 < 116.0 mg/dL:\nLIVER FUNCTION PROFILE, SERUM '\nBILIRUBIN, TOTAL 2.8 23-12 git\nMETHOD ; SPECTROPHOTOMETRY\nBILIRUBIN, DIRECT 0.10\n0.0-0.2 mg/dL\nMETHOD: SPECTROPHOTOMETRY\nTOTAL PROTEIN ee\n6.4- 8.2 g/dL\nTHOD: SPECTROPHOTOMETRY\nspin 4.2 3.4-5.0 g/dL\nJETHOD: SPECTROPHOTOMETRY\ndconuian 2.9 2.0-4.1 G/DL\nMETHOD: SPECTROPHOTOMETRY i 3a RATIO\nALBUMIN/GLOBULIN RATIO 1.5 :.\nMETHOD: SPECTROPHOTOMETRY — ut\nASPARTATE AMINOTRANSFERASE (AST/SGOT) 30\nMETHOD ; SPECTROPHOTOMETRY er u/t\nALANINE AMINOTRANSFERASE (ALT/SGPT) 22 :\nMETHOD: SPECTROPHOTOMETRY\nPage 2 Of 10\nNOSTIC REPORT\nMIPSC REI\nCLIENT CODE: C00002",
+      "static_file_url": "/demo-files/blood test 2018.pdf"
+    },
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "case_id": null,
+      "file_name": "blood test 2021.pdf",
+      "file_path": "b99fbc58171a494faaf99871a597b6f0.pdf",
+      "mime_type": "application/pdf",
+      "checksum": "91637f453f668ec72d29ee1498e1f00ab6da100ab1f950ec332560845c33fe28",
+      "report_type": "Medical Test Report",
+      "report_category": null,
+      "report_keywords": [],
+      "report_metadata": {
+        "lab": {
+          "lab_id": null,
+          "address": null,
+          "lab_name": "Satya Diagnostics C-16 A, Shastri Nagar, Jodhpur. Pt Name Cio Nav Jeevan Hospital Ref By. Receipt No 3315 Mr Lakhan",
+          "accreditation": null,
+          "hospital_name": "Ref By. Receipt No:3315 : MR LAKHAN HAEMOGRAM COMPLETE: W.B.C (WHITE BLOOD CELL COUNT) DLC (DIFFERENTIAL LEUCOCYTE COUNT) NEUTROPHILS LYMPHOCYTES EOSINOPHILS MONOCYTES HB (HEMOGLOBIN) ERYTHROCYTE SEDIMENTATION RATE PLATELET COUNT R.B.C (RED BLOOD CELL COUNT) H.C.I. (HEMATOCRIT) TEST M.C.V (MEAN CORPUSCULAR VOLUME ) MCH (MEAN CORPUSCULAR HEMOGLOBIN) MCHC (MEAN CORP. Hb CONCENTRATION) R.D.W. HAEMATOLOGY EXAMINATION REPORT C-REACTIVE PROTEN TEST PERIPHERAL BLOOD FILM RED BIOOD CELLS RESULT Sr. Tech. 8,900 NORMOCYTIC NORMOCHROMIC. WHITE BLOOD CELLS: 72 23 02 03 15.6 25 5.49 1,47,000 45.7 84.2 29.2 33.4 14.3 RESULT 5.7 MG/L MOLECULAR DIAGNOSTIC LAB Email: satyajodhpur@gmail.com O 0291-2614194 AII Days: 8.00 a.m. to 9.00 pm H"
+        },
+        "admin": {
+          "barcode": null,
+          "report_id": null,
+          "registration_number": null
+        },
+        "flags": [],
+        "notes": [],
+        "doctor": {
+          "doctor_name": "Dr. Anuraag M D Pathologist",
+          "referring_doctor": null,
+          "consulting_doctor": null,
+          "doctor_specialization": null
+        },
+        "report": {
+          "drawn_date": null,
+          "report_date": "2021-09-17",
+          "report_time": null,
+          "report_type": "Liver Function Test",
+          "received_date": null,
+          "reported_date": "2021-09-17",
+          "collection_date": null,
+          "date_confidence": "low",
+          "test_panel_name": null,
+          "report_generation_date": null
+        },
+        "sample": {
+          "sample_id": null,
+          "sample_type": "blood",
+          "fasting_status": null,
+          "sample_condition": null
+        },
+        "machine": {
+          "test_method": null,
+          "analyzer_name": null
+        },
+        "patient": {
+          "age": "18",
+          "gender": "male",
+          "full_name": "Mr Lakhan Ref By. Recejot No Urtne Examination Report Peyslcal Colour C O Nav Jeevan Hospital",
+          "patient_id": null,
+          "contact_info": {
+            "email": "satyajodhpur@gmail.com",
+            "phone": "72 23 02 03 15"
+          },
+          "accession_number": null
+        },
+        "reference": {
+          "lab_notes": [],
+          "reference_ranges": [],
+          "interpretation_hints": []
+        }
+      },
+      "parameters": [
+        {
+          "name": "hematocrit",
+          "unit": "%",
+          "value": 45.7,
+          "status": "normal",
+          "original_name": "hematocrit",
+          "interpretation": "normal",
+          "reference_range": "40.0-54.0",
+          "reference_range_raw": "40-54",
+          "reference_range_parsed": {
+            "max": 54,
+            "min": 40
+          }
+        },
+        {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "value": 15.6,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "13.0-17.0",
+          "reference_range_raw": "13-17",
+          "reference_range_parsed": {
+            "max": 17,
+            "min": 13
+          }
+        },
+        {
+          "name": "lymphocytes",
+          "unit": "%",
+          "value": 23,
+          "status": "normal",
+          "original_name": "lymphocytes",
+          "interpretation": "normal",
+          "reference_range": "20.0-40.0",
+          "reference_range_raw": "20-40",
+          "reference_range_parsed": {
+            "max": 40,
+            "min": 20
+          }
+        },
+        {
+          "name": "platelets",
+          "unit": "/µL",
+          "value": 147000,
+          "status": "low",
+          "original_name": "platelets",
+          "interpretation": "low",
+          "reference_range": "150000.0-500000.0",
+          "reference_range_raw": "150000-500000",
+          "reference_range_parsed": {
+            "max": 500000,
+            "min": 150000
+          }
+        },
+        {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "value": 8900,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4000.0-11000.0",
+          "reference_range_raw": "4000-11000",
+          "reference_range_parsed": {
+            "max": 11000,
+            "min": 4000
+          }
+        }
+      ],
+      "patient_name": "Mr Lakhan Ref By. Recejot No Urtne Examination Report Peyslcal Colour C O Nav Jeevan Hospital",
+      "lab_name": "Satya Diagnostics C-16 A, Shastri Nagar, Jodhpur. Pt Name Cio Nav Jeevan Hospital Ref By. Receipt No 3315 Mr Lakhan",
+      "doctor_name": "Dr. Anuraag M D Pathologist",
+      "sample_type": "blood",
+      "machine_used": null,
+      "report_date": "2021-09-17",
+      "sample_collection_date": null,
+      "report_generation_date": "2021-09-17",
+      "report_time": null,
+      "date_confidence": "low",
+      "summary": "The report includes hematology, liver function, urine examination, and some biochemistry results for an 18-year-old male.",
+      "status": "PROCESSED",
+      "id": "f6a316cb-66ab-41fe-aba2-c72f759d3785",
+      "created_at": "2026-03-31T21:07:03+05:30",
+      "updated_at": "2026-03-31T21:07:23.514789+05:30",
+      "raw_text": "Since 1994 Dr. Ahuraag\nTEST\nSATYA DIAGNOSTICS C-16 A, Shastri Nagar, Jodhpur. Pt Name CIO NAV JEEVAN HOSPITAL Ref By. Receipt No:3315 : MR LAKHAN\nHAEMOGRAM COMPLETE:\nW.B.C (WHITE BLOOD CELL COUNT) DLC (DIFFERENTIAL LEUCOCYTE COUNT) NEUTROPHILS LYMPHOCYTES EOSINOPHILS MONOCYTES HB (HEMOGLOBIN) ERYTHROCYTE SEDIMENTATION RATE PLATELET COUNT R.B.C (RED BLOOD CELL COUNT) H.C.I. (HEMATOCRIT)\nTEST\nM.C.V (MEAN CORPUSCULAR VOLUME ) MCH (MEAN CORPUSCULAR HEMOGLOBIN) MCHC (MEAN CORP. Hb CONCENTRATION) R.D.W. HAEMATOLOGY EXAMINATION REPORT C-REACTIVE PROTEN TEST PERIPHERAL BLOOD FILM RED BIOOD CELLS\nRESULT\nSr. Tech.\n8,900\nNORMOCYTIC NORMOCHROMIC. WHITE BLOOD CELLS:\n72 23 02 03 15.6 25\n5.49 1,47,000 45.7 84.2 29.2 33.4 14.3\nRESULT 5.7 MG/L\nMOLECULAR DIAGNOSTIC LAB Email: satyajodhpur@gmail.com O 0291-2614194 AII Days: 8.00 a.m. to 9.00 pm\nH\nAge: 18 Yrs. Sex:Male Date: 17/09/2021\nNORMAL VALUE 4000 -11000/CUMM 40 -70 % 20 -40 % 00-06 % 00 -10 % 13-17 H 02-20 MM FALL 1ST HOUR. 150000 500000 /CMM 4.5-6.5 MILL./CUMM 40-54 % 80 -100 27-34 32-36\nGM%\n11.0-16.0 CV %\nNORMAL RANGE 00-6.0\nM.P. NOT SEEN. COUNTS NORMAL. NO TOXIC OR IMMATURE CELLS. PLATELETS:-SLIGHTLY REDUCED IN NUMBERS\nDR. ANURAAG[M D ] (PATHOLOGIST]\nPatho I Micro PCRs Harmones Biopsy FNAC I ECG I TMT I EEG\nbe contacted if required.\n1994 Dr. SATYA DIAGNOSTICS\nTest\nC-16 A, Shastri Nagar, Jodhpur. Pt Name: MR LAKHAN: CIO NAV JEEVAN HOSPITAL Ref By. Receipt No:3315 LIVER FUNCTION TEST S.G.O.T S.G.P.T\nAnuraAg\nS.BILIRUBIN TOTAL S.BILIRUBIN DIRECT S.BILIRUBIN INDIRECT S. ALKALINE PHOSPHATASE S.TOTAL PROTEIN S.ALBUMIN GLOBULIN S. AWG RATIO\nSz. Tech.\nResult 28 30 0.79 0.22 0.57 154 6.8 3.9 2.9\nMOLECULAR DIAGNOSTIC LAB Email: satyajodhpur@gmail.com 0291-2614194 All Days:8.00 a.m. to 9.00 pm\n1.34\nAge:18Yrs. Sex: Male Date: 17/O9/2021\nNormal Value 00-46 U/L 00-46 U/L 0-1.2 mg/dl 0-0.3 mgldl 0-0.9 mg/dl 30-270 UL 6-8 gm/dl 3.7-5.3 gm/dl 2.5-3.5 gm/dl 1-2.3\nDR. ANURAAG [M D ] [PATHOLOGIST]\nPatho Micro I PCRS Harmones I Biopsy FNAC ECG I TMT I EEG\n94 pr.\nTest\nSATYA DIAGNOSTICS C-16A, Shastri Nagar, Jodhpur.\nPt Name: MR LAKHAN Ref By. Recejot No:3315 URTNE EXAMINATION REPORT PEYSLCAL, COLOUR: C/O NAV JEEVAN HOSPITAL\nAPPEARANCE CHIEMICAL REACTION pH sPECIFIC GRAVITY ALBUMIN SUGAR\nAnuraag\n(F) MICROSCOPIC PUS CELLS RED BL00D CELLS CASTS EPITHELIAL CELLS CRYSTALS MUCUS THREAD BACTERIA Sr. Tech.\nResult (s) PALE CLEAR 6.0 1.020 NIL NIL 1-2 /HPF NIL 1-2 /HPF NIL\nMOLECULAR DIAGNOSTIC LAB Email: satyajodhpur@gmail.com\nNIL NIL NIL\n0291-2614194 All Days:8.00 a.m. to 9.00 pm Age:18 Yrs. Sex: Male Date: 17/09/2021\nDR. ANURAAG I MD1 [PATHOLOGIST]\nPatho I Micro I PCRs I Harmones Biopsy FNAC I ECG TMTI EEG\nnle No: 231c730 Pir-hemistry Lab, M.D.M. HOSPITAL, JODHPJR. uepartment of Bio-Chemistry, Dr. S. N. Medical College Jodhpur. )\nbMPUTER CODE 2.029 Gtient Name: Lakia. -Caeoy-J\nTest\nBlooc Ure. S.Creatinte\nMEDICARE RELIE: SOCIETY\n[TECHNIC.AN)\nDate Age Ward\n24 Result\nReceipt Nio. BIO -CHEMISTRY EXAMINAT:ON REPORT\n09/09/2021 18 Yrs.\n1.00\nMedical Ward -A\n1. Please Co-relsie e.ort with clirical condition of patient\nUnit ng/dl mg/dl\n2. Tes: are perfcrnea 2s per instruction manual provided with kits.\n.\nReg. No. : 10099 Sex Male\nNormal Value\n[ MEDICAL OFFICER]\n17 -43 0.6-1.2",
+      "static_file_url": "/demo-files/blood test 2021.pdf"
+    }
+  ],
+  "appointments": [
+    {
+      "patient_id": "2fd91d2c-05df-43b8-b8e6-ddf52656ec62",
+      "doctor_id": "17412fd5-005a-43c4-9123-3a233e43ce0f",
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "title": "Follow-up Consultation",
+      "description": "Scheduled consultation follow-up.",
+      "location": "AIIMS Delhi",
+      "date_time": "2026-04-15T17:00:00+05:30",
+      "status": "SCHEDULED",
+      "id": "abf1b885-6034-409e-8c0f-158833e83251",
+      "created_at": "2026-04-01T16:43:04+05:30",
+      "updated_at": "2026-04-01T16:43:04+05:30"
+    }
+  ],
+  "messages": [
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Dr. Aarav Sharma is requesting permission to access your reports for this consultation.",
+      "message_type": "report_access_request",
+      "id": "0f3a1a6d-e2e0-412c-b734-6e592c167bc6",
+      "created_at": "2026-04-01T22:03:37.323447+05:30",
+      "updated_at": "2026-04-01T22:03:37.323447+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Your Iron and Vitamin D is too less",
+      "message_type": "text",
+      "id": "239e40d9-1124-494c-89c7-204c21bb1f29",
+      "created_at": "2026-04-11T00:32:19.119152+05:30",
+      "updated_at": "2026-04-11T00:32:19.119152+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Dr. Aarav Sharma is requesting permission to access your reports for this consultation.",
+      "message_type": "report_access_request",
+      "id": "3f729e3a-74c3-4fee-a126-cd426fd66177",
+      "created_at": "2026-04-11T00:14:15.064603+05:30",
+      "updated_at": "2026-04-11T00:14:15.064603+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "3da04cbd-9487-4c47-9d26-5e64d4573c5d",
+      "sender_type": "PATIENT",
+      "content": "Patient granted report access. Doctor may now review the reports.",
+      "message_type": "report_access_response",
+      "id": "4804100c-2660-4b66-8e8b-4105504afc26",
+      "created_at": "2026-04-01T22:29:57.324101+05:30",
+      "updated_at": "2026-04-01T22:29:57.324101+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Could you please explain what my new medical report shows?",
+      "message_type": "text",
+      "id": "4bce3d55-a2bd-47b3-89e4-108f190bfb53",
+      "created_at": "2026-04-11T00:16:20.699784+05:30",
+      "updated_at": "2026-04-11T00:16:20.699784+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Hello Lakhan",
+      "message_type": "text",
+      "id": "698607fd-7cc0-4f6b-a914-e2cf71db9062",
+      "created_at": "2026-04-11T00:33:23.267462+05:30",
+      "updated_at": "2026-04-11T00:33:23.267462+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Dr. Aarav Sharma is requesting permission to access your reports for this consultation.",
+      "message_type": "report_access_request",
+      "id": "8665cc8f-c41b-4445-a1aa-f656610a3f57",
+      "created_at": "2026-04-01T16:40:53+05:30",
+      "updated_at": "2026-04-01T16:40:53+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "3da04cbd-9487-4c47-9d26-5e64d4573c5d",
+      "sender_type": "PATIENT",
+      "content": "Your Iron and Vitamin D is too less",
+      "message_type": "text",
+      "id": "9ab41429-0b9b-496f-a2dd-19b824c28ff4",
+      "created_at": "2026-04-11T00:41:25.708447+05:30",
+      "updated_at": "2026-04-11T00:41:25.708447+05:30"
+    },
+    {
+      "case_id": "af7b285d-322b-4f02-95b9-96c8bf812fc1",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Good afternoon. Yes, I’ve reviewed your recent blood test. Overall most values are normal, but your vitamin D level is low. It’s at 18 ng/mL, and the healthy range is usually 30 to 100.",
+      "message_type": "text",
+      "id": "9baa6613-1499-4151-be4f-be887e11f658",
+      "created_at": "2026-04-11T00:37:26.79851+05:30",
+      "updated_at": "2026-04-11T00:37:26.79851+05:30"
+    },
+    {
+      "case_id": "af7b285d-322b-4f02-95b9-96c8bf812fc1",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Good afternoon, Doctor. You had called me to discuss my new report. Could you tell me what it shows?",
+      "message_type": "text",
+      "id": "a7650f5e-6286-46ab-b1ee-d01b125a05a7",
+      "created_at": "2026-04-11T00:36:41.778878+05:30",
+      "updated_at": "2026-04-11T00:36:41.778878+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Hi",
+      "message_type": "text",
+      "id": "ce1b8f12-af4f-45d7-b1e7-66588fb2ed09",
+      "created_at": "2026-04-01T22:03:45.501744+05:30",
+      "updated_at": "2026-04-01T22:03:45.501744+05:30"
+    },
+    {
+      "case_id": "4d3e74ae-c689-4a91-89d5-3860826d5763",
+      "sender_user_id": "3da04cbd-9487-4c47-9d26-5e64d4573c5d",
+      "sender_type": "PATIENT",
+      "content": "Patient granted report access. Doctor may now review the reports.",
+      "message_type": "report_access_response",
+      "id": "ee7cb68e-7f34-46f5-a217-0be4ebef8375",
+      "created_at": "2026-04-01T16:49:54+05:30",
+      "updated_at": "2026-04-01T16:49:54+05:30"
+    },
+    {
+      "case_id": "af7b285d-322b-4f02-95b9-96c8bf812fc1",
+      "sender_user_id": "2bbecdd1-b648-4e98-a809-22dd17270eb8",
+      "sender_type": "DOCTOR",
+      "content": "Dr. Aarav Sharma started a consultation and invited you to connect in chat.",
+      "message_type": "consultation_started",
+      "id": "f3c927a7-2d50-47c0-8ead-723715c2cd0c",
+      "created_at": "2026-04-01T22:52:20.449278+05:30",
+      "updated_at": "2026-04-01T22:52:20.449278+05:30"
+    }
+  ],
+  "report_insights": [
+    {
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "category": "Graft Status",
+      "title": "Grafts",
+      "description": "All grafts are patent with normal opacification distal to anastomosis.",
+      "severity": "Normal",
+      "metadata": {},
+      "id": "17441b2e-b98a-4add-a036-aac16b33eeb9",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    },
+    {
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "category": "Lung Status",
+      "title": "Post-operative Changes",
+      "description": "Post-operative changes observed but rest of lung parenchyma appears normal.",
+      "severity": "Normal",
+      "metadata": {},
+      "id": "17961f3d-da9f-433a-bc74-4b9fcd33a720",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    },
+    {
+      "report_id": "79ead909-4161-4007-9203-d64a1711f0b5",
+      "category": "Vitamin Levels",
+      "title": "Vitamin D Insufficiency",
+      "description": "Vitamin D level indicates insufficiency.",
+      "severity": "Moderate",
+      "metadata": {
+        "vitamin_d": "20.59"
+      },
+      "id": "186b4edb-29d0-4f4c-8232-2864614bfc26",
+      "created_at": "2026-03-31T21:06:25+05:30",
+      "updated_at": "2026-03-31T21:06:25+05:30"
+    },
+    {
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "category": "Coronary Artery Status",
+      "title": "Left Circumflex Artery",
+      "description": "Calcified plaque causing 30-40% stenosis.",
+      "severity": "Moderate",
+      "metadata": {
+        "Stenosis": "30-40%"
+      },
+      "id": "3a34c895-5f66-4ced-a1d3-d4ed038ef138",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    },
+    {
+      "report_id": "79ead909-4161-4007-9203-d64a1711f0b5",
+      "category": "Blood Count",
+      "title": "Thrombocytopenia",
+      "description": "Mild thrombocytopenia noted due to low platelet count and high mean platelet volume.",
+      "severity": "Moderate",
+      "metadata": {
+        "platelets": "125",
+        "mean_platelet_volume": "13.1"
+      },
+      "id": "702beda1-22fa-4024-a72b-09968bccc1e3",
+      "created_at": "2026-03-31T21:06:25+05:30",
+      "updated_at": "2026-03-31T21:06:25+05:30"
+    },
+    {
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "category": "Coronary Artery Status",
+      "title": "Right Coronary Artery",
+      "description": "Multiple eccentric calcified plaques causing 70-80% luminal narrowing.",
+      "severity": "Severe",
+      "metadata": {
+        "Stenosis": "70-80%"
+      },
+      "id": "7d3119b6-c2e2-4ad8-9b89-cfed8b9f3d1c",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    },
+    {
+      "report_id": "35d6ea9e-0750-4519-b16e-be7ed8f6e0f1",
+      "category": "Vitamin Deficiency",
+      "title": "Vitamin B12 Deficiency",
+      "description": "The patient's vitamin B12 level is below the normal range, indicating a deficiency.",
+      "severity": "Moderate",
+      "metadata": {
+        "Vitamin B12 Level": "89.00 pg/mL"
+      },
+      "id": "a7cde997-ba33-43fa-82de-c9a1e22421cc",
+      "created_at": "2026-03-31T21:07:52+05:30",
+      "updated_at": "2026-03-31T21:07:52+05:30"
+    },
+    {
+      "report_id": "f6a316cb-66ab-41fe-aba2-c72f759d3785",
+      "category": "platelet_count",
+      "title": "Slightly Reduced Platelet Count",
+      "description": "The platelet count is slightly reduced, suggesting the need for monitoring or further evaluation if clinically indicated.",
+      "severity": "mild",
+      "metadata": {
+        "platelet_count": "147000",
+        "reference_range": "150000-500000"
+      },
+      "id": "b5fc7b32-48fa-4834-bf09-6eb491526e38",
+      "created_at": "2026-03-31T21:07:23+05:30",
+      "updated_at": "2026-03-31T21:07:23+05:30"
+    },
+    {
+      "report_id": "79ead909-4161-4007-9203-d64a1711f0b5",
+      "category": "Vitamin Levels",
+      "title": "Vitamin B12 Deficiency",
+      "description": "The Vitamin B12 level is low, indicating a deficiency.",
+      "severity": "Moderate",
+      "metadata": {
+        "vitamin_b12": "185.0"
+      },
+      "id": "b75e506c-015c-4b32-9542-7b21270f4f03",
+      "created_at": "2026-03-31T21:06:25+05:30",
+      "updated_at": "2026-03-31T21:06:25+05:30"
+    },
+    {
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "category": "Cardiac Function",
+      "title": "Cardiac Valves and Chambers",
+      "description": "Valves and chambers appear normal without pericardial effusion.",
+      "severity": "Normal",
+      "metadata": {},
+      "id": "c3bb43d2-d783-466f-8593-90dbb25479f6",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    },
+    {
+      "report_id": "79ead909-4161-4007-9203-d64a1711f0b5",
+      "category": "Iron Studies",
+      "title": "High Serum Iron",
+      "description": "Elevation in serum iron and saturation percentages.",
+      "severity": "Moderate",
+      "metadata": {
+        "iron": "203",
+        "saturation": "48.1"
+      },
+      "id": "f02aab64-460c-49d5-b561-55502dc4ed2e",
+      "created_at": "2026-03-31T21:06:25+05:30",
+      "updated_at": "2026-03-31T21:06:25+05:30"
+    },
+    {
+      "report_id": "35d6ea9e-0750-4519-b16e-be7ed8f6e0f1",
+      "category": "Vitamin Deficiency",
+      "title": "Vitamin D Deficiency",
+      "description": "The patient's vitamin D level is below 20 ng/mL, indicating a deficiency.",
+      "severity": "Severe",
+      "metadata": {
+        "Vitamin D Level": "9.77 ng/mL"
+      },
+      "id": "f1232a8c-9030-40be-b55e-6428897a0a58",
+      "created_at": "2026-03-31T21:07:52+05:30",
+      "updated_at": "2026-03-31T21:07:52+05:30"
+    },
+    {
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "category": "Coronary Artery Status",
+      "title": "Left Anterior Descending Artery",
+      "description": "Diffuse atherocalcific plaques causing 70-80% luminal narrowing.",
+      "severity": "Severe",
+      "metadata": {
+        "Stenosis": "70-80%"
+      },
+      "id": "fb7ceb15-ce8c-4d5a-9179-b421d2907ef3",
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    }
+  ],
+  "extracted_data": [
+    {
+      "id": "09f42ef5-d78e-459b-b218-0168eb777b34",
+      "report_id": "200a4233-54b2-408a-b9e9-56e7486e36f5",
+      "schema_version": "1.0",
+      "report_type": "biochemistry, hematology, immunoassay",
+      "summary": "Routine biochemistry and hematology analyses were conducted, including liver function, kidney function, complete blood count, and immunoassay for anti-tissue transglutaminase antibodies. Liver enzymes and bilirubin levels were noted. Blood cell indices were assessed. All values were within reference ranges unless specified.",
+      "key_values": {
+        "alt": {
+          "name": "alt",
+          "unit": "U/L",
+          "panel": "liver",
+          "value": 24.6,
+          "status": "normal",
+          "original_name": "alt",
+          "interpretation": "normal",
+          "reference_range": "0.0-50.0",
+          "reference_range_raw": "0-50",
+          "reference_range_parsed": {
+            "max": 50,
+            "min": 0
+          }
+        },
+        "ast": {
+          "name": "ast",
+          "unit": "U/L",
+          "panel": "liver",
+          "value": 23.9,
+          "status": "normal",
+          "original_name": "ast",
+          "interpretation": "normal",
+          "reference_range": "0.0-50.0",
+          "reference_range_raw": "0-50",
+          "reference_range_parsed": {
+            "max": 50,
+            "min": 0
+          }
+        },
+        "mch": {
+          "name": "mch",
+          "unit": "pg",
+          "panel": "cbc",
+          "value": 26.7,
+          "status": "low",
+          "original_name": "mch",
+          "interpretation": "low",
+          "reference_range": "27.0-32.0",
+          "reference_range_raw": "27-32",
+          "reference_range_parsed": {
+            "max": 32,
+            "min": 27
+          }
+        },
+        "mcv": {
+          "name": "mcv",
+          "unit": "fL",
+          "panel": "cbc",
+          "value": 83.7,
+          "status": "normal",
+          "original_name": "mcv",
+          "interpretation": "normal",
+          "reference_range": "76.0-93.0",
+          "reference_range_raw": "76-93",
+          "reference_range_parsed": {
+            "max": 93,
+            "min": 76
+          }
+        },
+        "mchc": {
+          "name": "mchc",
+          "unit": "g/dL",
+          "panel": "cbc",
+          "value": 31.9,
+          "status": "low",
+          "original_name": "mchc",
+          "interpretation": "low",
+          "reference_range": "32.0-36.0",
+          "reference_range_raw": "32-36",
+          "reference_range_parsed": {
+            "max": 36,
+            "min": 32
+          }
+        },
+        "albumin": {
+          "name": "albumin",
+          "unit": "g/dL",
+          "panel": "liver",
+          "value": 4.72,
+          "status": "normal",
+          "original_name": "albumin",
+          "interpretation": "normal",
+          "reference_range": "3.5-5.3",
+          "reference_range_raw": "3.5-5.3",
+          "reference_range_parsed": {
+            "max": 5.3,
+            "min": 3.5
+          }
+        },
+        "globulin": {
+          "name": "globulin",
+          "unit": "g/dL",
+          "panel": "liver",
+          "value": 2.9,
+          "status": "normal",
+          "original_name": "globulin",
+          "interpretation": "normal",
+          "reference_range": "2.0-3.5",
+          "reference_range_raw": "2-3.5",
+          "reference_range_parsed": {
+            "max": 3.5,
+            "min": 2
+          }
+        },
+        "basophils": {
+          "name": "basophils",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 0.1,
+          "status": "normal",
+          "original_name": "basophils",
+          "interpretation": "normal",
+          "reference_range": "0.0-1.0",
+          "reference_range_raw": "0-1",
+          "reference_range_parsed": {
+            "max": 1,
+            "min": 0
+          }
+        },
+        "monocytes": {
+          "name": "monocytes",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 6.9,
+          "status": "normal",
+          "original_name": "monocytes",
+          "interpretation": "normal",
+          "reference_range": "2.0-8.0",
+          "reference_range_raw": "2-8",
+          "reference_range_parsed": {
+            "max": 8,
+            "min": 2
+          }
+        },
+        "platelets": {
+          "name": "platelets",
+          "unit": "/µL",
+          "panel": "cbc",
+          "value": 171000,
+          "status": "high",
+          "original_name": "platelets",
+          "interpretation": "high",
+          "reference_range": "150.0-450.0",
+          "reference_range_raw": "150-450",
+          "reference_range_parsed": {
+            "max": 450,
+            "min": 150
+          }
+        },
+        "creatinine": {
+          "name": "creatinine",
+          "unit": "mg/dL",
+          "panel": "kidney",
+          "value": 0.94,
+          "status": "normal",
+          "original_name": "creatinine",
+          "interpretation": "normal",
+          "reference_range": "0.7-1.2",
+          "reference_range_raw": "0.67-1.17",
+          "reference_range_parsed": {
+            "max": 1.17,
+            "min": 0.67
+          }
+        },
+        "hematocrit": {
+          "name": "hematocrit",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 46.9,
+          "status": "normal",
+          "original_name": "hematocrit",
+          "interpretation": "normal",
+          "reference_range": "35.0-47.0",
+          "reference_range_raw": "35-47",
+          "reference_range_parsed": {
+            "max": 47,
+            "min": 35
+          }
+        },
+        "hemoglobin": {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "panel": "cbc",
+          "value": 15,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "11.0-15.0",
+          "reference_range_raw": "11-15",
+          "reference_range_parsed": {
+            "max": 15,
+            "min": 11
+          }
+        },
+        "eosinophils": {
+          "name": "eosinophils",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 0.8,
+          "status": "low",
+          "original_name": "eosinophils",
+          "interpretation": "low",
+          "reference_range": "1.0-6.0",
+          "reference_range_raw": "1-6",
+          "reference_range_parsed": {
+            "max": 6,
+            "min": 1
+          }
+        },
+        "lymphocytes": {
+          "name": "lymphocytes",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 37.5,
+          "status": "normal",
+          "original_name": "lymphocytes",
+          "interpretation": "normal",
+          "reference_range": "20.0-40.0",
+          "reference_range_raw": "20-40",
+          "reference_range_parsed": {
+            "max": 40,
+            "min": 20
+          }
+        },
+        "neutrophils": {
+          "name": "neutrophils",
+          "unit": "%",
+          "panel": "cbc",
+          "value": 54.4,
+          "status": "normal",
+          "original_name": "neutrophils",
+          "interpretation": "normal",
+          "reference_range": "40.0-70.0",
+          "reference_range_raw": "40-70",
+          "reference_range_parsed": {
+            "max": 70,
+            "min": 40
+          }
+        },
+        "total_protein": {
+          "name": "total_protein",
+          "unit": "g/dL",
+          "panel": "liver",
+          "value": 7.62,
+          "status": "normal",
+          "original_name": "total_protein",
+          "interpretation": "normal",
+          "reference_range": "6.6-8.3",
+          "reference_range_raw": "6.6-8.3",
+          "reference_range_parsed": {
+            "max": 8.3,
+            "min": 6.6
+          }
+        },
+        "white_blood_cells": {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "panel": "cbc",
+          "value": 6.25,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4.0-11.0",
+          "reference_range_raw": "4-11",
+          "reference_range_parsed": {
+            "max": 11,
+            "min": 4
+          }
+        }
+      },
+      "normalized_terms": [
+        {
+          "source_term": "Bilirubin",
+          "coding_system": null,
+          "normalized_term": "bilirubin"
+        },
+        {
+          "source_term": "Albumin",
+          "coding_system": null,
+          "normalized_term": "albumin"
+        },
+        {
+          "source_term": "Creatinine",
+          "coding_system": null,
+          "normalized_term": "creatinine"
+        },
+        {
+          "source_term": "Hemoglobin",
+          "coding_system": null,
+          "normalized_term": "hemoglobin"
+        },
+        {
+          "source_term": "White Blood Cell Count",
+          "coding_system": null,
+          "normalized_term": "white_blood_cells"
+        },
+        {
+          "source_term": "Platelet Count",
+          "coding_system": null,
+          "normalized_term": "platelets"
+        },
+        {
+          "source_term": "RBC Count",
+          "coding_system": null,
+          "normalized_term": "rbc_count"
+        },
+        {
+          "source_term": "MCV",
+          "coding_system": null,
+          "normalized_term": "mcv"
+        },
+        {
+          "source_term": "MCH",
+          "coding_system": null,
+          "normalized_term": "mch"
+        },
+        {
+          "source_term": "MCHC",
+          "coding_system": null,
+          "normalized_term": "mchc"
+        },
+        {
+          "source_term": "RDW CV",
+          "coding_system": null,
+          "normalized_term": "rdw_cv"
+        },
+        {
+          "source_term": "Neutrophils",
+          "coding_system": null,
+          "normalized_term": "neutrophils"
+        },
+        {
+          "source_term": "Lymphocytes",
+          "coding_system": null,
+          "normalized_term": "lymphocytes"
+        },
+        {
+          "source_term": "Monocytes",
+          "coding_system": null,
+          "normalized_term": "monocytes"
+        },
+        {
+          "source_term": "Eosinophils",
+          "coding_system": null,
+          "normalized_term": "eosinophils"
+        },
+        {
+          "source_term": "Basophils",
+          "coding_system": null,
+          "normalized_term": "basophils"
+        },
+        {
+          "source_term": "Anti Tissue Transglutaminase",
+          "coding_system": null,
+          "normalized_term": "anti_tissue_transglutaminase"
+        }
+      ],
+      "confidence": 0.99,
+      "created_at": "2026-04-02T20:53:23.688232+05:30",
+      "updated_at": "2026-04-02T20:53:23.688232+05:30"
+    },
+    {
+      "id": "272d2d5d-536e-4b95-a7af-137d69083f29",
+      "report_id": "f6a316cb-66ab-41fe-aba2-c72f759d3785",
+      "schema_version": "1.0",
+      "report_type": "Medical Test Report",
+      "summary": "The report includes hematology, liver function, urine examination, and some biochemistry results for an 18-year-old male.",
+      "key_values": {
+        "platelets": {
+          "name": "platelets",
+          "unit": "/µL",
+          "value": 147000,
+          "status": "low",
+          "original_name": "platelets",
+          "interpretation": "low",
+          "reference_range": "150000.0-500000.0",
+          "reference_range_raw": "150000-500000",
+          "reference_range_parsed": {
+            "max": 500000,
+            "min": 150000
+          }
+        },
+        "hematocrit": {
+          "name": "hematocrit",
+          "unit": "%",
+          "value": 45.7,
+          "status": "normal",
+          "original_name": "hematocrit",
+          "interpretation": "normal",
+          "reference_range": "40.0-54.0",
+          "reference_range_raw": "40-54",
+          "reference_range_parsed": {
+            "max": 54,
+            "min": 40
+          }
+        },
+        "hemoglobin": {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "value": 15.6,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "13.0-17.0",
+          "reference_range_raw": "13-17",
+          "reference_range_parsed": {
+            "max": 17,
+            "min": 13
+          }
+        },
+        "lymphocytes": {
+          "name": "lymphocytes",
+          "unit": "%",
+          "value": 23,
+          "status": "normal",
+          "original_name": "lymphocytes",
+          "interpretation": "normal",
+          "reference_range": "20.0-40.0",
+          "reference_range_raw": "20-40",
+          "reference_range_parsed": {
+            "max": 40,
+            "min": 20
+          }
+        },
+        "white_blood_cells": {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "value": 8900,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4000.0-11000.0",
+          "reference_range_raw": "4000-11000",
+          "reference_range_parsed": {
+            "max": 11000,
+            "min": 4000
+          }
+        }
+      },
+      "normalized_terms": [
+        {
+          "source_term": "W.B.C (WHITE BLOOD CELL COUNT)",
+          "coding_system": null,
+          "normalized_term": "white_blood_cells"
+        },
+        {
+          "source_term": "NEUTROPHILS",
+          "coding_system": null,
+          "normalized_term": "neutrophils"
+        },
+        {
+          "source_term": "LYMPHOCYTES",
+          "coding_system": null,
+          "normalized_term": "lymphocytes"
+        },
+        {
+          "source_term": "EOSINOPHILS",
+          "coding_system": null,
+          "normalized_term": "eosinophils"
+        },
+        {
+          "source_term": "MONOCYTES",
+          "coding_system": null,
+          "normalized_term": "monocytes"
+        },
+        {
+          "source_term": "HB (HEMOGLOBIN)",
+          "coding_system": null,
+          "normalized_term": "hemoglobin"
+        },
+        {
+          "source_term": "ERYTHROCYTE SEDIMENTATION RATE",
+          "coding_system": null,
+          "normalized_term": "erythrocyte_sedimentation_rate"
+        },
+        {
+          "source_term": "PLATELET COUNT",
+          "coding_system": null,
+          "normalized_term": "platelets"
+        },
+        {
+          "source_term": "R.B.C (RED BLOOD CELL COUNT)",
+          "coding_system": null,
+          "normalized_term": "red_blood_cell_count"
+        },
+        {
+          "source_term": "H.C.I. (HEMATOCRIT)",
+          "coding_system": null,
+          "normalized_term": "hematocrit"
+        },
+        {
+          "source_term": "M.C.V (MEAN CORPUSCULAR VOLUME)",
+          "coding_system": null,
+          "normalized_term": "mean_corpuscular_volume"
+        },
+        {
+          "source_term": "MCH (MEAN CORPUSCULAR HEMOGLOBIN)",
+          "coding_system": null,
+          "normalized_term": "mean_corpuscular_hemoglobin"
+        },
+        {
+          "source_term": "MCHC (MEAN CORP. Hb CONCENTRATION)",
+          "coding_system": null,
+          "normalized_term": "mean_corpuscular_hemoglobin_concentration"
+        },
+        {
+          "source_term": "R.D.W.",
+          "coding_system": null,
+          "normalized_term": "red_cell_distribution_width"
+        },
+        {
+          "source_term": "C-REACTIVE PROTEN TEST",
+          "coding_system": null,
+          "normalized_term": "c_reactive_protein"
+        },
+        {
+          "source_term": "S.G.O.T",
+          "coding_system": null,
+          "normalized_term": "SGOT"
+        },
+        {
+          "source_term": "S.G.P.T",
+          "coding_system": null,
+          "normalized_term": "SGPT"
+        },
+        {
+          "source_term": "S.BILIRUBIN TOTAL",
+          "coding_system": null,
+          "normalized_term": "total_bilirubin"
+        },
+        {
+          "source_term": "S.BILIRUBIN DIRECT",
+          "coding_system": null,
+          "normalized_term": "direct_bilirubin"
+        },
+        {
+          "source_term": "S.BILIRUBIN INDIRECT",
+          "coding_system": null,
+          "normalized_term": "indirect_bilirubin"
+        },
+        {
+          "source_term": "S. ALKALINE PHOSPHATASE",
+          "coding_system": null,
+          "normalized_term": "alkaline_phosphatase"
+        },
+        {
+          "source_term": "S.TOTAL PROTEIN",
+          "coding_system": null,
+          "normalized_term": "total_protein"
+        },
+        {
+          "source_term": "S.ALBUMIN",
+          "coding_system": null,
+          "normalized_term": "albumin"
+        },
+        {
+          "source_term": "GLOBULIN",
+          "coding_system": null,
+          "normalized_term": "globulin"
+        },
+        {
+          "source_term": "S. AWG RATIO",
+          "coding_system": null,
+          "normalized_term": "albumin_globulin_ratio"
+        },
+        {
+          "source_term": "pH",
+          "coding_system": null,
+          "normalized_term": "ph"
+        },
+        {
+          "source_term": "SPECIFIC GRAVITY",
+          "coding_system": null,
+          "normalized_term": "specific_gravity"
+        },
+        {
+          "source_term": "PUS CELLS",
+          "coding_system": null,
+          "normalized_term": "urine_pus_cells"
+        },
+        {
+          "source_term": "RED BL00D CELLS",
+          "coding_system": null,
+          "normalized_term": "urine_red_blood_cells"
+        },
+        {
+          "source_term": "Blooc Ure",
+          "coding_system": null,
+          "normalized_term": "blood_urea"
+        },
+        {
+          "source_term": "S.Creatinte",
+          "coding_system": null,
+          "normalized_term": "creatinine"
+        }
+      ],
+      "confidence": 0.99,
+      "created_at": "2026-03-31T21:07:23+05:30",
+      "updated_at": "2026-03-31T21:07:23+05:30"
+    },
+    {
+      "id": "3525cf6a-856c-4085-94be-f1bf717cc546",
+      "report_id": "35d6ea9e-0750-4519-b16e-be7ed8f6e0f1",
+      "schema_version": "1.0",
+      "report_type": "Laboratory Report",
+      "summary": "Complete blood count, iron profile, and vitamin levels evaluated. Several values are outside their reference ranges, indicating potential issues with blood components.",
+      "key_values": {
+        "iron": {
+          "name": "iron",
+          "unit": "µg/dL",
+          "value": 96.3,
+          "status": "normal",
+          "original_name": "iron",
+          "interpretation": "normal",
+          "reference_range": "60.0-160.0",
+          "reference_range_raw": "60-160",
+          "reference_range_parsed": {
+            "max": 160,
+            "min": 60
+          }
+        },
+        "platelets": {
+          "name": "platelets",
+          "unit": "/µL",
+          "value": 172,
+          "status": "normal",
+          "original_name": "platelets",
+          "interpretation": "normal",
+          "reference_range": "150.0-410.0",
+          "reference_range_raw": "150-410",
+          "reference_range_parsed": {
+            "max": 410,
+            "min": 150
+          }
+        },
+        "vitamin_d": {
+          "name": "vitamin_d",
+          "unit": "ng/mL",
+          "value": 9.77,
+          "status": "deficient",
+          "original_name": "vitamin_d",
+          "interpretation": "deficient",
+          "reference_range": "20.0-100.0",
+          "reference_range_raw": "DEFICENT:-<20.0 ng/ml",
+          "reference_range_parsed": {
+            "max": 100,
+            "min": 20
+          }
+        },
+        "hemoglobin": {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "value": 15.1,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "13.0-17.0",
+          "reference_range_raw": "13.0-17.0",
+          "reference_range_parsed": {
+            "max": 17,
+            "min": 13
+          }
+        },
+        "vitamin_b12": {
+          "name": "vitamin_b12",
+          "unit": "pg/mL",
+          "value": 89,
+          "status": "low",
+          "original_name": "vitamin_b12",
+          "interpretation": "low",
+          "reference_range": "211.0-911.0",
+          "reference_range_raw": "211.0-911.0",
+          "reference_range_parsed": {
+            "max": 911,
+            "min": 211
+          }
+        },
+        "white_blood_cells": {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "value": 5.58,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4.0-10.0",
+          "reference_range_raw": "4.00-10.00",
+          "reference_range_parsed": {
+            "max": 10,
+            "min": 4
+          }
+        }
+      },
+      "normalized_terms": [
+        {
+          "source_term": "WBC (TOTAL LEUCOCYTE COUNT)",
+          "coding_system": null,
+          "normalized_term": "white_blood_cells"
+        },
+        {
+          "source_term": "HAEMOGLOBIN,EDTA",
+          "coding_system": null,
+          "normalized_term": "hemoglobin"
+        },
+        {
+          "source_term": "PLATELET COUNT,EDTA",
+          "coding_system": null,
+          "normalized_term": "platelets"
+        },
+        {
+          "source_term": "VITAMIN B12 LEVEL,Serum",
+          "coding_system": null,
+          "normalized_term": "vitamin_b12"
+        },
+        {
+          "source_term": "VITAMIN D(25 OH),Serum",
+          "coding_system": null,
+          "normalized_term": "vitamin_d"
+        }
+      ],
+      "confidence": 0.99,
+      "created_at": "2026-03-31T21:07:52+05:30",
+      "updated_at": "2026-03-31T21:07:52+05:30"
+    },
+    {
+      "id": "712cee65-bd37-4c0b-b45c-6d6a2dd286ee",
+      "report_id": "79ead909-4161-4007-9203-d64a1711f0b5",
+      "schema_version": "1.0",
+      "report_type": "Laboratory Report",
+      "summary": "The report includes a complete blood count, liver function tests, glucose levels, and a lipid profile with notable findings of mild lymphocytosis, mild thrombocytopenia, low platelet count, high mean platelet volume, low alkaline phosphatase, high lactate dehydrogenase, vitamin D deficiency, low vitamin B12, and high serum iron and saturation. The patient shows normal glucose and glycated hemoglobin levels.",
+      "key_values": {
+        "iron": {
+          "name": "iron",
+          "unit": "µg/dL",
+          "value": 203,
+          "status": "high",
+          "original_name": "iron",
+          "interpretation": "high",
+          "reference_range": "65.0-175.0",
+          "reference_range_raw": "65-175",
+          "reference_range_parsed": {
+            "max": 175,
+            "min": 65
+          }
+        },
+        "platelets": {
+          "name": "platelets",
+          "unit": "/µL",
+          "value": 125,
+          "status": "low",
+          "original_name": "platelets",
+          "interpretation": "low",
+          "reference_range": "150.0-410.0",
+          "reference_range_raw": "150 - 410",
+          "reference_range_parsed": {
+            "max": 410,
+            "min": 150
+          }
+        },
+        "vitamin_d": {
+          "name": "vitamin_d",
+          "unit": "ng/mL",
+          "value": 20.59,
+          "status": "insufficient",
+          "original_name": "vitamin_d",
+          "interpretation": "insufficient",
+          "reference_range": "20.0-100.0",
+          "reference_range_raw": "> 20.0",
+          "reference_range_parsed": {
+            "max": 100,
+            "min": 20
+          }
+        },
+        "hematocrit": {
+          "name": "hematocrit",
+          "unit": "%",
+          "value": 42.3,
+          "status": "normal",
+          "original_name": "hematocrit",
+          "interpretation": "normal",
+          "reference_range": "40.0-50.0",
+          "reference_range_raw": "40 - 50",
+          "reference_range_parsed": {
+            "max": 50,
+            "min": 40
+          }
+        },
+        "hemoglobin": {
+          "name": "hemoglobin",
+          "unit": "g/dL",
+          "value": 14.2,
+          "status": "normal",
+          "original_name": "hemoglobin",
+          "interpretation": "normal",
+          "reference_range": "13.0-17.0",
+          "reference_range_raw": "13.0 - 17.0",
+          "reference_range_parsed": {
+            "max": 17,
+            "min": 13
+          }
+        },
+        "lymphocytes": {
+          "name": "lymphocytes",
+          "unit": "%",
+          "value": 50,
+          "status": "high",
+          "original_name": "lymphocytes",
+          "interpretation": "high",
+          "reference_range": "20.0-40.0",
+          "reference_range_raw": "20 - 40",
+          "reference_range_parsed": {
+            "max": 40,
+            "min": 20
+          }
+        },
+        "vitamin_b12": {
+          "name": "vitamin_b12",
+          "unit": "pg/mL",
+          "value": 185,
+          "status": "low",
+          "original_name": "vitamin_b12",
+          "interpretation": "low",
+          "reference_range": "211.0-911.0",
+          "reference_range_raw": "211.0 - 911.0",
+          "reference_range_parsed": {
+            "max": 911,
+            "min": 211
+          }
+        },
+        "white_blood_cells": {
+          "name": "white_blood_cells",
+          "unit": "×10³/µL",
+          "value": 5,
+          "status": "normal",
+          "original_name": "white_blood_cells",
+          "interpretation": "normal",
+          "reference_range": "4.0-10.0",
+          "reference_range_raw": "4.0 - 10.0",
+          "reference_range_parsed": {
+            "max": 10,
+            "min": 4
+          }
+        }
+      },
+      "normalized_terms": [
+        {
+          "source_term": "HEMOGLOBIN",
+          "coding_system": null,
+          "normalized_term": "hemoglobin"
+        },
+        {
+          "source_term": "WBC",
+          "coding_system": null,
+          "normalized_term": "white_blood_cells"
+        },
+        {
+          "source_term": "PLATELET COUNT",
+          "coding_system": null,
+          "normalized_term": "platelets"
+        },
+        {
+          "source_term": "Vitamin B12",
+          "coding_system": null,
+          "normalized_term": "vitamin_b12"
+        },
+        {
+          "source_term": "25-HYDROXYVITAMIN D",
+          "coding_system": null,
+          "normalized_term": "vitamin_d"
+        }
+      ],
+      "confidence": 0.99,
+      "created_at": "2026-03-31T21:06:25+05:30",
+      "updated_at": "2026-03-31T21:06:25+05:30"
+    },
+    {
+      "id": "aacc73d0-03b7-4624-b7fd-7c726f1b59cb",
+      "report_id": "72bd5fff-7ca7-4607-a087-9a5973a9c1a7",
+      "schema_version": "1.0",
+      "report_type": "Coronary CT Angiography",
+      "summary": "Coronary arteries show varied degrees of stenosis. Graft vessels appear patent. Cardiac function is normal with an LVEF of 78%. Post-operative changes noted in lungs without significant abnormalities.",
+      "key_values": {},
+      "normalized_terms": [
+        {
+          "source_term": "LIMA to Diagonal",
+          "coding_system": null,
+          "normalized_term": "LIMA to Diagonal"
+        },
+        {
+          "source_term": "LRA to OM",
+          "coding_system": null,
+          "normalized_term": "LRA to OM"
+        },
+        {
+          "source_term": "RSVG to PDA",
+          "coding_system": null,
+          "normalized_term": "RSVG to PDA"
+        },
+        {
+          "source_term": "LMCA",
+          "coding_system": null,
+          "normalized_term": "left_main_coronary_artery"
+        },
+        {
+          "source_term": "LAD",
+          "coding_system": null,
+          "normalized_term": "left_anterior_descending_artery"
+        },
+        {
+          "source_term": "LCx",
+          "coding_system": null,
+          "normalized_term": "left_circumflex_artery"
+        },
+        {
+          "source_term": "RCA",
+          "coding_system": null,
+          "normalized_term": "right_coronary_artery"
+        },
+        {
+          "source_term": "PDA",
+          "coding_system": null,
+          "normalized_term": "posterior_descending_artery"
+        },
+        {
+          "source_term": "PLV",
+          "coding_system": null,
+          "normalized_term": "posterior_lateral_ventricle"
+        }
+      ],
+      "confidence": 0.9,
+      "created_at": "2026-04-02T20:52:54.314484+05:30",
+      "updated_at": "2026-04-02T20:52:54.314484+05:30"
+    }
+  ]
+}

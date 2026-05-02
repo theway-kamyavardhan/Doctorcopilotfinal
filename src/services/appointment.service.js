@@ -1,10 +1,19 @@
 import api from "./api";
+import {
+  getDemoDoctorAppointments,
+  getDemoPatientAppointments,
+  isDemoSession,
+} from "../lib/demoData";
 
 function getErrorMessage(error, fallbackMessage) {
   return error?.response?.data?.detail || error?.message || fallbackMessage;
 }
 
 export async function createAppointment(payload) {
+  if (isDemoSession()) {
+    throw new Error("Appointment creation is disabled in static reviewer demo mode.");
+  }
+
   try {
     const response = await api.post("/api/v1/appointments", payload);
     return response.data;
@@ -14,6 +23,10 @@ export async function createAppointment(payload) {
 }
 
 export async function getPatientAppointments() {
+  if (isDemoSession()) {
+    return getDemoPatientAppointments();
+  }
+
   try {
     const response = await api.get("/api/v1/patients/me/appointments");
     return response.data || [];
@@ -23,6 +36,10 @@ export async function getPatientAppointments() {
 }
 
 export async function getDoctorAppointments() {
+  if (isDemoSession()) {
+    return getDemoDoctorAppointments();
+  }
+
   try {
     const response = await api.get("/api/v1/doctors/me/appointments");
     return response.data || [];
@@ -32,6 +49,10 @@ export async function getDoctorAppointments() {
 }
 
 export async function updateAppointment(appointmentId, payload) {
+  if (isDemoSession()) {
+    throw new Error("Appointment editing is disabled in static reviewer demo mode.");
+  }
+
   try {
     const response = await api.patch(`/api/v1/appointments/${appointmentId}`, payload);
     return response.data;

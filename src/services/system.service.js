@@ -1,10 +1,15 @@
 import api, { clearSessionOpenAiKey, getSessionOpenAiKey, setSessionOpenAiKey } from "./api";
+import { getDemoAiAccessStatus, isDemoSession } from "../lib/demoData";
 
 function getErrorMessage(error, fallbackMessage) {
   return error?.response?.data?.detail || error?.message || fallbackMessage;
 }
 
 export async function getAiAccessStatus() {
+  if (isDemoSession()) {
+    return getDemoAiAccessStatus();
+  }
+
   try {
     const response = await api.get("/api/v1/system/ai-access");
     return response.data;
@@ -14,6 +19,10 @@ export async function getAiAccessStatus() {
 }
 
 export async function validateSessionApiKey() {
+  if (isDemoSession()) {
+    return getDemoAiAccessStatus();
+  }
+
   try {
     const response = await api.get("/api/v1/system/ai-access");
     return response.data;

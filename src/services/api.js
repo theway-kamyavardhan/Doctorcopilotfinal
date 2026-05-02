@@ -54,6 +54,7 @@ export function getLastLoginIdentifier() {
 export function clearAuthToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(ROLE_STORAGE_KEY);
+  localStorage.removeItem(LAST_LOGIN_IDENTIFIER_KEY);
   sessionStorage.removeItem(SESSION_OPENAI_KEY);
 }
 

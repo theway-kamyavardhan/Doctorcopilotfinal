@@ -6,6 +6,15 @@ import api, {
   setAuthToken,
   setLastLoginIdentifier,
 } from "./api";
+import {
+  getDemoCurrentUser,
+  getDemoDoctorProfile,
+  getDemoPatientProfile,
+  isDemoIdentifier,
+  isDemoPassword,
+  isDemoSession,
+  startDemoSession,
+} from "../lib/demoData";
 
 const AUTH_BASE_PATH = "/api/v1/auth";
 
@@ -58,6 +67,18 @@ export function getDashboardPathForRole(role) {
 }
 
 export async function loginUser({ username, password }) {
+  if (isDemoIdentifier(username)) {
+    if (!isDemoPassword(username, password)) {
+      throw new Error("Invalid demo account password.");
+    }
+    const demoUser = startDemoSession(username);
+    return {
+      access_token: getAuthToken(),
+      token_type: "bearer",
+      user: demoUser,
+    };
+  }
+
   try {
     const response = await api.post(`${AUTH_BASE_PATH}/login`, {
       username,
@@ -89,6 +110,14 @@ export async function getMe() {
     throw new Error("No authentication token found.");
   }
 
+  if (isDemoSession()) {
+    const demoUser = getDemoCurrentUser();
+    if (demoUser?.role) {
+      setAuthRole(demoUser.role);
+    }
+    return demoUser;
+  }
+
   try {
     const response = await api.get(`${AUTH_BASE_PATH}/me`);
     if (response.data?.role) {
@@ -105,6 +134,10 @@ export async function getPatientProfile() {
     throw new Error("No authentication token found.");
   }
 
+  if (isDemoSession()) {
+    return getDemoPatientProfile();
+  }
+
   try {
     const response = await api.get("/api/v1/patients/me");
     return response.data;
@@ -114,6 +147,10 @@ export async function getPatientProfile() {
 }
 
 export async function updatePatientProfile(payload) {
+  if (isDemoSession()) {
+    return { ...getDemoPatientProfile(), ...payload };
+  }
+
   try {
     const response = await api.patch("/api/v1/patients/me", payload);
     return response.data;
@@ -123,6 +160,10 @@ export async function updatePatientProfile(payload) {
 }
 
 export async function changePatientPassword(payload) {
+  if (isDemoSession()) {
+    throw new Error("Demo patient password cannot be changed.");
+  }
+
   try {
     const response = await api.patch("/api/v1/patients/me/password", payload);
     return response.data;
@@ -132,6 +173,10 @@ export async function changePatientPassword(payload) {
 }
 
 export async function clearPatientData(payload) {
+  if (isDemoSession()) {
+    throw new Error("Demo patient data is static for reviewer sessions.");
+  }
+
   try {
     await api.delete("/api/v1/patients/me/data", { data: payload });
   } catch (error) {
@@ -140,6 +185,10 @@ export async function clearPatientData(payload) {
 }
 
 export async function changeDoctorPassword(payload) {
+  if (isDemoSession()) {
+    throw new Error("Demo doctor password cannot be changed.");
+  }
+
   try {
     const response = await api.patch("/api/v1/doctors/me/password", payload);
     return response.data;

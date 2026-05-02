@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import api, { getAuthToken } from "../services/api";
+import { isDemoSession } from "../lib/demoData";
 
 export default function useCaseChatStream(caseId, { enabled = true, onMessage } = {}) {
   const [connectionState, setConnectionState] = useState("idle");
@@ -12,7 +13,7 @@ export default function useCaseChatStream(caseId, { enabled = true, onMessage } 
   }, [onMessage]);
 
   useEffect(() => {
-    if (!enabled || !caseId) {
+    if (!enabled || !caseId || isDemoSession()) {
       setConnectionState("idle");
       return undefined;
     }
