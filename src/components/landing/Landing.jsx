@@ -149,7 +149,10 @@ export default function Landing() {
               <div className="flex w-full items-center justify-between gap-4">
                 <div className="min-w-0 flex items-center gap-3">
                   <div className={`h-7 w-7 rounded-full bg-gradient-to-tr ${isDark ? "from-[var(--gold-primary)] via-amber-200 to-[var(--gold-soft)] shadow-[0_0_20px_var(--gold-primary)]" : "from-blue-400 via-violet-400 to-rose-400 shadow-[0_0_16px_rgba(30,58,138,0.2)]"}`} />
-                  <span className={`truncate text-lg font-black tracking-tight sm:text-xl ${isDark ? "text-transparent bg-clip-text bg-[var(--gold-metallic)]" : "text-slate-800"}`}>
+                  <span
+                    className={`truncate text-lg font-black tracking-tight sm:text-xl ${isDark ? "text-transparent bg-clip-text" : "text-slate-800"}`}
+                    style={isDark ? { backgroundImage: "linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)" } : {}}
+                  >
                     DoctorCopilot
                   </span>
                 </div>
