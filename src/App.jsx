@@ -14,6 +14,7 @@ import useViewport from "./hooks/useViewport";
 import PatientLayout from "./components/patient/PatientLayout";
 import DoctorLayout from "./components/doctor/DoctorLayout";
 import ParticleTransition from "./components/ui/ParticleTransition";
+import InstallPWA from "./components/ui/InstallPWA";
 import { authService } from "./services/auth.service";
 
 const RegisterPatient = lazy(() => import("./pages/auth/RegisterPatient"));
@@ -189,6 +190,9 @@ export default function App() {
 
             {/* CINEMATIC PARTICLE LAYER */}
             {!isMobile ? <ParticleTransition /> : null}
+
+            {/* PWA INSTALL PROMPT */}
+            <InstallPWA />
 
             <Suspense fallback={<RouteLoader />}>
               <AnimatedRoutes />

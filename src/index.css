@@ -57,7 +57,98 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  /* Prevent iOS rubber-band bounce (keeps feel native) */
+  overscroll-behavior: none;
+  /* Safe area insets for iOS notch / Dynamic Island */
+  padding-top: env(safe-area-inset-top);
   transition: background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1), color 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  min-height: -webkit-fill-available;
+}
+
+* {
+  box-sizing: border-box;
+  /* Remove tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+/* ─── iOS Input Zoom Prevention ──────────────────────────────────── */
+/* Inputs must be >= 16px to prevent iOS Safari auto-zoom */
+@media (max-width: 640px) {
+  body {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ─── Safe Area Utilities ─────────────────────────────────────────── */
+/* Bottom nav must account for iOS home indicator */
+.safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Fixed bottom container that respects safe area */
+.fixed-bottom-safe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Main content — add bottom padding to avoid fixed bottom nav */
+.main-mobile {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+/* Smooth scroll regions within the app */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .dark body {

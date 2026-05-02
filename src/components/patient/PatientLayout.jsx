@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays,
   ClipboardList,
@@ -172,18 +173,29 @@ function PatientDesktopLayout({
                         <NavLink
                           key={link.name}
                           to={link.path}
-                          className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all duration-300 lg:px-5 ${
+                          className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all duration-300 lg:px-5 z-10 ${
                             isActive
                               ? isDark
-                                ? "bg-[var(--cyan-primary)]/10 text-[var(--cyan-primary)] shadow-[inset_0_1px_0_0_rgba(6,182,212,0.2)]"
-                                : "bg-blue-500/10 text-blue-700 shadow-[inset_0_1px_0_0_rgba(59,130,246,0.3)]"
+                                ? "text-[var(--cyan-primary)]"
+                                : "text-blue-700"
                               : isDark
                                 ? "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                                 : "text-slate-500 hover:bg-black/5 hover:text-slate-800"
                           }`}
                         >
+                          {isActive && (
+                            <motion.div
+                              layoutId="desktop-patient-nav-active"
+                              className={`absolute inset-0 rounded-full -z-10 ${
+                                isDark
+                                  ? "bg-[var(--cyan-primary)]/10 shadow-[inset_0_1px_0_0_rgba(6,182,212,0.2)]"
+                                  : "bg-blue-500/10 shadow-[inset_0_1px_0_0_rgba(59,130,246,0.3)]"
+                              }`}
+                              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            />
+                          )}
                           <Icon size={14} className={isActive ? "opacity-100" : "opacity-70"} />
-                          {link.name}
+                          <span>{link.name}</span>
                         </NavLink>
                       );
                     })}
@@ -345,7 +357,7 @@ function PatientMobileLayout({
 }) {
   return (
     <div
-      className={`min-h-screen pb-28 ${
+      className={`min-h-screen main-mobile ${
         isDark
           ? "bg-[linear-gradient(180deg,#020617,#0f172a_34%,#020617)] text-white"
           : "bg-[linear-gradient(180deg,#f8fbff,#edf4fb_42%,#f8fbff)] text-slate-900"
@@ -383,77 +395,78 @@ function PatientMobileLayout({
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
-
         </GlassSurface>
       </div>
 
-      {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-slate-950/55 px-3 py-4 backdrop-blur-sm">
-          <GlassSurface
-            width="100%"
-            height="auto"
-            borderRadius={30}
-            backgroundOpacity={isDark ? 0.44 : 0.84}
-            blur={26}
-            brightness={isDark ? 90 : 112}
-            saturation={1.8}
-            className={`border p-4 ${isDark ? "border-white/10 text-white" : "border-white/80 text-slate-900"}`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className={`text-[10px] font-black uppercase tracking-[0.24em] ${isDark ? "text-cyan-300/75" : "text-blue-700/75"}`}>
-                  Navigation
-                </div>
-                <div className="mt-1 text-lg font-black">Patient Menu</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`rounded-full p-2 ${isDark ? "bg-white/5 text-slate-100" : "bg-slate-100 text-slate-700"}`}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <nav className="mt-4 grid gap-2">
-              {navLinks.map((link) => {
-                const isActive = location.pathname === link.path;
-                const Icon = link.icon;
-                return (
-                  <NavLink
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
-                      isActive
-                        ? isDark
-                          ? "bg-cyan-500/10 text-cyan-200"
-                          : "bg-blue-100 text-blue-700"
-                        : isDark
-                          ? "bg-white/5 text-slate-300"
-                          : "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {link.name}
-                  </NavLink>
-                );
-              })}
-            </nav>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className={`mt-4 flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold ${
-                isDark ? "bg-rose-500/10 text-rose-200" : "bg-rose-100 text-rose-700"
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 35 }}
+              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-[2.5rem] p-5 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.3)] ${
+                isDark ? "bg-slate-900 border-t border-white/10 text-white" : "bg-white border-t border-slate-200 text-slate-900"
               }`}
             >
-              <LogOut size={16} />
-              Sign out
-            </button>
-          </GlassSurface>
-        </div>
-      ) : null}
+              <div className="mx-auto mb-6 h-1.5 w-12 rounded-full bg-slate-400/30" />
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className={`text-[10px] font-black uppercase tracking-[0.24em] ${isDark ? "text-cyan-300/75" : "text-blue-700/75"}`}>
+                    Navigation
+                  </div>
+                  <div className="mt-1 text-lg font-black">Patient Menu</div>
+                </div>
+              </div>
+
+              <nav className="mt-4 grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto scroll-smooth pb-4">
+                {navLinks.map((link) => {
+                  const isActive = location.pathname === link.path;
+                  const Icon = link.icon;
+                  return (
+                    <NavLink
+                      key={link.name}
+                      to={link.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex flex-col items-center justify-center gap-2 rounded-3xl p-4 text-xs font-bold transition-all ${
+                        isActive
+                          ? isDark
+                            ? "bg-cyan-500/15 text-cyan-300 border border-cyan-500/20"
+                            : "bg-blue-50 text-blue-700 border border-blue-200"
+                          : isDark
+                            ? "bg-white/5 text-slate-300 border border-white/5"
+                            : "bg-slate-50 text-slate-700 border border-slate-100"
+                      }`}
+                    >
+                      <Icon size={24} className="mb-1" />
+                      {link.name}
+                    </NavLink>
+                  );
+                })}
+              </nav>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className={`mt-2 flex w-full items-center justify-center gap-3 rounded-2xl px-4 py-4 text-sm font-bold ${
+                  isDark ? "bg-rose-500/10 text-rose-300" : "bg-rose-50 text-rose-700"
+                }`}
+              >
+                <LogOut size={18} />
+                Sign out
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <main className="px-3 pt-4">
         <div className={`rounded-[2rem] border p-3 ${isDark ? "border-white/8 bg-white/[0.03]" : "border-slate-200 bg-white/72"}`}>
@@ -464,7 +477,7 @@ function PatientMobileLayout({
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-3">
+      <div className="fixed-bottom-safe z-40 px-3 pb-3">
         <GlassSurface
           width="100%"
           height="auto"
@@ -475,7 +488,7 @@ function PatientMobileLayout({
           saturation={1.8}
           className={`border px-2 py-2 ${isDark ? "border-white/10 shadow-[0_-14px_40px_rgba(2,6,23,0.45)]" : "border-white/80 shadow-[0_-12px_28px_rgba(15,23,42,0.1)]"}`}
         >
-          <nav className="grid grid-cols-5 gap-1">
+          <nav className="relative grid grid-cols-5 gap-1">
             {primaryMobileLinks.map((link) => {
               const isActive = location.pathname === link.path;
               const Icon = link.icon;
@@ -483,17 +496,26 @@ function PatientMobileLayout({
                 <NavLink
                   key={link.path}
                   to={link.path}
-                  className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold transition-all ${
+                  className={`relative flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold transition-all z-10 ${
                     isActive
                       ? isDark
-                        ? "bg-cyan-500/12 text-cyan-200"
-                        : "bg-blue-100 text-blue-700"
+                        ? "text-cyan-200"
+                        : "text-blue-700"
                       : isDark
                         ? "text-slate-300"
                         : "text-slate-600"
                   }`}
                 >
-                  <Icon size={16} />
+                  {isActive && (
+                    <motion.div
+                      layoutId="mobile-patient-nav-active"
+                      className={`absolute inset-0 rounded-2xl -z-10 ${isDark ? "bg-cyan-500/20" : "bg-blue-100"}`}
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <motion.div whileTap={{ scale: 0.85 }}>
+                    <Icon size={16} />
+                  </motion.div>
                   <span className="truncate">{link.name}</span>
                 </NavLink>
               );
@@ -501,17 +523,26 @@ function PatientMobileLayout({
             <button
               type="button"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold ${
+              className={`relative flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold z-10 ${
                 mobileMenuOpen
                   ? isDark
-                    ? "bg-cyan-500/12 text-cyan-200"
-                    : "bg-blue-100 text-blue-700"
+                    ? "text-cyan-200"
+                    : "text-blue-700"
                   : isDark
                     ? "text-slate-300"
                     : "text-slate-600"
               }`}
             >
-              {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
+              {mobileMenuOpen && (
+                <motion.div
+                  layoutId="mobile-patient-nav-active"
+                  className={`absolute inset-0 rounded-2xl -z-10 ${isDark ? "bg-cyan-500/20" : "bg-blue-100"}`}
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <motion.div whileTap={{ scale: 0.85 }}>
+                {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
+              </motion.div>
               <span>More</span>
             </button>
           </nav>

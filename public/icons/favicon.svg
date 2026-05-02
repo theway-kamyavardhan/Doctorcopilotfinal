@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#020617"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#bf953f"/>
+      <stop offset="35%" style="stop-color:#fcf6ba"/>
+      <stop offset="60%" style="stop-color:#b38728"/>
+      <stop offset="100%" style="stop-color:#d4af37"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+
+  <!-- Subtle border -->
+  <rect width="512" height="512" rx="110" fill="none" stroke="rgba(6,182,212,0.3)" stroke-width="2"/>
+
+  <!-- Medical cross / DNA helix base — stylized stethoscope icon -->
+  <!-- Outer circle ring -->
+  <circle cx="256" cy="256" r="140" fill="none" stroke="url(#cyan)" stroke-width="3" opacity="0.4"/>
+
+  <!-- Heart with medical cross -->
+  <!-- Cross vertical -->
+  <rect x="238" y="150" width="36" height="120" rx="10" fill="url(#gold)" filter="url(#glow)"/>
+  <!-- Cross horizontal -->
+  <rect x="196" y="192" width="120" height="36" rx="10" fill="url(#gold)" filter="url(#glow)"/>
+
+  <!-- Stethoscope curve at bottom -->
+  <path d="M 200 300 Q 200 360 256 360 Q 312 360 312 300" fill="none" stroke="url(#cyan)" stroke-width="14" stroke-linecap="round" filter="url(#glow)"/>
+  <!-- Stethoscope earpieces -->
+  <circle cx="200" cy="300" r="10" fill="url(#cyan)" filter="url(#glow)"/>
+  <circle cx="312" cy="300" r="10" fill="url(#cyan)" filter="url(#glow)"/>
+  <!-- Stethoscope chest piece -->
+  <circle cx="256" cy="372" r="22" fill="url(#cyan)" filter="url(#glow)"/>
+  <circle cx="256" cy="372" r="10" fill="url(#gold)"/>
+
+  <!-- Corner dots — tech aesthetic -->
+  <circle cx="80" cy="80" r="6" fill="rgba(6,182,212,0.5)"/>
+  <circle cx="432" cy="80" r="6" fill="rgba(6,182,212,0.5)"/>
+  <circle cx="80" cy="432" r="6" fill="rgba(212,175,55,0.5)"/>
+  <circle cx="432" cy="432" r="6" fill="rgba(212,175,55,0.5)"/>
+</svg>

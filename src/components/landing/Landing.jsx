@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Download } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
+import usePWA from "../../hooks/usePWA";
 import GlassSurface from "../ui/GlassSurface";
 import LiquidEther from "../ui/LiquidEther";
 import RefractionFilter from "../ui/RefractionFilter";
@@ -65,6 +67,7 @@ export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const { allowFluid } = useAdaptiveVisuals();
+  const { isInstallable, promptInstall } = usePWA();
 
   const handleEnter = () => {
     navigate("/login");
@@ -239,10 +242,20 @@ export default function Landing() {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-5 pt-4">
               <GlassButton onClick={handleEnter} primary className="px-14 py-5 !rounded-2xl text-base !tracking-wide">
                 Start System
-                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </GlassButton>
+
+              {isInstallable && (
+                <GlassButton
+                  onClick={promptInstall}
+                  className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
+                >
+                  <Download className="w-5 h-5 inline-block" />
+                  Install App
+                </GlassButton>
+              )}
             </motion.div>
           </motion.div>
         </main>

@@ -3,7 +3,10 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
+  CalendarDays,
   ClipboardPlus,
+  Clock3,
+  History,
   LoaderCircle,
   MessageSquareHeart,
   RefreshCcw,
@@ -31,12 +34,47 @@ function statusTone(status, isDark) {
   return isDark ? "bg-slate-500/10 text-slate-300" : "bg-slate-100 text-slate-700";
 }
 
+function SectionShell({ title, subtitle, action, isDark, children }) {
+  return (
+    <section className={`rounded-[1.75rem] border p-4 sm:p-5 lg:p-6 ${isDark ? "border-white/10 bg-slate-900/82" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className={`text-xl font-black tracking-tight sm:text-2xl ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h2>
+          {subtitle ? <p className={`mt-2 text-sm leading-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}>{subtitle}</p> : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+function StatTile({ icon: Icon, label, value, tone, isDark }) {
+  const tones = {
+    cyan: isDark ? "bg-cyan-500/10 text-cyan-200" : "bg-blue-50 text-blue-700",
+    emerald: isDark ? "bg-emerald-500/10 text-emerald-200" : "bg-emerald-50 text-emerald-700",
+    amber: isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-700",
+  };
+
+  return (
+    <div className={`rounded-2xl border p-4 ${isDark ? "border-white/10 bg-white/[0.035]" : "border-slate-200 bg-slate-50"}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${tones[tone] || tones.cyan}`}>
+          <Icon size={17} />
+        </div>
+        <div className={`text-2xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>{value}</div>
+      </div>
+      <div className={`mt-3 text-[11px] font-black uppercase tracking-[0.18em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>{label}</div>
+    </div>
+  );
+}
+
 function DoctorOption({ doctor, selected, onSelect, isDark }) {
   return (
     <button
       type="button"
       onClick={() => onSelect(doctor.id)}
-      className={`w-full rounded-2xl border p-4 text-left transition-all ${
+      className={`w-full rounded-2xl border p-4 text-left transition-all active:scale-[0.99] ${
         selected
           ? isDark
             ? "border-cyan-400/40 bg-cyan-500/10 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]"
@@ -79,20 +117,20 @@ function RequestConsultationOverlay({
   isDark,
 }) {
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 px-4 py-8">
+    <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-950/65 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-8">
       <div
-        className={`w-full max-w-5xl rounded-[2rem] border shadow-2xl ${
+        className={`max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[1.75rem] border shadow-2xl sm:rounded-[2rem] ${
           isDark ? "border-white/10 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-900"
         }`}
       >
-        <div className={`flex items-start justify-between gap-4 border-b px-6 py-5 ${isDark ? "border-white/10" : "border-slate-200"}`}>
-          <div className="flex items-start gap-4">
-            <div className={`rounded-2xl p-3 ${isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-50 text-blue-700"}`}>
+        <div className={`flex items-start justify-between gap-3 border-b px-4 py-4 sm:px-6 sm:py-5 ${isDark ? "border-white/10" : "border-slate-200"}`}>
+          <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+            <div className={`shrink-0 rounded-2xl p-3 ${isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-50 text-blue-700"}`}>
               <ClipboardPlus size={24} />
             </div>
-            <div>
-              <h2 className="text-2xl font-black">New Consultation Request</h2>
-              <p className={`mt-2 max-w-2xl text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            <div className="min-w-0">
+              <h2 className="text-xl font-black sm:text-2xl">New Consultation Request</h2>
+              <p className={`mt-2 max-w-2xl text-sm leading-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                 Choose a doctor and send your request. A consultation with the same doctor cannot be created again until the current one is closed.
               </p>
             </div>
@@ -109,7 +147,7 @@ function RequestConsultationOverlay({
           </button>
         </div>
 
-        <div className="grid gap-8 px-6 py-6 xl:grid-cols-[0.9fr,1.1fr]">
+        <div className="grid max-h-[calc(92vh-6.5rem)] gap-6 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 xl:grid-cols-[0.9fr,1.1fr]">
           <div className="space-y-5">
             <div className={`rounded-2xl p-5 ${isDark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
               <div className={`text-xs font-black uppercase tracking-[0.2em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>Selected Doctor</div>
@@ -130,12 +168,12 @@ function RequestConsultationOverlay({
               </div>
             ) : null}
 
-            <div className="flex flex-wrap gap-3">
+            <div className="grid gap-3 sm:flex sm:flex-wrap">
               <button
                 type="button"
                 onClick={onSubmit}
                 disabled={requesting || !selectedDoctorId || Boolean(sameDoctorActiveCase)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
               >
                 {requesting ? "Sending request..." : "Send Consultation Request"}
                 <ArrowRight size={16} />
@@ -143,7 +181,7 @@ function RequestConsultationOverlay({
               <button
                 type="button"
                 onClick={onClose}
-                className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 font-bold transition-colors ${
+                className={`inline-flex min-h-12 items-center justify-center rounded-2xl px-5 py-3 font-bold transition-colors ${
                   isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
@@ -245,6 +283,7 @@ export default function PatientCases() {
     [activeCases, selectedDoctorId]
   );
 
+  const pendingCases = useMemo(() => cases.filter((item) => item.status === "pending"), [cases]);
   const handleRequestConsultation = async () => {
     if (!selectedDoctorId) {
       setError("Please select a doctor before sending the consultation request.");
@@ -298,42 +337,51 @@ export default function PatientCases() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 md:px-0">
-      <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Consultation Cases</h1>
-          <p className={`mt-2 text-lg ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+    <div className="mx-auto max-w-6xl space-y-5 px-1 pb-4 sm:space-y-6 sm:px-0">
+      <section className={`overflow-hidden rounded-[1.75rem] border p-4 sm:p-6 lg:p-7 ${isDark ? "border-white/10 bg-slate-900/78" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <div className={`text-[11px] font-black uppercase tracking-[0.22em] ${isDark ? "text-cyan-300/75" : "text-blue-700/75"}`}>Patient Workspace</div>
+            <h1 className={`mt-2 text-3xl font-black tracking-tight sm:text-4xl ${isDark ? "text-white" : "text-slate-900"}`}>Consultation Cases</h1>
+            <p className={`mt-2 max-w-2xl text-base leading-7 sm:text-lg ${isDark ? "text-slate-400" : "text-slate-500"}`}>
             Track your requests, appointments, and live consultations in one place.
-          </p>
+            </p>
+          </div>
+          <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setShowRequestOverlay(true)}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500"
+            >
+              <ClipboardPlus size={16} />
+              New Consultation
+            </button>
+            <Link
+              to="/patient/cases/insights"
+              className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
+                isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <Stethoscope size={16} />
+              Insights
+            </Link>
+            <button
+              type="button"
+              onClick={loadCases}
+              className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
+                isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <RefreshCcw size={16} />
+              Refresh
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            to="/patient/cases/insights"
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
-              isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-          >
-            <Stethoscope size={16} />
-            Insights
-          </Link>
-          <button
-            type="button"
-            onClick={() => setShowRequestOverlay(true)}
-            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500"
-          >
-            <ClipboardPlus size={16} />
-            New Consultation Request
-          </button>
-          <button
-            type="button"
-            onClick={loadCases}
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 font-bold transition-colors ${
-              isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-          >
-            <RefreshCcw size={16} />
-            Refresh
-          </button>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <StatTile icon={MessageSquareHeart} label="Active" value={activeCases.length} tone="cyan" isDark={isDark} />
+          <StatTile icon={Clock3} label="Pending" value={pendingCases.length} tone="amber" isDark={isDark} />
+          <StatTile icon={CalendarDays} label="Appointments" value={activeCaseAppointments.length} tone="emerald" isDark={isDark} />
         </div>
       </section>
 
@@ -349,26 +397,23 @@ export default function PatientCases() {
       ) : null}
 
       {activeCases.length ? (
-        <section className={`rounded-[2rem] border p-8 ${isDark ? "border-white/10 bg-slate-900" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>Active consultations</h2>
-              <p className={`mt-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                Pending requests can be cancelled by you. Once a doctor accepts a request, only the doctor can close that case.
-              </p>
-            </div>
+        <SectionShell
+          title="Active Consultations"
+          subtitle="Pending requests can be cancelled by you. Once a doctor accepts a request, only the doctor can close that case."
+          isDark={isDark}
+          action={(
             <Link
               to="/patient/chat"
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white transition-colors hover:bg-emerald-500"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-500 sm:px-5 sm:text-base"
             >
               <MessageSquareHeart size={16} />
-              Open Consultation Chat
+              Open Chat
             </Link>
-          </div>
-
-          <div className="mt-6 space-y-4">
+          )}
+        >
+          <div className="space-y-4">
             {activeCases.map((item) => (
-              <div key={item.id} className={`rounded-2xl border p-5 ${isDark ? "border-white/10 bg-white/[0.03]" : "border-slate-200 bg-slate-50"}`}>
+              <div key={item.id} className={`rounded-2xl border p-4 sm:p-5 ${isDark ? "border-white/10 bg-white/[0.03]" : "border-slate-200 bg-slate-50"}`}>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.18em] ${statusTone(item.status, isDark)}`}>
@@ -381,10 +426,10 @@ export default function PatientCases() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center">
                     <Link
                       to="/patient/chat"
-                      className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-bold ${isDark ? "bg-white/5 text-slate-100 hover:bg-white/10" : "bg-white text-slate-700 hover:bg-slate-200"}`}
+                      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 py-3 font-bold ${isDark ? "bg-white/5 text-slate-100 hover:bg-white/10" : "bg-white text-slate-700 hover:bg-slate-200"}`}
                     >
                       <MessageSquareHeart size={16} />
                       Open Chat
@@ -394,7 +439,7 @@ export default function PatientCases() {
                         type="button"
                         onClick={() => handleCancelConsultation(item.id)}
                         disabled={cancellingId === item.id}
-                        className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-bold transition-colors ${
+                        className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 py-3 font-bold transition-colors ${
                           isDark ? "bg-red-500/10 text-red-300 hover:bg-red-500/15" : "bg-red-50 text-red-700 hover:bg-red-100"
                         }`}
                       >
@@ -407,12 +452,15 @@ export default function PatientCases() {
               </div>
             ))}
           </div>
-        </section>
+        </SectionShell>
       ) : null}
 
-      <section className={`rounded-[2rem] border p-6 ${isDark ? "border-white/10 bg-slate-900" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
-        <h2 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>Appointments</h2>
-        <div className="mt-5 space-y-3">
+      <SectionShell
+        title="Appointments"
+        subtitle="Scheduled visits linked to your active consultations."
+        isDark={isDark}
+      >
+        <div className="space-y-3">
           {activeCases.length ? (
             activeCaseAppointments.length ? (
               activeCaseAppointments.map((appointment) => (
@@ -453,11 +501,14 @@ export default function PatientCases() {
             </div>
           )}
         </div>
-      </section>
+      </SectionShell>
 
-      <section className={`rounded-[2rem] border p-6 ${isDark ? "border-white/10 bg-slate-900" : "border-slate-100 bg-white shadow-lg shadow-slate-100/50"}`}>
-        <h2 className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>Case History</h2>
-        <div className="mt-5 space-y-3">
+      <SectionShell
+        title="Case History"
+        subtitle="A complete record of your requests and doctor interactions."
+        isDark={isDark}
+      >
+        <div className="space-y-3">
           {cases.length ? (
             cases.map((item) => (
               <div key={item.id} className={`rounded-2xl px-4 py-4 ${isDark ? "bg-white/5" : "bg-slate-50"}`}>
@@ -468,13 +519,13 @@ export default function PatientCases() {
                       {formatDate(item.created_at)} • <span className="capitalize">{item.status}</span> • {item.doctor?.full_name || "Doctor pending"}
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
                     {item.status === "pending" ? (
                       <button
                         type="button"
                         onClick={() => handleCancelConsultation(item.id)}
                         disabled={cancellingId === item.id}
-                        className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${
+                        className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${
                           isDark ? "bg-red-500/10 text-red-300 hover:bg-red-500/15" : "bg-red-50 text-red-700 hover:bg-red-100"
                         }`}
                       >
@@ -484,11 +535,11 @@ export default function PatientCases() {
                     ) : null}
                     <Link
                       to="/patient/chat"
-                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${
+                      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${
                         isDark ? "bg-white/5 text-slate-200 hover:bg-white/10" : "bg-white text-slate-700 hover:bg-slate-200"
                       }`}
                     >
-                      <Stethoscope size={14} />
+                      <History size={14} />
                       Open Chat
                     </Link>
                   </div>
@@ -501,7 +552,7 @@ export default function PatientCases() {
             </div>
           )}
         </div>
-      </section>
+      </SectionShell>
 
       {showRequestOverlay ? (
         <RequestConsultationOverlay
