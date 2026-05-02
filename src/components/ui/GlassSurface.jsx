@@ -109,13 +109,16 @@ const GlassSurface = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    let debounceTimer;
     const resizeObserver = new ResizeObserver(() => {
-      setTimeout(updateDisplacementMap, 0);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updateDisplacementMap, 100);
     });
 
     resizeObserver.observe(containerRef.current);
 
     return () => {
+      clearTimeout(debounceTimer);
       resizeObserver.disconnect();
     };
   }, []);
