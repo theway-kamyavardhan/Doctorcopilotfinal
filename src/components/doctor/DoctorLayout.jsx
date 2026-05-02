@@ -376,7 +376,7 @@ function GlossyHeader({
               </div>
               <h1
                 className={`mt-0.5 truncate text-xl font-black tracking-tighter sm:text-2xl ${
-                  isDark ? "bg-[var(--gold-metallic)] bg-clip-text text-transparent" : "text-slate-800"
+                  isDark ? "text-[#f3e5ab]" : "text-slate-800"
                 }`}
               >
                 {doctorName}
@@ -465,20 +465,21 @@ function GlossyMain({ isDark, location }) {
   return (
     <motion.main
       key={location.pathname}
-      initial={{ opacity: 0, y: 16, filter: "blur(10px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
       className="w-full flex-1"
+      style={{ willChange: "opacity, transform" }}
     >
       <GlassSurface
         width="100%"
         height="100%"
         borderRadius={32}
         backgroundOpacity={isDark ? 0.25 : 0.4}
-        blur={50}
+        blur={20}
         brightness={isDark ? 95 : 120}
         saturation={1.5}
-        className={`border p-4 transition-all duration-700 sm:p-5 md:p-8 ${
+        className={`border p-4 sm:p-5 md:p-8 ${
           isDark
             ? "border-white/10 text-white shadow-[0_24px_80px_rgba(2,6,23,0.32),inset_0_1px_0_rgba(255,255,255,0.05)]"
             : "border-white/60 text-slate-900 shadow-[0_20px_80px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,1)]"
