@@ -180,23 +180,30 @@ export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [installHint, setInstallHint] = useState("");
   const { allowFluid } = useAdaptiveVisuals();
   const { isInstallable, promptInstall, isIOS } = usePWA();
 
   const handleInstallClick = async () => {
     if (isIOS) {
-      // iOS Safari: show the guide — Apple blocks programmatic install
+      // iOS: Apple blocks programmatic install — show step guide
       setShowIOSGuide(true);
       return;
     }
     if (isInstallable) {
-      // Android Chrome / Desktop Chrome/Edge: fire native install prompt directly
+      // Android Chrome / Desktop Chrome/Edge: fire native install prompt NOW
       await promptInstall();
       return;
     }
-    // Browser hasn't fired beforeinstallprompt yet (not eligible or already installed)
-    // Open the page in a new tab which may trigger the prompt, or show nothing
-    window.open(window.location.href, "_blank");
+    // beforeinstallprompt not yet fired — browser not ready or already installed
+    // Detect if on Android
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      setInstallHint("Open this page in Chrome, then tap ⋮ → 'Add to Home screen'");
+    } else {
+      setInstallHint("Open in Chrome or Edge — the install prompt will appear in the address bar");
+    }
+    setTimeout(() => setInstallHint(""), 5000);
   };
 
   const handleEnter = () => {
@@ -394,21 +401,39 @@ export default function Landing() {
               </GlassText>
             </motion.section>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-5 pt-4">
-              <GlassButton onClick={handleEnter} primary className="px-14 py-5 !rounded-2xl text-base !tracking-wide">
-                Start System
-                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </GlassButton>
+            <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 pt-4 w-full max-w-md">
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+                <GlassButton onClick={handleEnter} primary className="px-14 py-5 !rounded-2xl text-base !tracking-wide">
+                  Start System
+                  <svg className="w-5 h-5 transition-transform group-hover:translate-x-1 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </GlassButton>
 
-              <GlassButton
-                onClick={handleInstallClick}
-                className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
-              >
-                <Download className="w-5 h-5 inline-block" />
-                {isIOS ? "Add to Home Screen" : isInstallable ? "Install App" : "Get the App"}
-              </GlassButton>
+                <GlassButton
+                  onClick={handleInstallClick}
+                  className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
+                >
+                  <Download className="w-5 h-5 inline-block" />
+                  {isIOS ? "Add to Home Screen" : "Install App"}
+                </GlassButton>
+              </div>
+
+              {/* Hint toast when browser hasn't fired beforeinstallprompt */}
+              <AnimatePresence>
+                {installHint && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className={`rounded-2xl px-4 py-3 text-xs font-semibold text-center max-w-sm ${
+                      isDark ? "bg-amber-500/10 text-amber-300 border border-amber-500/20" : "bg-amber-50 text-amber-700 border border-amber-200"
+                    }`}
+                  >
+                    {installHint}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             {/* Platform badges */}
