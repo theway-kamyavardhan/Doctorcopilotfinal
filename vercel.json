@@ -1,27 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "routes": [
+  "headers": [
     {
-      "src": "/assets/(.*)",
-      "headers": { "cache-control": "public, max-age=31536000, immutable" },
-      "continue": true
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     },
     {
-      "src": "/icons/(.*)",
-      "continue": true
+      "source": "/icons/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
     },
     {
-      "src": "/(sw\\.js|workbox-.*\\.js|manifest\\.webmanifest)",
-      "headers": { "cache-control": "no-cache" },
-      "continue": true
-    },
+      "source": "/(sw\\.js|workbox-.*\\.js|registerSW\\.js|manifest\\.webmanifest)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "rewrites": [
     {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webp|avif|glb|pdf|txt|json))",
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!assets|icons|api|sw\\.js|workbox|registerSW\\.js|manifest\\.webmanifest|favicon|robots\\.txt|sitemap).*)",
+      "destination": "/index.html"
     }
   ]
 }
