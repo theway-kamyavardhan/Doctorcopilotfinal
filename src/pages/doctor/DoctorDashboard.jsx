@@ -273,149 +273,93 @@ function OverviewModal({
 
 // ─── Native Mobile Port (Apple Health Style) ─────────────────────────────────
 
-function DoctorDashboardMobile({
-  isDark,
-  profile,
-  dashboard,
-  activeCases,
-  pendingCases,
-  upcomingAppointments,
-  error,
-  onRefresh,
-}) {
+// ─── Native Mobile Port ───────────────────────────────────────────────────────
+function DoctorDashboardMobile({ isDark, activeCases, pendingCases, reviewRequiredCases }) {
   return (
-    <div className={`px-4 pt-12 pb-6 min-h-screen ${isDark ? "bg-black text-white" : "bg-[#F2F2F7] text-black"}`}>
-      <header className="mb-8 flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-bold tabular-nums tracking-tight">Workspace</h1>
-          <p className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            {profile?.user?.full_name ? `Dr. ${profile.user.full_name}` : "Doctor Dashboard"}
-          </p>
-        </div>
-        <button onClick={onRefresh} className="p-2 bg-blue-500/10 text-blue-500 rounded-full" style={{ touchAction: 'manipulation' }}>
-          <RefreshCcw size={20} />
-        </button>
+    <div className={`flex flex-col min-h-[100svh] w-full font-sans antialiased ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'} pb-24`}>
+      <header className="px-4 pt-12 pb-6">
+        <h1 className="text-4xl font-bold tracking-tight">Overview</h1>
+        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          Your clinical workspace
+        </p>
       </header>
 
-      {error ? (
-        <div className="mb-6 rounded-2xl bg-red-100 p-4 text-sm font-semibold text-red-700">
-          {error}
-        </div>
-      ) : null}
-
-      <div className="space-y-6">
-        
-        {/* Top Tiles Row */}
+      <main className="px-4 space-y-6">
         <section>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xl font-bold">Overview</h2>
-          </div>
           <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
-            {/* Total Cases */}
-            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
-                <Stethoscope size={16} />
-              </div>
-              <div className="text-3xl font-bold tabular-nums">{dashboard?.total_cases ?? "--"}</div>
-              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Total Cases</div>
-            </div>
-
-            {/* Pending Cases */}
-            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="h-8 w-8 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center mb-3">
-                <ShieldAlert size={16} />
-              </div>
-              <div className="text-3xl font-bold tabular-nums">{pendingCases.length ?? "--"}</div>
-              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pending Review</div>
+            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="text-[32px] leading-none font-bold tabular-nums text-blue-500">{activeCases.length + pendingCases.length}</div>
+              <div className="text-[13px] font-semibold text-gray-500 mt-2">Total Cases</div>
+              <div className="mt-1.5 text-[12px] font-bold text-gray-400 flex items-center gap-1">All active</div>
             </div>
             
-            {/* Open Cases */}
-            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="h-8 w-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mb-3">
-                <CheckCircle2 size={16} />
-              </div>
-              <div className="text-3xl font-bold tabular-nums">{activeCases.filter((item) => item.status === "open").length ?? "--"}</div>
-              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Open Cases</div>
+            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="text-[32px] leading-none font-bold tabular-nums text-emerald-500">{activeCases.length}</div>
+              <div className="text-[13px] font-semibold text-gray-500 mt-2">Open Cases</div>
+              <div className="mt-1.5 text-[12px] font-bold text-gray-400 flex items-center gap-1">Currently treating</div>
             </div>
 
-            {/* Reports */}
-            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="h-8 w-8 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-3">
-                <FileHeart size={16} />
-              </div>
-              <div className="text-3xl font-bold tabular-nums">{dashboard?.recent_report_count ?? "--"}</div>
-              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Linked Reports</div>
+            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="text-[32px] leading-none font-bold tabular-nums text-orange-500">{pendingCases.length}</div>
+              <div className="text-[13px] font-semibold text-gray-500 mt-2">Pending Review</div>
+              <div className="mt-1.5 text-[12px] font-bold text-orange-500 flex items-center gap-1">Needs attention</div>
+            </div>
+            
+            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="text-[32px] leading-none font-bold tabular-nums text-purple-500">{reviewRequiredCases.length}</div>
+              <div className="text-[13px] font-semibold text-gray-500 mt-2">Alerts</div>
+              <div className="mt-1.5 text-[12px] font-bold text-gray-400 flex items-center gap-1">Anomalies</div>
             </div>
           </div>
         </section>
 
-        {/* Action Needed */}
-        <section>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xl font-bold">Needs Review</h2>
-          </div>
-          <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-            {pendingCases.length ? (
-              <div className="divide-y divide-gray-200 dark:divide-gray-800 content-visibility-auto">
-                {pendingCases.map((caseItem) => (
-                  <div key={caseItem.id} className="p-4 flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold text-[15px]">{caseItem.patient_name || "Unknown Patient"}</div>
-                      <div className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                        {caseItem.title || "Consultation Request"}
+        {reviewRequiredCases.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold mb-3 px-1">Needs Review</h2>
+            <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
+              <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
+                {reviewRequiredCases.map((c) => (
+                  <Link to={`/doctor/case/${c.id}`} key={c.id} className="block p-4 active-feedback transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-[15px]">{c.patient?.full_name || "Unknown Patient"}</div>
+                        <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {c.reports?.length || 0} recent reports
+                        </div>
                       </div>
+                      <div className="h-2 w-2 rounded-full bg-orange-500"></div>
                     </div>
-                    <Link
-                      to={`/doctor/case/${caseItem.id}`}
-                      style={{ touchAction: 'manipulation' }}
-                      className="px-4 py-2 bg-blue-500/10 text-blue-600 rounded-full text-sm font-bold"
-                    >
-                      View
-                    </Link>
-                  </div>
+                  </Link>
                 ))}
               </div>
-            ) : (
-              <div className="p-6 text-center text-gray-500 text-sm">
-                No pending requests. You're all caught up.
-              </div>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
-        {/* Upcoming Appointments */}
         <section>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xl font-bold">Upcoming</h2>
-          </div>
-          <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-            {upcomingAppointments.length ? (
-              <div className="divide-y divide-gray-200 dark:divide-gray-800 content-visibility-auto">
-                {upcomingAppointments.map((appointment) => (
-                  <div key={appointment.id} className="p-4 flex justify-between items-start">
+          <h2 className="text-xl font-bold mb-3 px-1">Active Cases</h2>
+          <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
+            <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
+              {activeCases.map((c) => (
+                <Link to={`/doctor/case/${c.id}`} key={c.id} className="block p-4 active-feedback transition-colors">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-[15px]">{appointment.patient_name || "Patient"}</div>
-                      <div className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                        {new Date(appointment.date_time).toLocaleString(undefined, {
-                          weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-                        })}
+                      <div className="font-semibold text-[15px]">{c.patient?.full_name || "Unknown Patient"}</div>
+                      <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Updated recently
                       </div>
                     </div>
-                    <div className="h-8 w-8 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center">
-                      <CalendarDays size={14} />
-                    </div>
+                    <ChevronRight size={16} className={`${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-6 text-center text-gray-500 text-sm">
-                No upcoming appointments booked.
-              </div>
-            )}
+                </Link>
+              ))}
+              {!activeCases.length && (
+                <div className="p-4 text-center text-sm text-gray-500">No active cases</div>
+              )}
+            </div>
           </div>
         </section>
-
-      </div>
+      </main>
     </div>
   );
 }

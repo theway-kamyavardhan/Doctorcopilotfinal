@@ -1,15 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * MobileSparkline
- * A lightweight, pure SVG sparkline component optimized for mobile.
- * Generates a smooth cubic-bezier curve from an array of numbers.
- * 
- * @param {Array<number>} data - Array of numeric values
- * @param {string} color - Stroke color
- * @param {number} width - SVG width (or 100% if undefined)
- * @param {number} height - SVG height
- * @param {number} strokeWidth - Stroke thickness
+ * Premium SVG sparkline optimized for mobile.
  */
 export default function MobileSparkline({
   data = [],
@@ -18,6 +11,14 @@ export default function MobileSparkline({
   height = 40,
   strokeWidth = 2.5
 }) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    // Slight delay to ensure paint
+    const timer = setTimeout(() => setMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!data || data.length < 2) {
     return (
       <div 
@@ -29,42 +30,37 @@ export default function MobileSparkline({
     );
   }
 
-  // Normalize data to fit within height bounds
   const min = Math.min(...data);
   const max = Math.max(...data);
-  const range = max - min || 1; // Prevent division by zero
+  const range = max - min || 1;
   
-  const paddingY = strokeWidth;
+  const paddingY = strokeWidth + 4; // Extra padding for glow
   const drawHeight = height - paddingY * 2;
-  
-  // Calculate X spacing (100% based, viewBox will handle aspect)
   const viewBoxWidth = 100;
   const xStep = viewBoxWidth / (data.length - 1);
 
-  // Generate path commands
   let pathD = '';
-  
   data.forEach((val, i) => {
     const x = i * xStep;
-    // Invert Y because SVG coordinates go top-down
     const normalizedY = ((val - min) / range);
     const y = paddingY + drawHeight - (normalizedY * drawHeight);
 
     if (i === 0) {
       pathD += `M ${x},${y}`;
     } else {
-      // Create a smooth curve using bezier
       const prevX = (i - 1) * xStep;
       const prevY = paddingY + drawHeight - (((data[i - 1] - min) / range) * drawHeight);
-      
       const cp1X = prevX + xStep * 0.4;
       const cp1Y = prevY;
       const cp2X = x - xStep * 0.4;
       const cp2Y = y;
-      
       pathD += ` C ${cp1X},${cp1Y} ${cp2X},${cp2Y} ${x},${y}`;
     }
   });
+
+  const lastPointX = viewBoxWidth;
+  const lastPointY = paddingY + drawHeight - (((data[data.length - 1] - min) / range) * drawHeight);
+  const idPrefix = color.replace('#', '');
 
   return (
     <svg 
@@ -74,42 +70,78 @@ export default function MobileSparkline({
       preserveAspectRatio="none"
       className="overflow-visible pointer-events-none"
     >
-      {/* Optional: Add a subtle gradient fill underneath the line */}
       <defs>
-        <linearGradient id={`spark-grad-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+        <linearGradient id={`spark-grad-${idPrefix}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
           <stop offset="100%" stopColor={color} stopOpacity="0.0" />
         </linearGradient>
+        <linearGradient id={`stroke-grad-${idPrefix}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={color} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={color} stopOpacity="1" />
+        </linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
       </defs>
       
       {/* Area fill */}
       <path 
         d={`${pathD} L ${viewBoxWidth},${height} L 0,${height} Z`}
-        fill={`url(#spark-grad-${color.replace('#', '')})`}
+        fill={`url(#spark-grad-${idPrefix})`}
+        className={`transition-opacity duration-700 ease-out ${mounted ? 'opacity-100' : 'opacity-0'}`}
       />
       
       {/* Line stroke */}
       <path 
         d={pathD}
         fill="none"
-        stroke={color}
+        stroke={`url(#stroke-grad-${idPrefix})`}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
+        pathLength="1"
+        style={{
+          strokeDasharray: 1,
+          strokeDashoffset: mounted ? 0 : 1,
+          transition: 'stroke-dashoffset 800ms ease-out'
+        }}
       />
       
-      {/* Current/Latest point dot */}
-      {data.length > 0 && (
+      {/* Glow / Pulse Dot */}
+      <g 
+        className={`transition-opacity duration-500 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+        transform={`translate(${lastPointX}, ${lastPointY})`}
+      >
         <circle 
-          cx={viewBoxWidth} 
-          cy={paddingY + drawHeight - (((data[data.length - 1] - min) / range) * drawHeight)} 
+          cx="0" cy="0" 
+          r={strokeWidth * 2.5} 
+          fill={color} 
+          opacity="0.3"
+          filter="url(#glow)"
+        >
+          <animate 
+            attributeName="r" 
+            values={`${strokeWidth * 1.5};${strokeWidth * 3.5};${strokeWidth * 1.5}`} 
+            dur="2s" 
+            repeatCount="indefinite" 
+          />
+          <animate 
+            attributeName="opacity" 
+            values="0.4;0.1;0.4" 
+            dur="2s" 
+            repeatCount="indefinite" 
+          />
+        </circle>
+        <circle 
+          cx="0" cy="0" 
           r={strokeWidth * 1.5} 
-          fill="#fff" 
+          fill="#ffffff" 
           stroke={color} 
           strokeWidth={strokeWidth}
         />
-      )}
+      </g>
     </svg>
   );
 }

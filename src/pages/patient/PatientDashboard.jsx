@@ -239,26 +239,36 @@ function PatientDashboardMobile({
             </div>
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
               {stripMetrics.map((metric) => (
-                <div key={metric.name} className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-                  <div className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <Link to={`/patient/parameter/${metric.name}`} key={metric.name} className={`block shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+                  
+                  {/* 1. Primary Value (Dominant) */}
+                  <div className="text-[32px] leading-none font-bold tabular-nums flex items-baseline gap-1">
+                    {metric.value} <span className="text-xs font-normal text-gray-400">{metric.unit}</span>
+                  </div>
+                  
+                  {/* 2. Label (Context) */}
+                  <div className="text-[13px] font-semibold text-gray-500 mt-2">
                     {formatParameterLabel(metric.name)}
                   </div>
-                  <div className="text-2xl font-bold flex items-baseline gap-1">
-                    {metric.value} <span className="text-xs font-normal text-gray-500">{metric.unit}</span>
-                  </div>
-                  <div className={`mt-2 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md inline-block ${
-                    metric.status === 'low' || metric.status === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+                  
+                  {/* 3. Trend Indicator (Supporting) */}
+                  <div className={`mt-1.5 text-[12px] font-bold flex items-center gap-1 ${
+                    metric.status === 'low' || metric.status === 'high' ? 'text-orange-500' : 'text-emerald-500'
                   }`}>
+                    {(metric.status === 'low' || metric.status === 'high') ? '↓ ' : '↑ '}
                     {metric.status || 'stable'}
                   </div>
-                  <div className="mt-4 mb-1">
+                  
+                  {/* 4. Sparkline (Background support) */}
+                  <div className="mt-4 -mx-1 opacity-80">
                     <MobileSparkline 
                       data={metric.history || []} 
-                      color={metric.status === 'low' || metric.status === 'high' ? '#f97316' : '#22c55e'} 
+                      color={metric.status === 'low' || metric.status === 'high' ? '#f97316' : '#10b981'} 
                       height={32} 
+                      strokeWidth={3}
                     />
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>

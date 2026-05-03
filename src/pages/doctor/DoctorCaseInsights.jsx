@@ -66,14 +66,25 @@ function DoctorCaseInsightsMobile({ caseItem, trends, insights, isDark, loading,
           <div className="space-y-4">
              {Object.keys(trends?.series || {}).slice(0,4).map(param => {
                const data = trends.series[param] || [];
+               const latest = data.length ? data[data.length-1] : null;
+               const metric = trends.metrics?.[param];
+               const statusColor = (latest?.status === 'low' || latest?.status === 'high') ? 'text-orange-500' : 'text-emerald-500';
+               const strokeColor = (latest?.status === 'low' || latest?.status === 'high') ? '#f97316' : '#10b981';
+               
                return (
-                 <div key={param} className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-                   <div className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider">{param.replace('_', ' ')}</div>
-                   <div className="text-3xl font-bold tabular-nums mt-1">{data.length ? data[data.length-1].value : '--'}</div>
-                   <div className="h-20 mt-4">
-                     <MobileSparkline data={data.map(d=>d.value)} color="#007AFF" height={80} strokeWidth={3} />
+                 <Link to={`/doctor/case/${caseItem?.id}`} key={param} className={`block rounded-[1.5rem] p-5 active-feedback transition-all ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
+                   <div className="text-[32px] leading-none font-bold tabular-nums flex items-baseline gap-1">
+                     {latest ? latest.value : '--'} <span className="text-xs font-normal text-gray-400">{latest?.unit || ''}</span>
                    </div>
-                 </div>
+                   <div className="text-[13px] font-semibold text-gray-500 mt-2 capitalize">{param.replace('_', ' ')}</div>
+                   <div className={`mt-1.5 text-[12px] font-bold flex items-center gap-1 ${statusColor}`}>
+                      {(latest?.status === 'low' || latest?.status === 'high') ? '↓ ' : '↑ '}
+                      {latest?.status || 'stable'}
+                   </div>
+                   <div className="h-20 mt-4 -mx-1 opacity-80">
+                     <MobileSparkline data={data.map(d=>d.value)} color={strokeColor} height={80} strokeWidth={3} />
+                   </div>
+                 </Link>
                )
              })}
           </div>
