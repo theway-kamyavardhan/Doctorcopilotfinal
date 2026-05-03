@@ -400,32 +400,7 @@ export default function DoctorDashboard() {
     );
   }
 
-  if (isMobile) {
-    return (
-      <DoctorDashboardMobile
-        isDark={isDark}
-        profile={profile}
-        dashboard={dashboard}
-        activeCases={activeCases}
-        pendingCases={pendingCases}
-        nextActionItems={nextActionItems}
-        upcomingAppointments={upcomingAppointments}
-        error={error}
-        overviewCase={overviewCase}
-        overviewTrends={overviewTrends}
-        overviewLoading={overviewLoading}
-        actingId={actingId}
-        onRefresh={loadDashboard}
-        onOverview={handleOverview}
-        onAccept={handleAccept}
-        onReject={handleReject}
-        onCloseOverview={() => {
-          setOverviewCase(null);
-          setOverviewTrends(null);
-        }}
-      />
-    );
-  }
+
 
   return (
     <div className="space-y-6">

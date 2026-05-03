@@ -129,9 +129,7 @@ export default function Landing() {
     ? ["#aa771c", "#d4af37", "#f3e5ab", "#bf953f"]
     : ["#bfdbfe", "#ddd6fe", "#fbcfe8", "#ffffff"];
 
-  if (isMobile) {
-    return <MobileLanding onEnter={handleEnter} isDark={isDark} />;
-  }
+
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-700">

@@ -400,32 +400,7 @@ export default function PatientDashboard() {
     );
   }
 
-  if (isMobile) {
-    return (
-      <PatientDashboardMobile
-        profile={profile}
-        reports={reports}
-        trends={trends}
-        healthScore={healthScore}
-        subsystemStats={subsystemStats}
-        alerts={alerts}
-        anomalies={anomalies}
-        activeCase={activeCase}
-        abnormalParameterCount={abnormalParameterCount}
-        categoryCount={categoryCount}
-        upcomingAppointments={upcomingAppointments}
-        overallTrendDirection={overallTrendDirection}
-        stripMetrics={stripMetrics}
-        isNewUser={isNewUser}
-        exportError={exportError}
-        dashboardError={dashboardError}
-        exporting={exporting}
-        onExport={handleExport}
-        onUpload={() => navigate("/patient/reports")}
-        isDark={isDark}
-      />
-    );
-  }
+
 
   return (
     <div className="relative mx-auto max-w-[88rem] px-4 pb-10 md:px-2">
