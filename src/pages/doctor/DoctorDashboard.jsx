@@ -16,6 +16,7 @@ import {
 import { useTheme } from "../../context/ThemeContext";
 import { getDoctorDemoDashboardSeed } from "../../lib/demoData";
 import appointmentService from "../../services/appointment.service";
+import useViewport from "../../hooks/useViewport";
 import {
   acceptDoctorCase,
   getDoctorCase,
@@ -270,8 +271,160 @@ function OverviewModal({
   );
 }
 
+// ─── Native Mobile Port (Apple Health Style) ─────────────────────────────────
+
+function DoctorDashboardMobile({
+  isDark,
+  profile,
+  dashboard,
+  activeCases,
+  pendingCases,
+  upcomingAppointments,
+  error,
+  onRefresh,
+}) {
+  return (
+    <div className={`px-4 pt-12 pb-6 min-h-screen ${isDark ? "bg-black text-white" : "bg-[#F2F2F7] text-black"}`}>
+      <header className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">Workspace</h1>
+          <p className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            {profile?.user?.full_name ? `Dr. ${profile.user.full_name}` : "Doctor Dashboard"}
+          </p>
+        </div>
+        <button onClick={onRefresh} className="p-2 bg-blue-500/10 text-blue-500 rounded-full" style={{ touchAction: 'manipulation' }}>
+          <RefreshCcw size={20} />
+        </button>
+      </header>
+
+      {error ? (
+        <div className="mb-6 rounded-2xl bg-red-100 p-4 text-sm font-semibold text-red-700">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="space-y-6">
+        
+        {/* Top Tiles Row */}
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xl font-bold">Overview</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Total Cases */}
+            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
+                <Stethoscope size={16} />
+              </div>
+              <div className="text-3xl font-bold">{dashboard?.total_cases ?? "--"}</div>
+              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Total Cases</div>
+            </div>
+
+            {/* Pending Cases */}
+            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="h-8 w-8 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center mb-3">
+                <ShieldAlert size={16} />
+              </div>
+              <div className="text-3xl font-bold">{pendingCases.length ?? "--"}</div>
+              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pending Review</div>
+            </div>
+            
+            {/* Open Cases */}
+            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="h-8 w-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mb-3">
+                <CheckCircle2 size={16} />
+              </div>
+              <div className="text-3xl font-bold">{activeCases.filter((item) => item.status === "open").length ?? "--"}</div>
+              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Open Cases</div>
+            </div>
+
+            {/* Reports */}
+            <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="h-8 w-8 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-3">
+                <FileHeart size={16} />
+              </div>
+              <div className="text-3xl font-bold">{dashboard?.recent_report_count ?? "--"}</div>
+              <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Linked Reports</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Action Needed */}
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xl font-bold">Needs Review</h2>
+          </div>
+          <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+            {pendingCases.length ? (
+              <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                {pendingCases.map((caseItem) => (
+                  <div key={caseItem.id} className="p-4 flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold text-[15px]">{caseItem.patient_name || "Unknown Patient"}</div>
+                      <div className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                        {caseItem.title || "Consultation Request"}
+                      </div>
+                    </div>
+                    <Link
+                      to={`/doctor/case/${caseItem.id}`}
+                      style={{ touchAction: 'manipulation' }}
+                      className="px-4 py-2 bg-blue-500/10 text-blue-600 rounded-full text-sm font-bold"
+                    >
+                      View
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-6 text-center text-gray-500 text-sm">
+                No pending requests. You're all caught up.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Upcoming Appointments */}
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xl font-bold">Upcoming</h2>
+          </div>
+          <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+            {upcomingAppointments.length ? (
+              <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                {upcomingAppointments.map((appointment) => (
+                  <div key={appointment.id} className="p-4 flex justify-between items-start">
+                    <div>
+                      <div className="font-semibold text-[15px]">{appointment.patient_name || "Patient"}</div>
+                      <div className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                        {new Date(appointment.date_time).toLocaleString(undefined, {
+                          weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                    <div className="h-8 w-8 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center">
+                      <CalendarDays size={14} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-6 text-center text-gray-500 text-sm">
+                No upcoming appointments booked.
+              </div>
+            )}
+          </div>
+        </section>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Desktop Components ───────────────────────────────────────────────────────
+
 export default function DoctorDashboard() {
   const { isDark } = useTheme();
+  const { isMobile } = useViewport();
   const [demoSeed] = useState(() => getDoctorDemoDashboardSeed());
   const [profile, setProfile] = useState(() => demoSeed?.profile || null);
   const [dashboard, setDashboard] = useState(() => demoSeed?.dashboard || null);
@@ -396,6 +549,32 @@ export default function DoctorDashboard() {
     );
   }
 
+  if (isMobile) {
+    return (
+      <DoctorDashboardMobile
+        isDark={isDark}
+        profile={profile}
+        dashboard={dashboard}
+        activeCases={activeCases}
+        pendingCases={pendingCases}
+        nextActionItems={nextActionItems}
+        upcomingAppointments={upcomingAppointments}
+        error={error}
+        overviewCase={overviewCase}
+        overviewTrends={overviewTrends}
+        overviewLoading={overviewLoading}
+        actingId={actingId}
+        onRefresh={loadDashboard}
+        onOverview={handleOverview}
+        onAccept={handleAccept}
+        onReject={handleReject}
+        onCloseOverview={() => {
+          setOverviewCase(null);
+          setOverviewTrends(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

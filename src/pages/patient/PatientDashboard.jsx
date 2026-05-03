@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, CalendarDays, Download, FileText, LoaderCircle, Microscope, TrendingUp, Upload } from "lucide-react";
+import { Activity, ArrowRight, CalendarDays, Download, FileText, LoaderCircle, Microscope, TrendingUp, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
 import HealthBar from "../../components/patient/HealthBar";
@@ -12,20 +12,22 @@ import SystemPanel from "../../components/patient/SystemPanel";
 import {
   buildAlertItems,
   calculateHealthScore,
+  formatParameterLabel,
   getLatestParameter,
   getLatestReport,
 } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
 import usePatientDashboardData from "../../hooks/usePatientDashboardData";
-
-// ─── Helper sub-components ────────────────────────────────────────────────────
+import useViewport from "../../hooks/useViewport";
 
 function HeroAction({ to, icon: Icon, label, isDark }) {
   return (
     <Link
       to={to}
-      className={`inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-colors min-h-[48px] ${
-        isDark ? "bg-slate-900 text-slate-200 hover:bg-slate-800" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+      className={`inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-colors ${
+        isDark
+          ? "bg-slate-900 text-slate-200 hover:bg-slate-800"
+          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
       }`}
     >
       <Icon size={15} />
@@ -37,32 +39,33 @@ function HeroAction({ to, icon: Icon, label, isDark }) {
 function StartTimelinePanel({ isDark, onUpload }) {
   return (
     <section
-      className={`relative overflow-hidden rounded-[2rem] border px-5 py-5 sm:px-6 sm:py-6 ${
+      className={`relative overflow-hidden rounded-[2.2rem] border px-6 py-6 ${
         isDark
           ? "border-white/8 bg-slate-900/55 shadow-[0_28px_80px_rgba(2,6,23,0.45)]"
           : "border-white/70 bg-white/60 shadow-[0_24px_80px_rgba(15,23,42,0.08)]"
       } backdrop-blur-2xl`}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_44%)]" />
-      <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+      <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-4">
-          <div className="rounded-[1.4rem] bg-blue-500/10 p-4 text-blue-500 shrink-0">
-            <Microscope size={24} />
+          <div className="rounded-[1.4rem] bg-blue-500/10 p-4 text-blue-500">
+            <Microscope size={28} />
           </div>
           <div>
             <div className={`text-[11px] font-black uppercase tracking-[0.3em] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
               Activate Timeline
             </div>
-            <p className={`mt-2 text-sm leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-              Upload your first report and DoctorCopilot will start building a living health history, structured trends, and AI-driven summaries automatically.
+            <p className={`mt-3 max-w-2xl text-sm leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+              Upload your first report and DoctorCopilot will start building a living health history,
+              structured trends, and AI-driven summaries automatically.
             </p>
           </div>
         </div>
+
         <button
           type="button"
           onClick={onUpload}
-          style={{ touchAction: "manipulation" }}
-          className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500 min-h-[48px] shrink-0"
+          className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 font-bold text-white transition-colors hover:bg-blue-500"
         >
           Upload First Report
           <ArrowRight size={16} />
@@ -82,9 +85,9 @@ function statusToSubsystemScore(status) {
 }
 
 function averageScores(values, fallback) {
-  const valid = values.filter((v) => typeof v === "number");
+  const valid = values.filter((value) => typeof value === "number");
   if (!valid.length) return fallback;
-  return Math.round(valid.reduce((sum, v) => sum + v, 0) / valid.length);
+  return Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
 }
 
 function buildSubsystemStats(reports, fallbackScore) {
@@ -92,92 +95,271 @@ function buildSubsystemStats(reports, fallbackScore) {
   const parameterMap = new Map((latestReport?.parameters || []).map((item) => [item.name, item]));
 
   const bloodHealth = averageScores(
-    ["hemoglobin","platelets","red_blood_cells","white_blood_cells"].map((k) => statusToSubsystemScore(parameterMap.get(k)?.status)),
+    [
+      statusToSubsystemScore(parameterMap.get("hemoglobin")?.status),
+      statusToSubsystemScore(parameterMap.get("platelets")?.status),
+      statusToSubsystemScore(parameterMap.get("red_blood_cells")?.status),
+      statusToSubsystemScore(parameterMap.get("white_blood_cells")?.status),
+    ],
     fallbackScore
   );
+
   const vitaminStability = averageScores(
-    ["vitamin_b12","vitamin_d","iron"].map((k) => statusToSubsystemScore(parameterMap.get(k)?.status)),
+    [
+      statusToSubsystemScore(parameterMap.get("vitamin_b12")?.status),
+      statusToSubsystemScore(parameterMap.get("vitamin_d")?.status),
+      statusToSubsystemScore(parameterMap.get("iron")?.status),
+    ],
     Math.max(fallbackScore - 8, 24)
   );
+
   const immuneStrength = averageScores(
-    ["white_blood_cells","lymphocytes","neutrophils"].map((k) => statusToSubsystemScore(parameterMap.get(k)?.status)),
+    [
+      statusToSubsystemScore(parameterMap.get("white_blood_cells")?.status),
+      statusToSubsystemScore(parameterMap.get("lymphocytes")?.status),
+      statusToSubsystemScore(parameterMap.get("neutrophils")?.status),
+    ],
     Math.max(fallbackScore - 4, 30)
   );
 
   return [
-    { label: "Blood Health",     value: bloodHealth     },
-    { label: "Vitamin Stability",value: vitaminStability },
-    { label: "Immune Strength",  value: immuneStrength  },
+    { label: "Blood Health", value: bloodHealth },
+    { label: "Vitamin Stability", value: vitaminStability },
+    { label: "Immune Strength", value: immuneStrength },
   ];
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Native Mobile Port (Apple Health Style) ─────────────────────────────────
+
+function PatientDashboardMobile({
+  profile,
+  reports,
+  healthScore,
+  alerts,
+  anomalies,
+  upcomingAppointments,
+  stripMetrics,
+  isNewUser,
+  exportError,
+  dashboardError,
+  exporting,
+  onExport,
+  onUpload,
+  isDark,
+}) {
+  const focusSignals = [...alerts, ...anomalies].slice(0, 4);
+  const latestReport = reports[0];
+
+  return (
+    <div className={`px-4 pt-12 pb-6 min-h-screen ${isDark ? "bg-black text-white" : "bg-[#F2F2F7] text-black"}`}>
+      <header className="mb-8">
+        <h1 className="text-4xl font-bold tracking-tight">Summary</h1>
+        <p className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          {profile?.user?.full_name ? `Welcome back, ${profile.user.full_name}` : "Welcome to your health space"}
+        </p>
+      </header>
+
+      {exportError || dashboardError ? (
+        <div className="mb-6 rounded-2xl bg-red-100 p-4 text-sm font-semibold text-red-700">
+          {exportError || dashboardError?.message || "Failed to load health data."}
+        </div>
+      ) : null}
+
+      <div className="space-y-6">
+        
+        {/* Top Tiles Row (Horizontal Scroll) */}
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xl font-bold">Key Metrics</h2>
+          </div>
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
+            {/* Health Score Tile */}
+            <div className={`shrink-0 snap-center min-w-[160px] p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="text-sm font-semibold text-blue-500">Health Score</div>
+              <div className="mt-1 text-4xl font-bold">{healthScore.score}</div>
+              <div className={`mt-1 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{healthScore.status}</div>
+            </div>
+
+            {/* Reports Tile */}
+            <div className={`shrink-0 snap-center min-w-[160px] p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+              <div className="text-sm font-semibold text-purple-500">Records</div>
+              <div className="mt-1 text-4xl font-bold">{reports.length}</div>
+              <div className={`mt-1 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>Uploaded reports</div>
+            </div>
+
+            {/* Upload Tile */}
+            <div 
+              onClick={onUpload}
+              className={`shrink-0 snap-center min-w-[160px] p-5 rounded-3xl flex flex-col justify-center items-center ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}
+              style={{ touchAction: 'manipulation' }}
+            >
+              <div className="h-10 w-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-2">
+                <Upload size={20} />
+              </div>
+              <div className="text-sm font-semibold text-blue-500">Upload New</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Priority Signals Section */}
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xl font-bold">Priority Signals</h2>
+            <div className="text-sm text-blue-500 font-semibold">{focusSignals.length} Active</div>
+          </div>
+          <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+            {focusSignals.length ? (
+              <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                {focusSignals.map((item, index) => (
+                  <div key={index} className="p-4 flex gap-3">
+                    <div className={`h-3 w-3 rounded-full mt-1.5 shrink-0 ${item.severity === "critical" ? "bg-red-500" : "bg-orange-500"}`} />
+                    <div>
+                      <div className="font-semibold text-[15px] leading-tight">{item.title || item.label}</div>
+                      <div className={`mt-1 text-sm leading-snug ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                        {item.message || item.description}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-6 text-center text-gray-500 text-sm">
+                No active clinical signals right now.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Trends Strip (Horizontal Scroll) */}
+        {stripMetrics.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h2 className="text-xl font-bold">Trends</h2>
+            </div>
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
+              {stripMetrics.map((metric) => (
+                <div key={metric.name} className={`shrink-0 snap-center min-w-[150px] p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+                  <div className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    {formatParameterLabel(metric.name)}
+                  </div>
+                  <div className="text-2xl font-bold flex items-baseline gap-1">
+                    {metric.value} <span className="text-xs font-normal text-gray-500">{metric.unit}</span>
+                  </div>
+                  <div className={`mt-2 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md inline-block ${
+                    metric.status === 'low' || metric.status === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+                  }`}>
+                    {metric.status || 'stable'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Desktop Components ───────────────────────────────────────────────────────
 
 export default function PatientDashboard() {
   const { isDark } = useTheme();
-  const navigate   = useNavigate();
+  const { isMobile } = useViewport();
+  const navigate = useNavigate();
   const [exportError, setExportError] = useState("");
-  const [exporting, setExporting]     = useState(false);
-
+  const [exporting, setExporting] = useState(false);
   const { data, error: dashboardError, isLoading: loading } = usePatientDashboardData();
-  const profile      = data?.profile      || null;
-  const reports      = data?.reports      || [];
-  const trends       = data?.trends       || null;
-  const insights     = data?.insights     || null;
-  const cases        = data?.cases        || [];
+  const profile = data?.profile || null;
+  const reports = data?.reports || [];
+  const trends = data?.trends || null;
+  const insights = data?.insights || null;
+  const cases = data?.cases || [];
   const appointments = data?.appointments || [];
 
-  const isNewUser   = reports.length === 0;
+  const isNewUser = reports.length === 0;
   const healthScore = useMemo(() => calculateHealthScore(reports, trends, insights), [reports, trends, insights]);
-  const subsystemStats = useMemo(() => buildSubsystemStats(reports, healthScore.score), [reports, healthScore.score]);
-  const alerts      = useMemo(() => buildAlertItems(reports, trends, insights), [reports, trends, insights]);
-  const anomalies   = (trends?.anomalies || []).slice(0, 6);
-
+  const subsystemStats = useMemo(
+    () => buildSubsystemStats(reports, healthScore.score),
+    [reports, healthScore.score]
+  );
+  const alerts = useMemo(() => buildAlertItems(reports, trends, insights), [reports, trends, insights]);
+  const anomalies = (trends?.anomalies || []).slice(0, 6);
   const activeCase = useMemo(
-    () => cases.find((c) => ["pending","open","in_review"].includes(c.status)) || null,
+    () =>
+      cases.find(
+        (item) => item.status === "pending" || item.status === "open" || item.status === "in_review"
+      ) || null,
     [cases]
   );
 
   const abnormalParameterCount = useMemo(
-    () => reports.reduce((count, r) => count + (r.parameters || []).filter((p) =>
-      ["low","high","deficient","insufficient"].includes(String(p.status || p.interpretation || "").toLowerCase())
-    ).length, 0),
+    () =>
+      reports.reduce(
+        (count, report) =>
+          count +
+          (report.parameters || []).filter((parameter) =>
+            ["low", "high", "deficient", "insufficient"].includes(
+              String(parameter.status || parameter.interpretation || "").toLowerCase()
+            )
+          ).length,
+        0
+      ),
     [reports]
   );
 
   const categoryCount = useMemo(
-    () => new Set(reports.map((r) => r.report_category).filter(Boolean)).size,
+    () => new Set(reports.map((report) => report.report_category).filter(Boolean)).size,
     [reports]
   );
 
+  const activeConditionCount = alerts.length;
   const upcomingAppointments = useMemo(
-    () => appointments
-      .filter((a) => a.status === "scheduled" && new Date(a.date_time) >= new Date())
-      .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
-      .slice(0, 3),
+    () =>
+      appointments
+        .filter((item) => item.status === "scheduled")
+        .filter((item) => new Date(item.date_time) >= new Date())
+        .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
+        .slice(0, 3),
     [appointments]
   );
 
   const overallTrendDirection = useMemo(() => {
     const metrics = Object.values(trends?.metrics || {});
     if (!metrics.length) return "stable";
-    const inc = metrics.filter((m) => m.direction === "increasing").length;
-    const dec = metrics.filter((m) => m.direction === "decreasing").length;
-    return dec > inc ? "decreasing" : inc > dec ? "increasing" : "stable";
+
+    const increasing = metrics.filter((item) => item.direction === "increasing").length;
+    const decreasing = metrics.filter((item) => item.direction === "decreasing").length;
+
+    if (decreasing > increasing) return "decreasing";
+    if (increasing > decreasing) return "increasing";
+    return "stable";
   }, [trends]);
 
   const stripMetrics = useMemo(() => {
-    const palette = { hemoglobin:"#3b82f6", platelets:"#14b8a6", vitamin_b12:"#f59e0b", white_blood_cells:"#a855f7" };
-    return ["hemoglobin","platelets","vitamin_b12","white_blood_cells"].map((name) => {
-      const latest = getLatestParameter(reports, name);
-      if (!latest) return null;
-      return {
-        ...latest,
-        color: palette[name] || "#38bdf8",
-        history: (trends?.series?.[name] || []).map((p) => p.value).slice(-6),
-        direction: trends?.metrics?.[name]?.direction || "stable",
-      };
-    }).filter(Boolean);
+    const palette = {
+      hemoglobin: "#3b82f6",
+      platelets: "#14b8a6",
+      vitamin_b12: "#f59e0b",
+      white_blood_cells: "#a855f7",
+    };
+
+    return ["hemoglobin", "platelets", "vitamin_b12", "white_blood_cells"]
+      .map((name) => {
+        const latest = getLatestParameter(reports, name);
+        if (!latest) return null;
+
+        const history = (trends?.series?.[name] || []).map((point) => point.value).slice(-6);
+        const metric = trends?.metrics?.[name];
+
+        return {
+          ...latest,
+          color: palette[name] || "#38bdf8",
+          history,
+          direction: metric?.direction || "stable",
+        };
+      })
+      .filter(Boolean);
   }, [reports, trends]);
 
   const handleExport = async () => {
@@ -200,57 +382,97 @@ export default function PatientDashboard() {
     );
   }
 
+  if (isMobile) {
+    return (
+      <PatientDashboardMobile
+        profile={profile}
+        reports={reports}
+        trends={trends}
+        healthScore={healthScore}
+        subsystemStats={subsystemStats}
+        alerts={alerts}
+        anomalies={anomalies}
+        activeCase={activeCase}
+        abnormalParameterCount={abnormalParameterCount}
+        categoryCount={categoryCount}
+        upcomingAppointments={upcomingAppointments}
+        overallTrendDirection={overallTrendDirection}
+        stripMetrics={stripMetrics}
+        isNewUser={isNewUser}
+        exportError={exportError}
+        dashboardError={dashboardError}
+        exporting={exporting}
+        onExport={handleExport}
+        onUpload={() => navigate("/patient/reports")}
+        isDark={isDark}
+      />
+    );
+  }
+
   return (
-    <div className="relative mx-auto max-w-[88rem] px-2 pb-10 sm:px-4 md:px-2">
-      {/* Ambient blobs */}
+    <div className="relative mx-auto max-w-[88rem] px-4 pb-10 md:px-2">
       <div className="pointer-events-none absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-500/12 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-28 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
       <div className="pointer-events-none absolute left-1/3 top-60 h-72 w-72 rounded-full bg-amber-300/10 blur-3xl" />
 
-      <div className="relative space-y-5 sm:space-y-6">
-
-        {/* ── Hero header ── */}
-        <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="relative space-y-6">
+        <section className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-end">
           <div>
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`text-2xl font-black tracking-tight sm:text-3xl md:text-[3.4rem] ${isDark ? "text-white" : "text-slate-900"}`}
+              className={`text-4xl font-black tracking-tight md:text-[3.4rem] ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
             >
               {profile?.user?.full_name || "Your Personal Health System"}
             </motion.h1>
-            <p className={`mt-2 sm:mt-3 text-sm sm:text-lg leading-7 sm:leading-8 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            <p className={`mt-3 max-w-3xl text-lg leading-8 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
               Your health system is currently under analysis.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:gap-3">
+          <div className="flex flex-wrap gap-3">
             <HeroAction to="/patient/trends" icon={TrendingUp} label="Open Trends" isDark={isDark} />
             <button
               type="button"
               onClick={handleExport}
               disabled={exporting}
-              style={{ touchAction: "manipulation" }}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-colors min-h-[48px] ${isDark ? "bg-slate-900 text-slate-200 hover:bg-slate-800 disabled:opacity-70" : "bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-70"}`}
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold transition-colors ${
+                isDark
+                  ? "bg-slate-900 text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
+              }`}
             >
               {exporting ? <LoaderCircle size={15} className="animate-spin" /> : <Download size={15} />}
-              {exporting ? "Preparing PDF" : "Export AI Summary"}
+              {exporting ? "Preparing PDF" : "Export AI Health Summary"}
             </button>
           </div>
         </section>
 
-        {isNewUser && <StartTimelinePanel isDark={isDark} onUpload={() => navigate("/patient/reports")} />}
+        {isNewUser ? <StartTimelinePanel isDark={isDark} onUpload={() => navigate("/patient/reports")} /> : null}
 
-        {(exportError || dashboardError) && (
+        {exportError ? (
           <div className="rounded-[1.5rem] border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
-            {exportError || dashboardError?.message || "Failed to load your health system."}
+            {exportError}
           </div>
-        )}
+        ) : null}
+        {dashboardError ? (
+          <div className="rounded-[1.5rem] border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+            {dashboardError.message || "Failed to load your health system."}
+          </div>
+        ) : null}
 
-        {/* ── 3-panel row ── */}
-        <section className="grid gap-5 sm:gap-6 xl:grid-cols-[0.9fr_1.25fr_0.9fr] xl:items-start">
-          <PatientContextPanel profile={profile} reports={reports} trends={trends} insights={insights} isDark={isDark} />
+        <section className="grid gap-6 xl:grid-cols-[0.9fr_1.25fr_0.9fr] xl:items-start">
+          <PatientContextPanel
+            profile={profile}
+            reports={reports}
+            trends={trends}
+            insights={insights}
+            isDark={isDark}
+          />
+
           <HealthBar
             score={healthScore.score}
             status={healthScore.status}
@@ -260,32 +482,32 @@ export default function PatientDashboard() {
             subStats={subsystemStats}
             isDark={isDark}
           />
+
           <SignalStream alerts={alerts} anomalies={anomalies} isDark={isDark} />
         </section>
 
-        {/* ── Data strip ── */}
         <DataStrip metrics={stripMetrics} isDark={isDark} />
 
         <div className="px-1">
-          <p className={`text-sm leading-7 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-            The timeline ribbon below shows where your health story shifted. The operations panel beside it explains how those shifts connect to your current care state.
+          <p className={`max-w-4xl text-sm leading-7 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            The timeline ribbon below shows where your health story shifted. The operations panel beside
+            it explains how those shifts connect to your current care state.
           </p>
         </div>
 
-        {/* ── Timeline + system panel ── */}
-        <section className="grid gap-5 sm:gap-6 xl:grid-cols-[1.24fr_0.76fr] xl:items-start">
+        <section className="grid gap-6 xl:grid-cols-[1.24fr_0.76fr] xl:items-start">
           <TimelineRibbon reports={reports} isDark={isDark} />
+
           <SystemPanel
             reportsCount={reports.length}
             abnormalCount={abnormalParameterCount}
-            conditionsCount={alerts.length}
+            conditionsCount={activeConditionCount}
             categoryCount={categoryCount}
             upcomingAppointments={upcomingAppointments}
             activeCase={activeCase}
             isDark={isDark}
           />
         </section>
-
       </div>
     </div>
   );
