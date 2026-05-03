@@ -16,6 +16,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+
 import { useTheme } from "../../context/ThemeContext";
 import { authService } from "../../services/auth.service";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
@@ -23,7 +24,24 @@ import AiSessionBanner from "../ui/AiSessionBanner";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
 import useViewport from "../../hooks/useViewport";
-import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
+
+// ─── Nav configuration ──────────────────────────────────────────────────────
+
+const NAV_LINKS = [
+  { name: "Dashboard", path: "/patient/dashboard", icon: LayoutDashboard },
+  { name: "Timeline",  path: "/patient/timeline",  icon: History        },
+  { name: "Calendar",  path: "/patient/calendar",  icon: CalendarDays   },
+  { name: "Trends",    path: "/patient/trends",    icon: TrendingUp     },
+  { name: "Reports",   path: "/patient/reports",   icon: FileText       },
+  { name: "Your Cases",path: "/patient/cases",     icon: ClipboardList  },
+  { name: "Chats",     path: "/patient/chats",     icon: MessageSquare  },
+  { name: "Settings",  path: "/patient/settings",  icon: Settings       },
+];
+
+// Bottom-tab primary links (shown always in mobile bar)
+const PRIMARY_TABS = [NAV_LINKS[0], NAV_LINKS[1], NAV_LINKS[4], NAV_LINKS[5]];
+
+// ─── Root layout ─────────────────────────────────────────────────────────────
 
 export default function PatientLayout() {
   const { isMobile } = useViewport();
@@ -32,30 +50,8 @@ export default function PatientLayout() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { name: "Dashboard", path: "/patient/dashboard", icon: LayoutDashboard },
-    { name: "Timeline", path: "/patient/timeline", icon: History },
-    { name: "Calendar", path: "/patient/calendar", icon: CalendarDays },
-    { name: "Trends", path: "/patient/trends", icon: TrendingUp },
-    { name: "Reports", path: "/patient/reports", icon: FileText },
-    { name: "Your Cases", path: "/patient/cases", icon: ClipboardList },
-    { name: "Chats", path: "/patient/chats", icon: MessageSquare },
-    { name: "Settings", path: "/patient/settings", icon: Settings },
-  ];
-
-  const primaryMobileLinks = [
-    navLinks[0],
-    navLinks[1],
-    navLinks[4],
-    navLinks[5],
-  ];
-
-  const etherColors = isDark
-    ? ["#020617", "#0f172a", "#1e1b4b", "#06b6d4", "#2563eb", "#000000"]
-    : ["#f8fafc", "#f1f5f9", "#e2e8f0", "#bfdbfe", "#ddd6fe", "#ffffff"];
-
   const activeLink = useMemo(
-    () => navLinks.find((link) => location.pathname === link.path) || navLinks[0],
+    () => NAV_LINKS.find((l) => location.pathname === l.path) ?? NAV_LINKS[0],
     [location.pathname]
   );
 
@@ -64,41 +60,37 @@ export default function PatientLayout() {
     navigate("/login", { replace: true });
   };
 
-  if (isMobile) {
-    return (
-      <PatientMobileLayout
-        isDark={isDark}
-        location={location}
-        navLinks={navLinks}
-        primaryMobileLinks={primaryMobileLinks}
-        activeLink={activeLink}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        handleLogout={handleLogout}
-      />
-    );
-  }
+  const sharedProps = {
+    isDark,
+    location,
+    navLinks: NAV_LINKS,
+    primaryMobileLinks: PRIMARY_TABS,
+    activeLink,
+    mobileMenuOpen,
+    setMobileMenuOpen,
+    handleLogout,
+  };
+
+  if (isMobile) return <PatientMobileLayout {...sharedProps} />;
 
   return (
     <PatientDesktopLayout
-      isDark={isDark}
-      location={location}
-      navLinks={navLinks}
-      primaryMobileLinks={primaryMobileLinks}
-      activeLink={activeLink}
-      mobileMenuOpen={mobileMenuOpen}
-      setMobileMenuOpen={setMobileMenuOpen}
-      handleLogout={handleLogout}
-      etherColors={etherColors}
+      {...sharedProps}
+      etherColors={
+        isDark
+          ? ["#020617", "#0f172a", "#1e1b4b", "#06b6d4", "#2563eb", "#000000"]
+          : ["#f8fafc", "#f1f5f9", "#e2e8f0", "#bfdbfe", "#ddd6fe", "#ffffff"]
+      }
     />
   );
 }
+
+// ─── Desktop layout ───────────────────────────────────────────────────────────
 
 function PatientDesktopLayout({
   isDark,
   location,
   navLinks,
-  primaryMobileLinks,
   activeLink,
   mobileMenuOpen,
   setMobileMenuOpen,
@@ -109,6 +101,7 @@ function PatientDesktopLayout({
     <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] font-sans text-[var(--text-primary)] transition-colors duration-700">
       <RefractionFilter />
 
+      {/* Ambient canvas backdrop */}
       <div className="fixed inset-0 z-0 pointer-events-none select-none">
         <AmbientBackdrop
           palette={etherColors}
@@ -117,12 +110,14 @@ function PatientDesktopLayout({
         />
       </div>
 
+      {/* Vignette overlay */}
       <div
         className="fixed inset-0 z-[1] pointer-events-none transition-colors duration-1000"
         style={{ background: "radial-gradient(ellipse at center, transparent 40%, var(--vignette-color) 100%)" }}
       />
 
       <div className="relative z-10 flex min-h-screen flex-col">
+        {/* ── Header ── */}
         <header className="sticky top-0 z-50 px-3 py-3 transition-all duration-300 sm:px-4 sm:py-4 md:px-6 md:py-6">
           <div className="mx-auto max-w-[1600px]">
             <GlassSurface
@@ -141,6 +136,7 @@ function PatientDesktopLayout({
             >
               <div className="flex w-full flex-col gap-4">
                 <div className="flex items-center justify-between gap-3">
+                  {/* Brand */}
                   <div className="min-w-0 flex items-center gap-3">
                     <div
                       className={`h-7 w-7 shrink-0 rounded-full bg-gradient-to-tr ${
@@ -167,6 +163,7 @@ function PatientDesktopLayout({
                     </div>
                   </div>
 
+                  {/* Desktop nav */}
                   <nav className="hidden md:flex md:flex-1 md:flex-wrap md:items-center md:justify-center md:gap-2">
                     {navLinks.map((link) => {
                       const isActive = location.pathname === link.path;
@@ -203,6 +200,7 @@ function PatientDesktopLayout({
                     })}
                   </nav>
 
+                  {/* Actions */}
                   <div className="flex items-center gap-2 sm:gap-4">
                     <div
                       className={`hidden items-center gap-2 rounded-full border px-4 py-1.5 backdrop-blur-md lg:flex ${
@@ -227,7 +225,7 @@ function PatientDesktopLayout({
 
                     <button
                       type="button"
-                      onClick={() => setMobileMenuOpen((open) => !open)}
+                      onClick={() => setMobileMenuOpen((o) => !o)}
                       className={`inline-flex rounded-full p-2 md:hidden ${
                         isDark ? "bg-white/5 text-slate-200" : "bg-slate-100 text-slate-700"
                       }`}
@@ -238,7 +236,8 @@ function PatientDesktopLayout({
                   </div>
                 </div>
 
-                {mobileMenuOpen ? (
+                {/* Mobile dropdown nav */}
+                {mobileMenuOpen && (
                   <nav className="grid gap-2 md:hidden">
                     {navLinks.map((link) => {
                       const isActive = location.pathname === link.path;
@@ -274,17 +273,19 @@ function PatientDesktopLayout({
                       Sign out
                     </button>
                   </nav>
-                ) : null}
+                )}
               </div>
             </GlassSurface>
           </div>
         </header>
 
+        {/* ── Main content ── */}
         <main className="mx-auto w-full max-w-[1600px] flex-1 px-3 py-4 pb-24 sm:px-4 sm:py-5 sm:pb-24 md:px-6 md:py-6 md:pb-6">
           <AiSessionBanner />
           <Outlet />
         </main>
 
+        {/* ── Tablet bottom nav (md breakpoint and below) ── */}
         <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-3 md:hidden">
           <GlassSurface
             width="100%"
@@ -301,7 +302,7 @@ function PatientDesktopLayout({
             }`}
           >
             <nav className="grid grid-cols-5 gap-1">
-              {primaryMobileLinks.map((link) => {
+              {PRIMARY_TABS.map((link) => {
                 const isActive = location.pathname === link.path;
                 const Icon = link.icon;
                 return (
@@ -325,7 +326,7 @@ function PatientDesktopLayout({
               })}
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen((open) => !open)}
+                onClick={() => setMobileMenuOpen((o) => !o)}
                 className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-bold ${
                   mobileMenuOpen
                     ? isDark
@@ -347,6 +348,8 @@ function PatientDesktopLayout({
   );
 }
 
+// ─── Mobile layout ────────────────────────────────────────────────────────────
+
 function PatientMobileLayout({
   isDark,
   location,
@@ -360,18 +363,16 @@ function PatientMobileLayout({
   return (
     <div
       className={`min-h-screen main-mobile ${
-        isDark
-          ? "bg-[#070b14] text-white"
-          : "bg-[#f5f7fb] text-slate-950"
+        isDark ? "bg-[#070b14] text-white" : "bg-[#f5f7fb] text-slate-950"
       }`}
     >
+      {/* ── Sticky app header ── */}
       <div
         className={`mobile-app-header ${
-          isDark
-            ? "bg-[#070b14]/88"
-            : "bg-[#f5f7fb]/88"
+          isDark ? "bg-[#070b14]/88" : "bg-[#f5f7fb]/88"
         }`}
       >
+        {/* Title row */}
         <div className="mobile-top-card">
           <div
             className={`mobile-role-mark ${
@@ -382,52 +383,61 @@ function PatientMobileLayout({
           >
             {React.createElement(activeLink.icon, { size: 19 })}
           </div>
+
           <div className="min-w-0">
-            <span className={`mobile-eyebrow ${
-              isDark ? "text-cyan-400/70" : "text-blue-600/70"
-            }`}>Patient workspace</span>
+            <span
+              className={`mobile-eyebrow ${
+                isDark ? "text-cyan-400/70" : "text-blue-600/70"
+              }`}
+            >
+              Patient workspace
+            </span>
             <div className="mobile-title-line">DoctorCopilot</div>
           </div>
-          <div className={`mobile-context-pill ${
-            isDark ? "bg-white/8 text-slate-300" : "border border-slate-200 bg-white text-slate-600"
-          }`}>{activeLink.name}</div>
+
+          <div
+            className={`mobile-context-pill ${
+              isDark
+                ? "bg-white/8 text-slate-300"
+                : "border border-slate-200 bg-white text-slate-600"
+            }`}
+          >
+            {activeLink.name}
+          </div>
         </div>
 
+        {/* Quick-action strip */}
         <div className="mobile-quick-strip">
-          <NavLink
-            to="/patient/reports"
-            className={`mobile-quick-action ${
-              isDark ? "bg-cyan-400/10 text-cyan-200" : "bg-blue-600 text-white"
-            }`}
-          >
-            <Upload size={15} />
-            Upload
-          </NavLink>
-          <NavLink
-            to="/patient/trends"
-            className={`mobile-quick-action ${
-              isDark ? "bg-white/7 text-slate-200" : "bg-white text-slate-700 shadow-sm"
-            }`}
-          >
-            <TrendingUp size={15} />
-            Trends
-          </NavLink>
-          <NavLink
-            to="/patient/chats"
-            className={`mobile-quick-action ${
-              isDark ? "bg-white/7 text-slate-200" : "bg-white text-slate-700 shadow-sm"
-            }`}
-          >
-            <MessageSquare size={15} />
-            Chats
-          </NavLink>
+          {[
+            { to: "/patient/reports", icon: Upload,      label: "Upload", primary: true },
+            { to: "/patient/trends",  icon: TrendingUp,  label: "Trends"               },
+            { to: "/patient/chats",   icon: MessageSquare,label: "Chats"               },
+          ].map(({ to, icon: Icon, label, primary }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={`mobile-quick-action ${
+                primary
+                  ? isDark
+                    ? "bg-cyan-400/10 text-cyan-200"
+                    : "bg-blue-600 text-white"
+                  : isDark
+                    ? "bg-white/7 text-slate-200"
+                    : "bg-white text-slate-700 shadow-sm"
+              }`}
+            >
+              <Icon size={15} />
+              {label}
+            </NavLink>
+          ))}
         </div>
       </div>
 
-      {/* ── Slide-up full-screen drawer ── */}
+      {/* ── Slide-up drawer ── */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -436,6 +446,8 @@ function PatientMobileLayout({
               onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 z-50 bg-black/60"
             />
+
+            {/* Sheet */}
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -447,19 +459,27 @@ function PatientMobileLayout({
                   : "bg-white border-t border-slate-200 text-slate-950"
               }`}
             >
-              {/* Handle */}
+              {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-2">
-                <div className={`h-1 w-10 rounded-full ${
-                  isDark ? "bg-white/20" : "bg-slate-300"
-                }`} />
+                <div
+                  className={`h-1 w-10 rounded-full ${
+                    isDark ? "bg-white/20" : "bg-slate-300"
+                  }`}
+                />
               </div>
 
+              {/* Section label */}
               <div className="px-4 pb-2">
-                <p className={`text-[10px] font-black uppercase tracking-[0.22em] ${
-                  isDark ? "text-slate-500" : "text-slate-400"
-                }`}>Navigate</p>
+                <p
+                  className={`text-[10px] font-black uppercase tracking-[0.22em] ${
+                    isDark ? "text-slate-500" : "text-slate-400"
+                  }`}
+                >
+                  Navigate
+                </p>
               </div>
 
+              {/* Nav grid */}
               <nav className="mobile-menu-grid px-1 pb-3">
                 {navLinks.map((link) => {
                   const isActive = location.pathname === link.path;
@@ -486,6 +506,7 @@ function PatientMobileLayout({
                 })}
               </nav>
 
+              {/* Sign out */}
               <div className="px-1">
                 <button
                   type="button"
@@ -503,11 +524,13 @@ function PatientMobileLayout({
         )}
       </AnimatePresence>
 
+      {/* ── Page content ── */}
       <main className="px-3 pt-3 pb-[5.5rem]">
         <AiSessionBanner />
         <Outlet />
       </main>
 
+      {/* ── Fixed bottom tab bar ── */}
       <div
         className={`mobile-bottom-tabs ${
           isDark
@@ -542,7 +565,10 @@ function PatientMobileLayout({
                     transition={{ type: "spring", stiffness: 400, damping: 34 }}
                   />
                 )}
-                <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
+                <motion.div
+                  whileTap={{ scale: 0.82 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                >
                   <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
                 </motion.div>
                 <span>{link.name}</span>
@@ -550,14 +576,18 @@ function PatientMobileLayout({
             );
           })}
 
-          {/* More button */}
+          {/* More / drawer trigger */}
           <button
             type="button"
-            onClick={() => setMobileMenuOpen((open) => !open)}
+            onClick={() => setMobileMenuOpen((o) => !o)}
             className={`mobile-tab-item transition-colors ${
               mobileMenuOpen
-                ? isDark ? "text-cyan-400" : "text-blue-600"
-                : isDark ? "text-slate-500" : "text-slate-400"
+                ? isDark
+                  ? "text-cyan-400"
+                  : "text-blue-600"
+                : isDark
+                  ? "text-slate-500"
+                  : "text-slate-400"
             }`}
           >
             {mobileMenuOpen && (
@@ -569,8 +599,15 @@ function PatientMobileLayout({
                 transition={{ type: "spring", stiffness: 400, damping: 34 }}
               />
             )}
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
-              {mobileMenuOpen ? <X size={20} strokeWidth={2.2} /> : <Menu size={20} strokeWidth={1.8} />}
+            <motion.div
+              whileTap={{ scale: 0.82 }}
+              transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            >
+              {mobileMenuOpen ? (
+                <X size={20} strokeWidth={2.2} />
+              ) : (
+                <Menu size={20} strokeWidth={1.8} />
+              )}
             </motion.div>
             <span>More</span>
           </button>
