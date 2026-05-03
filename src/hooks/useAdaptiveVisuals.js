@@ -41,11 +41,13 @@ export default function useAdaptiveVisuals(options = {}) {
         allowFluid:
           webglSupported &&
           !reducedMotion &&
+          !mobileViewport &&
           deviceMemory >= fluidMemoryFloor &&
           cpuThreads >= fluidCpuFloor,
         allow3D:
           webglSupported &&
           !reducedMotion &&
+          !mobileViewport &&
           deviceMemory >= 8 &&
           cpuThreads >= 8,
       });
