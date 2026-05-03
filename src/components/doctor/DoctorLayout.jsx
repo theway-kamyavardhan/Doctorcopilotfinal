@@ -78,7 +78,7 @@ export default function DoctorLayout() {
     setMobileMenuOpen,
   };
 
-  if (isMobile) return <DoctorMobileLayout {...sharedProps} />;
+  
 
   return (
     <div

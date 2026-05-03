@@ -18,7 +18,6 @@ import {
 import { formatParameterLabel, isAbnormalStatus } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
 import systemService from "../../services/system.service";
-import useViewport from "../../hooks/useViewport";
 
 const CATEGORY_TABS = [
   { key: "all", label: "All" },
@@ -396,8 +395,7 @@ function ReportsMobile({
 
 export default function Reports() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [queue, setQueue] = useState([]);
   const [reports, setReports] = useState([]);
@@ -553,40 +551,7 @@ export default function Reports() {
     }
   };
 
-  if (isMobile) {
-    return (
-      <ReportsMobile
-        isDark={isDark}
-        fileInputRef={fileInputRef}
-        queue={queue}
-        reports={reports}
-        filteredReports={filteredReports}
-        categoryCounts={categoryCounts}
-        activeCategory={activeCategory}
-        searchQuery={searchQuery}
-        uploading={uploading}
-        loading={loading}
-        dragActive={dragActive}
-        error={error}
-        aiStatus={aiStatus}
-        workflowReady={workflowReady}
-        reportPendingDelete={reportPendingDelete}
-        deleteConfirmationText={deleteConfirmationText}
-        isDeleting={isDeleting}
-        onFileChange={handleFileChange}
-        onPushFiles={handleMobileDropState}
-        onUpload={handleUpload}
-        onRefresh={refreshWorkflow}
-        onCategory={setActiveCategory}
-        onSearch={setSearchQuery}
-        onDeleteOpen={openDeleteDialog}
-        onDeleteClose={closeDeleteDialog}
-        onDeleteConfirm={handleDeleteReport}
-        onDeleteText={setDeleteConfirmationText}
-        navigate={navigate}
-      />
-    );
-  }
+  
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 px-4 md:px-0">

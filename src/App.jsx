@@ -10,7 +10,7 @@ import Landing from "./components/landing/Landing";
 import PublicInfoPage from "./components/landing/PublicInfoPage";
 import SEOManager from "./components/seo/SEOManager";
 import swrConfig from "./lib/swr";
-import useViewport from "./hooks/useViewport";
+
 
 // Patient Imports
 import PatientLayout from "./components/patient/PatientLayout";
@@ -206,7 +206,7 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
-  const { isMobile } = useViewport();
+  
 
   return (
     <ThemeProvider>
@@ -219,7 +219,7 @@ export default function App() {
             <ThemeToggle />
 
             {/* CINEMATIC PARTICLE LAYER */}
-            {!isMobile ? <ParticleTransition /> : null}
+            <ParticleTransition />
 
             {/* PWA INSTALL PROMPT */}
             <RouteAwareInstallPWA />

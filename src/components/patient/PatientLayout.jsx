@@ -68,8 +68,7 @@ export default function PatientLayout() {
     handleLogout,
   };
 
-  if (isMobile) return <PatientMobileLayout {...sharedProps} />;
-
+  
   return (
     <PatientDesktopLayout
       {...sharedProps}

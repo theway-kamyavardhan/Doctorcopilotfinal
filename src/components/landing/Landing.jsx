@@ -8,7 +8,7 @@ import LiquidEther from "../ui/LiquidEther";
 import RefractionFilter from "../ui/RefractionFilter";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
 import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
-import useViewport from "../../hooks/useViewport";
+
 
 function GlassButton({ onClick, children, primary = false, className = "" }) {
   const { isDark } = useTheme();
@@ -99,7 +99,7 @@ function MobileLanding({ onEnter, isDark }) {
 export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const { isMobile } = useViewport();
+  
   const { allowFluid } = useAdaptiveVisuals();
   const { isInstallable, promptInstall } = usePWA();
 

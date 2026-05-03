@@ -213,24 +213,7 @@ function MobileLogin({
 }
 
 
-  if (isMobile) {
-    return (
-      <MobileLogin
-        role={role}
-        setRole={setRole}
-        identifier={identifier}
-        setIdentifier={setIdentifier}
-        password={password}
-        setPassword={setPassword}
-        handleLogin={handleLogin}
-        isAuthenticating={isAuthenticating}
-        loginError={loginError}
-        demoAccountsForRole={demoAccountsForRole}
-        applyDemoAccount={applyDemoAccount}
-        isDark={isDark}
-      />
-    );
-  }
+  
 
 return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans selection:bg-cyan-500/30 transition-colors duration-1000">
