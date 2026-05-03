@@ -503,7 +503,7 @@ function PatientMobileLayout({
         )}
       </AnimatePresence>
 
-      <main className="px-3 pt-3">
+      <main className="px-3 pt-3 pb-[5.5rem]">
         <AiSessionBanner />
         <Outlet />
       </main>

@@ -595,6 +595,8 @@ video {
     font-size: 0.62rem;
     font-weight: 850;
     line-height: 1;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-tab-item span {
