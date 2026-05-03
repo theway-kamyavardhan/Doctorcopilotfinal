@@ -16,7 +16,6 @@ import {
 import { useTheme } from "../../context/ThemeContext";
 import { getDoctorDemoDashboardSeed } from "../../lib/demoData";
 import appointmentService from "../../services/appointment.service";
-import useViewport from "../../hooks/useViewport";
 import {
   acceptDoctorCase,
   getDoctorCase,
@@ -271,188 +270,8 @@ function OverviewModal({
   );
 }
 
-function DoctorDashboardMobile({
-  isDark,
-  profile,
-  dashboard,
-  activeCases,
-  pendingCases,
-  nextActionItems,
-  upcomingAppointments,
-  error,
-  overviewCase,
-  overviewTrends,
-  overviewLoading,
-  actingId,
-  onRefresh,
-  onOverview,
-  onAccept,
-  onReject,
-  onCloseOverview,
-}) {
-  return (
-    <div className="mobile-page-stack">
-      <section className={`mobile-hero-card ${isDark ? "bg-slate-950 text-white" : "bg-white text-slate-950"}`}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className={`text-[0.68rem] font-black uppercase ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
-              Doctor Workspace
-            </div>
-            <h1 className="mt-2">Dr. {profile?.user?.full_name || "Doctor"}</h1>
-            <p className={isDark ? "text-slate-300" : "text-slate-600"}>
-              Mobile triage for patient context, trends, report review, and case decisions.
-            </p>
-          </div>
-          <button type="button" onClick={onRefresh} className={`mobile-icon-button ${isDark ? "bg-white/[0.08] text-slate-100" : "bg-slate-100 text-slate-800"}`} aria-label="Refresh dashboard">
-            <RefreshCcw size={18} />
-          </button>
-        </div>
-      </section>
-
-      {error ? (
-        <div className={`rounded-2xl px-4 py-3 text-sm font-semibold ${isDark ? "bg-red-500/10 text-red-300" : "bg-red-50 text-red-700"}`}>
-          {error}
-        </div>
-      ) : null}
-
-      <section className="mobile-stat-grid">
-        <div className={`mobile-stat-card ${isDark ? "bg-cyan-500/10 text-cyan-200" : "bg-cyan-50 text-cyan-700"}`}>
-          <div className="text-[0.68rem] font-black uppercase opacity-70">Cases</div>
-          <div className="mt-2 text-2xl font-black leading-none">{dashboard?.total_cases ?? "--"}</div>
-          <div className="mt-2 text-xs font-semibold opacity-75">total assigned</div>
-        </div>
-        <div className={`mobile-stat-card ${isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-700"}`}>
-          <div className="text-[0.68rem] font-black uppercase opacity-70">Pending</div>
-          <div className="mt-2 text-2xl font-black leading-none">{pendingCases.length}</div>
-          <div className="mt-2 text-xs font-semibold opacity-75">need review</div>
-        </div>
-        <div className={`mobile-stat-card ${isDark ? "bg-emerald-500/10 text-emerald-200" : "bg-emerald-50 text-emerald-700"}`}>
-          <div className="text-[0.68rem] font-black uppercase opacity-70">Open</div>
-          <div className="mt-2 text-2xl font-black leading-none">{activeCases.filter((item) => item.status === "open").length}</div>
-          <div className="mt-2 text-xs font-semibold opacity-75">active care</div>
-        </div>
-        <div className={`mobile-stat-card ${isDark ? "bg-violet-500/10 text-violet-200" : "bg-violet-50 text-violet-700"}`}>
-          <div className="text-[0.68rem] font-black uppercase opacity-70">Reports</div>
-          <div className="mt-2 text-2xl font-black leading-none">{dashboard?.recent_report_count ?? "--"}</div>
-          <div className="mt-2 text-xs font-semibold opacity-75">linked files</div>
-        </div>
-      </section>
-
-      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-        <div className="mobile-section-title">
-          <ShieldAlert size={18} />
-          Triage Queue
-        </div>
-        <div className="mt-4 space-y-3">
-          {pendingCases.length ? (
-            pendingCases.map((item) => (
-              <article key={item.id} className={`mobile-report-card ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3>{item.patient?.full_name || item.patient_name || "Patient"}</h3>
-                    <p className={isDark ? "text-slate-400" : "text-slate-500"}>
-                      {[item.patient?.age ? `${item.patient.age}y` : null, item.patient?.gender, item.patient?.blood_group].filter(Boolean).join(" / ") || "Patient details pending"}
-                    </p>
-                  </div>
-                  <span className="mobile-status-pill bg-amber-500/10 text-amber-500">pending</span>
-                </div>
-                <p className={`mt-3 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-                  {item.reports?.[0]?.insights?.[0] || item.description || "Consultation request awaiting doctor review."}
-                </p>
-                <div className="mobile-action-row mt-4">
-                  <button type="button" onClick={() => onOverview(item.id)} className={`mobile-soft-button ${isDark ? "bg-white/[0.06] text-slate-100" : "bg-white text-slate-800"}`}>
-                    Context
-                  </button>
-                  <Link to={`/doctor/case/${item.id}`} className="mobile-primary-button">
-                    Open Case
-                  </Link>
-                </div>
-                <div className="mobile-action-row mt-3">
-                  <button type="button" onClick={() => onAccept(item.id)} disabled={actingId === item.id} className="mobile-success-button">
-                    Accept
-                  </button>
-                  <button type="button" onClick={() => onReject(item.id)} disabled={actingId === item.id} className="mobile-danger-button">
-                    Reject
-                  </button>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className={`rounded-2xl border border-dashed px-4 py-8 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
-              Your review queue is clear.
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-        <div className="mobile-section-title">
-          <Activity size={18} />
-          Next Action
-        </div>
-        <div className="mt-4 space-y-3">
-          {nextActionItems.length ? (
-            nextActionItems.map((item) => (
-              <button key={item.id} type="button" onClick={() => onOverview(item.id)} className={`mobile-signal-row w-full text-left ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
-                <div className="mobile-dot bg-amber-500" />
-                <div>
-                  <div className="text-sm font-black">{item.patientName}</div>
-                  <div className={`mt-1 text-xs leading-5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>{item.reason}</div>
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className={`rounded-2xl px-4 py-5 text-sm ${isDark ? "bg-white/[0.05] text-slate-400" : "bg-slate-50 text-slate-500"}`}>
-              Nothing urgent right now.
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-        <div className="flex items-center justify-between gap-3">
-          <div className="mobile-section-title">
-            <CalendarDays size={18} />
-            Appointments
-          </div>
-          <Link to="/doctor/calendar" className={`text-sm font-black ${isDark ? "text-cyan-300" : "text-blue-700"}`}>Calendar</Link>
-        </div>
-        <div className="mt-4 space-y-3">
-          {upcomingAppointments.length ? (
-            upcomingAppointments.map((appointment) => (
-              <div key={appointment.id} className={`mobile-timeline-row ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
-                <div>
-                  <strong>{appointment.patient_name || "Patient"}</strong>
-                  <span>{new Date(appointment.date_time).toLocaleString()}</span>
-                </div>
-                <Link to={`/doctor/case/${appointment.case_id}`}>Open</Link>
-              </div>
-            ))
-          ) : (
-            <div className={`rounded-2xl border border-dashed px-4 py-8 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
-              No upcoming appointments.
-            </div>
-          )}
-        </div>
-      </section>
-
-      <OverviewModal
-        caseItem={overviewCase}
-        trendOverview={overviewTrends}
-        loading={overviewLoading}
-        isDark={isDark}
-        actingId={actingId}
-        onClose={onCloseOverview}
-        onAccept={onAccept}
-        onReject={onReject}
-      />
-    </div>
-  );
-}
-
 export default function DoctorDashboard() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
   const [demoSeed] = useState(() => getDoctorDemoDashboardSeed());
   const [profile, setProfile] = useState(() => demoSeed?.profile || null);
   const [dashboard, setDashboard] = useState(() => demoSeed?.dashboard || null);
@@ -577,32 +396,6 @@ export default function DoctorDashboard() {
     );
   }
 
-  if (isMobile) {
-    return (
-      <DoctorDashboardMobile
-        isDark={isDark}
-        profile={profile}
-        dashboard={dashboard}
-        activeCases={activeCases}
-        pendingCases={pendingCases}
-        nextActionItems={nextActionItems}
-        upcomingAppointments={upcomingAppointments}
-        error={error}
-        overviewCase={overviewCase}
-        overviewTrends={overviewTrends}
-        overviewLoading={overviewLoading}
-        actingId={actingId}
-        onRefresh={loadDashboard}
-        onOverview={handleOverview}
-        onAccept={handleAccept}
-        onReject={handleReject}
-        onCloseOverview={() => {
-          setOverviewCase(null);
-          setOverviewTrends(null);
-        }}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">

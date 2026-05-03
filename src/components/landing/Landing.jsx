@@ -8,32 +8,18 @@ import LiquidEther from "../ui/LiquidEther";
 import RefractionFilter from "../ui/RefractionFilter";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
 import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
-import useViewport from "../../hooks/useViewport";
 
 function GlassButton({ onClick, children, primary = false, className = "" }) {
   const { isDark } = useTheme();
-
   return (
     <motion.button
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className={`
-        relative overflow-hidden rounded-2xl px-10 py-4 font-bold text-sm tracking-wide
-        transition-all duration-300
-        backdrop-blur-xl backdrop-saturate-150
-        border border-white/40 dark:border-[var(--gold-primary)]/20
-        shadow-[0_4px_32px_rgba(255,255,255,0.25),inset_0_1px_0_rgba(255,255,255,0.6)]
-        dark:shadow-[0_4px_32px_rgba(212,175,55,0.1),inset_0_1px_0_rgba(212,175,55,0.2)]
-        bg-white/20 dark:bg-white/5 text-[var(--text-primary)]
-        hover:bg-white/30 dark:hover:bg-white/10 hover:border-white/60 dark:hover:border-[var(--gold-primary)]/40
-        ${primary ? "!bg-white/40 dark:!bg-[var(--gold-primary)]/20 !border-white/60 dark:!border-[var(--gold-primary)]/50 !text-[var(--text-primary)]" : ""}
-        ${className}
-      `}
+      style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+      className={`relative overflow-hidden rounded-2xl px-8 py-4 font-bold text-sm tracking-wide transition-all duration-300 backdrop-blur-xl backdrop-saturate-150 border border-white/40 dark:border-[var(--gold-primary)]/20 shadow-[0_4px_32px_rgba(255,255,255,0.25),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_4px_32px_rgba(212,175,55,0.1),inset_0_1px_0_rgba(212,175,55,0.2)] bg-white/20 dark:bg-white/5 text-[var(--text-primary)] hover:bg-white/30 dark:hover:bg-white/10 ${primary ? "!bg-white/40 dark:!bg-[var(--gold-primary)]/20 !border-white/60 dark:!border-[var(--gold-primary)]/50" : ""} ${className}`}
     >
-      <div
-        className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${isDark ? "from-[var(--gold-soft)]/10" : "from-white/30"} via-transparent to-transparent pointer-events-none`}
-      />
+      <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${isDark ? "from-[var(--gold-soft)]/10" : "from-white/30"} via-transparent to-transparent pointer-events-none`} />
       <span className="relative z-10 flex items-center gap-2">{children}</span>
     </motion.button>
   );
@@ -41,22 +27,9 @@ function GlassButton({ onClick, children, primary = false, className = "" }) {
 
 function GlassText({ children, className = "" }) {
   const { isDark } = useTheme();
-
   return (
-    <div
-      className={`
-        relative rounded-3xl
-        backdrop-blur-2xl backdrop-saturate-200
-        bg-white/15 dark:bg-white/5
-        border border-white/40 dark:border-[var(--gold-primary)]/20
-        shadow-[0_4px_24px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.5)]
-        dark:shadow-[0_4px_24px_rgba(212,175,55,0.1),inset_0_1px_0_rgba(212,175,55,0.2)]
-        ${className}
-      `}
-    >
-      <div
-        className={`absolute inset-0 rounded-3xl bg-gradient-to-b ${isDark ? "from-[var(--gold-soft)]/10" : "from-white/20"} via-white/5 to-transparent pointer-events-none`}
-      />
+    <div className={`relative rounded-3xl backdrop-blur-2xl backdrop-saturate-200 bg-white/15 dark:bg-white/5 border border-white/40 dark:border-[var(--gold-primary)]/20 shadow-[0_4px_24px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.5)] dark:shadow-[0_4px_24px_rgba(212,175,55,0.1),inset_0_1px_0_rgba(212,175,55,0.2)] ${className}`}>
+      <div className={`absolute inset-0 rounded-3xl bg-gradient-to-b ${isDark ? "from-[var(--gold-soft)]/10" : "from-white/20"} via-white/5 to-transparent pointer-events-none`} />
       <div className="relative z-10">{children}</div>
     </div>
   );
@@ -64,372 +37,136 @@ function GlassText({ children, className = "" }) {
 
 const ease = [0.22, 1, 0.36, 1];
 
-function MobileLanding({ onEnter, isDark }) {
-  return (
-    <div
-      className={`relative min-h-[100svh] w-full max-w-[100vw] overflow-hidden px-4 pb-8 pt-4 ${
-        isDark ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-950"
-      }`}
-    >
-      <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isDark
-              ? "radial-gradient(circle at 20% 12%, rgba(34,211,238,0.16), transparent 34%), radial-gradient(circle at 88% 28%, rgba(212,175,55,0.12), transparent 38%)"
-              : "radial-gradient(circle at 20% 12%, rgba(37,99,235,0.14), transparent 34%), radial-gradient(circle at 88% 28%, rgba(124,58,237,0.12), transparent 38%)",
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 flex min-h-[calc(100svh-3rem)] w-full min-w-0 max-w-full flex-col">
-        <header
-          className={`flex w-full max-w-full items-center justify-between gap-3 rounded-[1.35rem] border px-4 py-4 shadow-sm ${
-            isDark
-              ? "border-white/10 bg-white/[0.06]"
-              : "border-white/70 bg-white/80"
-          }`}
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="h-9 w-9 shrink-0 rounded-2xl bg-gradient-to-tr from-blue-500 via-violet-500 to-rose-400" />
-            <div className="min-w-0">
-              <div className="truncate text-lg font-black">DoctorCopilot</div>
-              <div className={`text-[0.62rem] font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
-                Medical AI
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onEnter}
-            className="hidden shrink-0 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-black text-white min-[420px]:inline-flex"
-          >
-            Login
-          </button>
-        </header>
-
-        <main className="flex w-full min-w-0 max-w-full flex-1 flex-col justify-center py-6">
-          <div className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-[0.68rem] font-black uppercase tracking-[0.22em] ${
-            isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-100 text-blue-700"
-          }`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            Precision Medical AI
-          </div>
-
-          <h1 className="mt-5 max-w-[calc(100vw-2rem)] text-[clamp(2.2rem,10.8vw,3rem)] font-black leading-[1.02] tracking-normal">
-            <span className="block">Understand</span>
-            <span className="block">your health.</span>
-            <span className={`mt-3 block ${isDark ? "text-cyan-300" : "text-blue-600"}`}>
-              Not just your
-            </span>
-            <span className={`block ${isDark ? "text-cyan-300" : "text-blue-600"}`}>
-              reports.
-            </span>
-          </h1>
-
-          <p className={`mt-5 max-w-sm text-base font-semibold leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-            DoctorCopilot helps you upload medical reports, track health trends, and review patient context in a mobile-first clinical workspace.
-          </p>
-
-          <div className="mt-6 grid w-full min-w-0 max-w-full gap-3">
-            <button
-              type="button"
-              onClick={onEnter}
-              className="flex min-h-14 w-full max-w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-4 text-base font-black text-white shadow-[0_18px_42px_rgba(37,99,235,0.28)]"
-            >
-              Start System
-            </button>
-            <div className={`grid w-full min-w-0 max-w-full grid-cols-2 gap-2 text-center text-[0.72rem] font-black ${
-              isDark ? "text-slate-300" : "text-slate-600"
-            }`}>
-              {["Reports", "Trends"].map((item) => (
-                <div key={item} className={`min-w-0 truncate rounded-2xl px-2 py-3 ${isDark ? "bg-white/[0.06]" : "bg-white"}`}>
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <section className={`mt-4 grid w-full max-w-full gap-2 overflow-hidden rounded-2xl border p-3 ${isDark ? "border-white/10 bg-white/[0.04]" : "border-white/70 bg-white/80"}`}>
-            <div className={`text-[0.62rem] font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
-              HIPAA-aware roadmap
-            </div>
-            <p className={`text-xs font-semibold leading-5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              Demo data is locked for review. Real PHI requires encryption, audit logs, consent, BAAs, and policy review.
-            </p>
-            <Link to="/hipaa-readiness" className={`text-xs font-black ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
-              Read readiness plan
-            </Link>
-          </section>
-        </main>
-
-        <footer className={`w-full max-w-full rounded-2xl px-4 py-4 text-center ${
-          isDark ? "bg-white/[0.04] text-slate-500" : "bg-white/70 text-slate-400"
-        }`}>
-          <div className="text-[0.62rem] font-black uppercase tracking-[0.18em]">
-            Clinical intelligence for demo review
-          </div>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[0.68rem] font-black uppercase tracking-[0.14em]">
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/terms">Terms</Link>
-            <Link to="/support">Support</Link>
-          </div>
-        </footer>
-      </div>
-    </div>
-  );
-}
-
 export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const { isMobile } = useViewport();
   const { allowFluid } = useAdaptiveVisuals();
   const { isInstallable, promptInstall } = usePWA();
 
-  const handleEnter = () => {
-    navigate("/login");
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.3, duration: 1.0, ease },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 40, filter: "blur(12px)" },
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: { duration: 1.4, ease },
-    },
-  };
+  const handleEnter = () => navigate("/login");
 
   const etherColors = isDark
     ? ["#aa771c", "#d4af37", "#f3e5ab", "#bf953f"]
     : ["#bfdbfe", "#ddd6fe", "#fbcfe8", "#ffffff"];
 
-  if (isMobile) {
-    return <MobileLanding onEnter={handleEnter} isDark={isDark} />;
-  }
+  const containerV = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.25, duration: 0.8, ease } },
+  };
+  const itemV = {
+    hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
+    visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1.2, ease } },
+  };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-700">
+    <div className="relative min-h-[100svh] w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-700">
       {allowFluid && <RefractionFilter />}
 
       <div className="fixed inset-0 z-0 pointer-events-none select-none">
         {allowFluid ? (
-          <LiquidEther
-            colors={etherColors}
-            mouseForce={28}
-            cursorSize={180}
-            isViscous
-            viscous={32}
-            iterationsViscous={40}
-            iterationsPoisson={40}
-            resolution={0.5}
-            isBounce={false}
-            autoDemo
-            autoSpeed={0.8}
-            autoIntensity={3.2}
-            takeoverDuration={0.4}
-            autoResumeDelay={2500}
-            autoRampDuration={1.2}
-            className={`h-full w-full ${isDark ? "mix-blend-screen opacity-90" : "mix-blend-multiply opacity-80"}`}
-          />
+          <LiquidEther colors={etherColors} mouseForce={28} cursorSize={180} isViscous viscous={32} iterationsViscous={40} iterationsPoisson={40} resolution={0.5} isBounce={false} autoDemo autoSpeed={0.8} autoIntensity={3.2} takeoverDuration={0.4} autoResumeDelay={2500} autoRampDuration={1.2} className={`h-full w-full ${isDark ? "mix-blend-screen opacity-90" : "mix-blend-multiply opacity-80"}`} />
         ) : (
-          <AmbientBackdrop
-            palette={etherColors}
-            opacity={isDark ? 0.9 : 0.75}
-            className={isDark ? "mix-blend-screen" : "mix-blend-multiply"}
-          />
+          <AmbientBackdrop palette={etherColors} opacity={isDark ? 0.9 : 0.75} className={isDark ? "mix-blend-screen" : "mix-blend-multiply"} />
         )}
       </div>
 
-      <div
-        className="fixed inset-0 z-[1] pointer-events-none transition-colors duration-1000"
-        style={{ background: "radial-gradient(ellipse at center, transparent 30%, var(--vignette-color) 100%)" }}
-      />
+      <div className="fixed inset-0 z-[1] pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 30%, var(--vignette-color) 100%)" }} />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="fixed left-0 right-0 top-0 z-50 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="relative z-10 flex min-h-[100svh] flex-col">
+
+        {/* Header */}
+        <header className="fixed left-0 right-0 top-0 z-50 px-3 py-3 sm:px-6 sm:py-5">
           <div className="mx-auto max-w-7xl">
-            <GlassSurface
-              width="100%"
-              height="auto"
-              borderRadius={28}
-              backgroundOpacity={isDark ? 0.4 : 0.15}
-              blur={28}
-              brightness={isDark ? 90 : 110}
-              saturation={2.5}
-              className={`border px-4 py-4 transition-all duration-700 sm:px-6 ${isDark ? "border-[var(--cyan-primary)]/20 shadow-[0_4px_30px_rgba(6,182,212,0.1),inset_0_1px_0_rgba(6,182,212,0.2)]" : "border-white/50 shadow-[0_4px_30px_rgba(255,255,255,0.3),inset_0_1px_0_rgba(255,255,255,0.7)]"}`}
-            >
-              <div className="flex w-full items-center justify-between gap-4">
-                <div className="min-w-0 flex items-center gap-3">
-                  <div className={`h-7 w-7 rounded-full bg-gradient-to-tr ${isDark ? "from-[var(--gold-primary)] via-amber-200 to-[var(--gold-soft)] shadow-[0_0_20px_var(--gold-primary)]" : "from-blue-400 via-violet-400 to-rose-400 shadow-[0_0_16px_rgba(30,58,138,0.2)]"}`} />
-                  <span
-                    className={`truncate text-lg font-black tracking-tight sm:text-xl ${isDark ? "text-[#f3e5ab]" : "text-slate-800"}`}
-                  >
-                    DoctorCopilot
-                  </span>
+            <GlassSurface width="100%" height="auto" borderRadius={24} backgroundOpacity={isDark ? 0.4 : 0.15} blur={28} brightness={isDark ? 90 : 110} saturation={2.5} className={`border px-4 py-3 sm:px-6 sm:py-4 transition-all duration-700 ${isDark ? "border-[var(--cyan-primary)]/20 shadow-[0_4px_30px_rgba(6,182,212,0.1),inset_0_1px_0_rgba(6,182,212,0.2)]" : "border-white/50 shadow-[0_4px_30px_rgba(255,255,255,0.3),inset_0_1px_0_rgba(255,255,255,0.7)]"}`}>
+              <div className="flex w-full items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-2xl bg-gradient-to-tr ${isDark ? "from-[var(--gold-primary)] via-amber-200 to-[var(--gold-soft)] shadow-[0_0_20px_var(--gold-primary)]" : "from-blue-400 via-violet-400 to-rose-400"}`} />
+                  <span className={`truncate text-base sm:text-xl font-black tracking-tight ${isDark ? "text-[#f3e5ab]" : "text-slate-800"}`}>DoctorCopilot</span>
                 </div>
-
-                <nav className="hidden md:flex items-center gap-3">
-                  <GlassButton
-                    onClick={handleEnter}
-                    primary
-                    className={`px-6 py-2 !rounded-full text-xs ${isDark ? "shadow-[0_0_20px_rgba(6,182,212,0.2)]" : ""}`}
-                  >
-                    Enter System
-                  </GlassButton>
-                </nav>
-
-                <GlassButton
-                  onClick={handleEnter}
-                  primary
-                  className={`px-4 py-2 !rounded-full text-[11px] sm:hidden ${isDark ? "shadow-[0_0_20px_rgba(6,182,212,0.2)]" : ""}`}
-                >
-                  Enter
-                </GlassButton>
+                <GlassButton onClick={handleEnter} primary className="!px-4 !py-2 sm:!px-6 sm:!py-2.5 !rounded-full !text-xs sm:!text-sm shrink-0">Enter System</GlassButton>
               </div>
             </GlassSurface>
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center px-4 pb-16 pt-32 sm:px-6 sm:pb-20 sm:pt-40">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="w-full max-w-5xl flex flex-col items-center text-center gap-8"
-          >
-            <motion.div variants={itemVariants}>
-              <GlassText className={`px-6 py-2 !rounded-full inline-flex items-center gap-2.5 transition-all duration-700 ${isDark ? "border-[var(--cyan-primary)]/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]" : ""}`}>
-                <div className={`h-1.5 w-1.5 rounded-full animate-pulse transition-colors duration-700 ${isDark ? "bg-[var(--cyan-primary)] shadow-[0_0_8px_var(--cyan-primary)]" : "bg-violet-400"}`} />
-                <span className={`text-[0.7rem] font-black uppercase tracking-[0.3em] transition-colors duration-700 ${isDark ? "text-[var(--cyan-primary)]" : "text-violet-700"}`}>
-                  Precision Medical AI
-                </span>
+        {/* Hero */}
+        <main className="flex flex-1 flex-col items-center justify-center px-4 pb-16 pt-28 sm:px-6 sm:pt-36 md:pt-44">
+          <motion.div variants={containerV} initial="hidden" animate="visible" className="w-full max-w-5xl flex flex-col items-center text-center gap-5 sm:gap-8">
+
+            <motion.div variants={itemV}>
+              <GlassText className={`px-5 py-2 !rounded-full inline-flex items-center gap-2.5 ${isDark ? "border-[var(--cyan-primary)]/30" : ""}`}>
+                <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${isDark ? "bg-[var(--cyan-primary)]" : "bg-violet-400"}`} />
+                <span className={`text-[0.65rem] sm:text-[0.7rem] font-black uppercase tracking-[0.3em] ${isDark ? "text-[var(--cyan-primary)]" : "text-violet-700"}`}>Precision Medical AI</span>
               </GlassText>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="w-full">
-              <GlassText className="relative overflow-hidden !rounded-[32px] border-white/60 px-5 py-8 dark:border-[var(--gold-primary)]/20 group sm:px-8 sm:py-10 md:!rounded-[40px] md:px-20 md:py-16">
-                <div className={`scanner-line opacity-0 group-hover:opacity-100 transition-opacity duration-1000 ${isDark ? "!background-[var(--gold-primary)] !box-shadow-[0_0_15px_var(--gold-primary)]" : ""}`} />
-                <div className={`corner-bracket corner-tl ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
-                <div className={`corner-bracket corner-tr ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
-                <div className={`corner-bracket corner-bl ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
-                <div className={`corner-bracket corner-br ${isDark ? "!border-[var(--cyan-primary)]/40 shadow-[0_0_5px_var(--cyan-primary)]" : ""}`} />
-
-                <div className={`absolute left-5 top-4 hidden system-text-precise opacity-70 transition-colors duration-700 sm:block md:left-10 ${isDark ? "text-[var(--cyan-primary)] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" : "text-[var(--text-secondary)]"}`}>
-                  Diagnostic Source: {isDark ? "GEN-CYAN-X1" : "Neural-V4"}
-                </div>
-                <div className={`absolute bottom-4 right-5 hidden system-text-precise opacity-70 transition-colors duration-700 sm:block md:right-10 ${isDark ? "text-[var(--cyan-primary)] drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" : "text-[var(--text-secondary)]"}`}>
-                  System Integrity: {isDark ? "99.9% GOLD" : "98.4%"}
-                </div>
-
-                <h1 className="relative z-10 text-[clamp(2.5rem,7.5vw,5.5rem)] font-black tracking-[-0.03em] leading-[1.05] text-[var(--text-primary)]">
-                  <span className="block mb-2 uppercase tracking-tight">Understand Your Health.</span>
-                  <span
-                    className={`text-transparent bg-clip-text font-extrabold tracking-[-0.01em] transition-all duration-1000 ${isDark ? "drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]" : ""}`}
-                    style={{
-                      backgroundImage: isDark
-                        ? "linear-gradient(135deg, #f3e5ab, #ffd700 50%, #f3e5ab)"
-                        : "linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)",
-                    }}
-                  >
-                    Not Just Your Reports.
-                  </span>
+            <motion.div variants={itemV} className="w-full">
+              <GlassText className="relative overflow-hidden !rounded-[20px] sm:!rounded-[32px] md:!rounded-[40px] px-5 py-8 sm:px-8 sm:py-12 md:px-20 md:py-16 group">
+                <div className="corner-bracket corner-tl" /><div className="corner-bracket corner-tr" />
+                <div className="corner-bracket corner-bl" /><div className="corner-bracket corner-br" />
+                <h1 className="relative z-10 text-[clamp(1.9rem,8vw,5.5rem)] font-black tracking-[-0.03em] leading-[1.05] text-[var(--text-primary)]">
+                  <span className="block mb-1 uppercase tracking-tight">Understand Your Health.</span>
+                  <span className="text-transparent bg-clip-text font-extrabold" style={{ backgroundImage: isDark ? "linear-gradient(135deg,#f3e5ab,#ffd700 50%,#f3e5ab)" : "linear-gradient(to right,#2563eb,#4f46e5,#7c3aed)" }}>Not Just Your Reports.</span>
                 </h1>
-
-                <div className="mt-8 flex items-center justify-center gap-1.5 opacity-20">
-                  {[...Array(12)].map((_, i) => (
-                    <div key={i} className={`h-1 rounded-full bg-slate-900 ${i % 4 === 0 ? "w-4" : "w-1.5"}`} />
-                  ))}
-                </div>
               </GlassText>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="w-full max-w-3xl">
-              <GlassText className="!rounded-3xl px-5 py-6 sm:px-8 sm:py-7 md:px-10">
-                <p className={`text-lg md:text-xl leading-[1.65] font-medium tracking-tight transition-colors duration-700 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-                  DoctorCopilot transforms complex medical reports into beautiful,
-                  <br className="hidden md:block" />
-                  actionable health intelligence for patients and clinicians alike.
+            <motion.div variants={itemV} className="w-full max-w-3xl">
+              <GlassText className="!rounded-2xl sm:!rounded-3xl px-5 py-5 sm:px-8 sm:py-6 md:px-10">
+                <p className={`text-base sm:text-lg md:text-xl leading-[1.7] font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                  DoctorCopilot transforms complex medical reports into beautiful, actionable health intelligence for patients and clinicians alike.
                 </p>
               </GlassText>
             </motion.div>
 
-            <motion.section variants={itemVariants} className="w-full max-w-4xl">
-              <GlassText className="!rounded-3xl px-5 py-5 sm:px-8">
-                <div className="grid gap-4 text-left md:grid-cols-3">
+            <motion.section variants={itemV} className="w-full max-w-4xl">
+              <GlassText className="!rounded-2xl sm:!rounded-3xl px-5 py-5 sm:px-8">
+                <div className="grid gap-4 text-left sm:grid-cols-3">
                   {[
                     ["Medical Report AI", "Extract and organize report findings into readable health context."],
                     ["Health Trend Timeline", "Track changing markers across stored reports and patient history."],
                     ["Doctor Review Workflow", "Give clinicians source-linked context before reviewing a case."],
                   ].map(([title, body]) => (
                     <div key={title}>
-                      <h2 className={`text-sm font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
-                        {title}
-                      </h2>
-                      <p className={`mt-2 text-sm font-semibold leading-6 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                        {body}
-                      </p>
+                      <h2 className={`text-xs sm:text-sm font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>{title}</h2>
+                      <p className={`mt-2 text-xs sm:text-sm font-semibold leading-6 ${isDark ? "text-slate-400" : "text-slate-600"}`}>{body}</p>
                     </div>
                   ))}
                 </div>
               </GlassText>
             </motion.section>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-5 pt-4">
-              <GlassButton onClick={handleEnter} primary className="px-14 py-5 !rounded-2xl text-base !tracking-wide">
+            <motion.div variants={itemV} className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 pt-2 w-full sm:w-auto">
+              <GlassButton onClick={handleEnter} primary className="w-full sm:w-auto !px-10 sm:!px-14 !py-4 sm:!py-5 !rounded-2xl !text-sm sm:!text-base">
                 Start System
-                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </GlassButton>
-
               {isInstallable && (
-                <GlassButton
-                  onClick={promptInstall}
-                  className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
-                >
-                  <Download className="w-5 h-5 inline-block" />
-                  Install App
+                <GlassButton onClick={promptInstall} className="w-full sm:w-auto !px-8 sm:!px-10 !py-4 sm:!py-5 !rounded-2xl !text-sm sm:!text-base">
+                  <Download className="w-5 h-5" /> Install App
                 </GlassButton>
               )}
             </motion.div>
+
           </motion.div>
         </main>
 
-        <footer className="mt-auto px-4 py-8 sm:px-8 sm:py-10 md:px-12 md:py-12">
-          <GlassText className="!rounded-2xl px-5 py-5 sm:px-8 md:px-10 md:py-6">
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:gap-6">
-              <span className={`text-[0.65rem] font-black uppercase tracking-[0.4em] transition-colors duration-700 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+        {/* Footer */}
+        <footer className="mt-auto px-4 py-5 sm:px-8 sm:py-10">
+          <GlassText className="!rounded-2xl px-5 py-4 sm:px-8 sm:py-5 md:px-10 md:py-6">
+            <div className="flex flex-col items-center justify-between gap-3 md:flex-row md:gap-6">
+              <span className={`text-[0.6rem] sm:text-[0.65rem] font-black uppercase tracking-[0.35em] text-center ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                 DoctorCopilot © 2026 · <span className={isDark ? "text-[var(--gold-primary)] opacity-60" : ""}>Futuristic Clinical Intelligence</span>
               </span>
-              <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8">
-                {[
-                  { label: "Terms", to: "/terms" },
-                  { label: "Privacy", to: "/privacy" },
-                  { label: "Support", to: "/support" },
-                  { label: "HIPAA Readiness", to: "/hipaa-readiness" },
-                ].map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    className={`text-[0.65rem] font-black uppercase tracking-widest transition-colors ${isDark ? "text-slate-500 hover:text-[var(--cyan-primary)]" : "text-slate-400 hover:text-slate-700"}`}
-                  >
-                    {item.label}
-                  </Link>
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                {[["Terms","/terms"],["Privacy","/privacy"],["Support","/support"],["HIPAA","/hipaa-readiness"]].map(([label, to]) => (
+                  <Link key={label} to={to} className={`text-[0.6rem] sm:text-[0.65rem] font-black uppercase tracking-widest transition-colors ${isDark ? "text-slate-500 hover:text-[var(--cyan-primary)]" : "text-slate-400 hover:text-slate-700"}`}>{label}</Link>
                 ))}
               </div>
             </div>
           </GlassText>
         </footer>
+
       </div>
     </div>
   );
