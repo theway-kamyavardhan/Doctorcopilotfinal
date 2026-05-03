@@ -97,91 +97,79 @@ function MobileLanding({ onEnter, isDark }) {
 
 // ─── Desktop Components ───────────────────────────────────────────────────────
 
-// ─── Install modal ───────────────────────────────────────────────────────────
-function InstallModal({ isDark, onClose, isInstallable, promptInstall, isIOS }) {
-  const handleInstall = async () => {
-    if (isInstallable) { await promptInstall(); onClose(); }
-  };
-
-  const platforms = [
-    {
-      id: "desktop",
-      label: "Desktop",
-      icon: Monitor,
-      desc: isInstallable ? "Click below — your browser will prompt you to install." : "Open in Chrome or Edge on desktop, then click the install button in the address bar.",
-      action: isInstallable ? handleInstall : null,
-      actionLabel: isInstallable ? "Install Now" : "Open in Chrome / Edge",
-    },
-    {
-      id: "android",
-      label: "Android",
-      icon: Smartphone,
-      desc: "Open in Chrome for Android and tap the banner, or tap ⋮ → 'Add to Home screen'.",
-      steps: ["Open in Chrome for Android", "Tap the ⋮ menu (top right)", "Tap 'Add to Home screen'", "Tap 'Add'"],
-    },
-    {
-      id: "ios",
-      label: "iPhone / iPad",
-      icon: Apple,
-      desc: "Open in Safari, tap the Share icon, then 'Add to Home Screen'.",
-      steps: ["Open in Safari (not Chrome)", "Tap the Share icon (□↑)", "Scroll down and tap 'Add to Home Screen'", "Tap 'Add'"],
-    },
-  ];
-
+// ─── iOS Add-to-Home-Screen guide (only shown on iOS) ───────────────────────
+function IOSGuide({ isDark, onClose }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-end justify-center"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <motion.div
-        initial={{ scale: 0.92, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.92, opacity: 0, y: 20 }}
-        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", stiffness: 380, damping: 38 }}
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-lg rounded-3xl border p-6 ${
-          isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"
+        className={`relative w-full max-w-md rounded-t-3xl border-t border-x p-6 pb-10 ${
+          isDark ? "bg-[#111114] border-white/10" : "bg-white border-slate-200"
         } shadow-2xl`}
       >
-        <button onClick={onClose} className={`absolute right-4 top-4 rounded-full p-1.5 ${ isDark ? "text-slate-400 hover:bg-white/10" : "text-slate-400 hover:bg-slate-100"}`}><X size={18}/></button>
-        <div className="flex items-center gap-3 mb-5">
-          <div className={`rounded-2xl p-3 ${ isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-50 text-blue-600"}`}><Download size={20}/></div>
+        {/* drag handle */}
+        <div className={`mx-auto mb-5 h-1 w-10 rounded-full ${isDark ? "bg-white/20" : "bg-slate-300"}`} />
+        <button onClick={onClose} className={`absolute right-4 top-4 rounded-full p-1.5 ${isDark ? "text-slate-400 hover:bg-white/10" : "text-slate-400 hover:bg-slate-100"}`}><X size={18}/></button>
+
+        <div className="flex items-center gap-3 mb-6">
+          <div className={`rounded-2xl p-3 ${isDark ? "bg-blue-500/10 text-blue-300" : "bg-blue-50 text-blue-600"}`}>
+            <Apple size={22}/>
+          </div>
           <div>
-            <div className={`font-black text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Install DoctorCopilot</div>
-            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>Works on Desktop, Android &amp; iOS</div>
+            <div className={`font-black text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Add to Home Screen</div>
+            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>iPhone &amp; iPad · Safari only</div>
           </div>
         </div>
+
+        {/* Visual step-by-step */}
         <div className="space-y-3">
-          {platforms.map(({ id, label, icon: Icon, desc, steps, action, actionLabel }) => (
-            <div key={id} className={`rounded-2xl border p-4 ${ isDark ? "border-white/8 bg-white/4" : "border-slate-100 bg-slate-50"}`}>
-              <div className="flex items-center gap-2 mb-2">
-                <Icon size={16} className={isDark ? "text-cyan-400" : "text-blue-600"}/>
-                <span className={`text-sm font-black ${isDark ? "text-white" : "text-slate-800"}`}>{label}</span>
+          {[
+            { step: 1, icon: "🌐", text: "Open this page in Safari", sub: "Chrome/Firefox on iOS cannot install PWAs" },
+            { step: 2, icon: "⬆️", text: "Tap the Share button", sub: "The □↑ icon at the bottom of Safari" },
+            { step: 3, icon: "➕", text: "Tap 'Add to Home Screen'", sub: "Scroll down in the share sheet" },
+            { step: 4, icon: "✅", text: "Tap 'Add'", sub: "App appears on your home screen instantly" },
+          ].map(({ step, icon, text, sub }) => (
+            <div key={step} className={`flex items-start gap-3 rounded-2xl p-3.5 ${
+              isDark ? "bg-white/5" : "bg-slate-50"
+            }`}>
+              <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${
+                isDark ? "bg-blue-500/20 text-blue-300" : "bg-blue-100 text-blue-700"
+              }`}>{step}</span>
+              <div className="min-w-0">
+                <div className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
+                  <span className="mr-1.5">{icon}</span>{text}
+                </div>
+                <div className={`text-xs mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>{sub}</div>
               </div>
-              {steps ? (
-                <ol className="space-y-1">
-                  {steps.map((s, i) => (
-                    <li key={i} className={`flex items-start gap-2 text-xs ${ isDark ? "text-slate-300" : "text-slate-600"}`}>
-                      <span className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${ isDark ? "bg-cyan-500/20 text-cyan-300" : "bg-blue-100 text-blue-700"}`}>{i+1}</span>
-                      {s}
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className={`text-xs mb-3 ${ isDark ? "text-slate-400" : "text-slate-500"}`}>{desc}</p>
-              )}
-              {action && (
-                <button onClick={action} className={`mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors ${ isDark ? "bg-cyan-500/15 text-cyan-300 hover:bg-cyan-500/25" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
-                  <Download size={14}/> {actionLabel}
-                </button>
-              )}
             </div>
           ))}
         </div>
+
+        {/* Animated arrow pointing down to where Safari share bar is */}
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ repeat: Infinity, duration: 1.4 }}
+          className={`mt-5 flex items-center justify-center gap-2 text-xs font-bold ${
+            isDark ? "text-blue-400" : "text-blue-600"
+          }`}
+        >
+          <span>Tap Share</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+          <span>below ↓</span>
+        </motion.div>
       </motion.div>
     </motion.div>
   );
@@ -191,9 +179,25 @@ function InstallModal({ isDark, onClose, isInstallable, promptInstall, isIOS }) 
 export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const [showInstall, setShowInstall] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
   const { allowFluid } = useAdaptiveVisuals();
   const { isInstallable, promptInstall, isIOS } = usePWA();
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      // iOS Safari: show the guide — Apple blocks programmatic install
+      setShowIOSGuide(true);
+      return;
+    }
+    if (isInstallable) {
+      // Android Chrome / Desktop Chrome/Edge: fire native install prompt directly
+      await promptInstall();
+      return;
+    }
+    // Browser hasn't fired beforeinstallprompt yet (not eligible or already installed)
+    // Open the page in a new tab which may trigger the prompt, or show nothing
+    window.open(window.location.href, "_blank");
+  };
 
   const handleEnter = () => {
     navigate("/login");
@@ -399,18 +403,22 @@ export default function Landing() {
               </GlassButton>
 
               <GlassButton
-                onClick={() => setShowInstall(true)}
+                onClick={handleInstallClick}
                 className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
               >
                 <Download className="w-5 h-5 inline-block" />
-                Install App
+                {isIOS ? "Add to Home Screen" : isInstallable ? "Install App" : "Get the App"}
               </GlassButton>
             </motion.div>
 
-            {/* Install platform badges */}
+            {/* Platform badges */}
             <motion.div variants={itemVariants} className="flex items-center gap-3 opacity-60">
-              {[{ icon: Monitor, label: "Desktop" }, { icon: Smartphone, label: "Android" }, { icon: Apple, label: "iOS" }].map(({ icon: Icon, label }) => (
-                <button key={label} onClick={() => setShowInstall(true)} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-colors ${ isDark ? "border-white/10 text-slate-400 hover:text-white hover:border-white/20" : "border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300"}`}>
+              {[
+                { icon: Monitor, label: "Desktop", action: handleInstallClick },
+                { icon: Smartphone, label: "Android", action: handleInstallClick },
+                { icon: Apple, label: "iOS", action: () => setShowIOSGuide(true) },
+              ].map(({ icon: Icon, label, action }) => (
+                <button key={label} onClick={action} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-colors ${ isDark ? "border-white/10 text-slate-400 hover:text-white hover:border-white/20" : "border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300"}`}>
                   <Icon size={12}/>{label}
                 </button>
               ))}
@@ -446,14 +454,8 @@ export default function Landing() {
       </div>
 
       <AnimatePresence>
-        {showInstall && (
-          <InstallModal
-            isDark={isDark}
-            onClose={() => setShowInstall(false)}
-            isInstallable={isInstallable}
-            promptInstall={promptInstall}
-            isIOS={isIOS}
-          />
+        {showIOSGuide && (
+          <IOSGuide isDark={isDark} onClose={() => setShowIOSGuide(false)} />
         )}
       </AnimatePresence>
     </div>
