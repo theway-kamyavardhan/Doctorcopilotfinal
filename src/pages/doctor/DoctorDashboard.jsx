@@ -310,7 +310,7 @@ function DoctorDashboardMobile({
           <div className="flex items-center justify-between mb-3 px-1">
             <h2 className="text-xl font-bold">Overview</h2>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
             {/* Total Cases */}
             <div className={`p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
               <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">

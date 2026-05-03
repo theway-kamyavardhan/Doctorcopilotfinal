@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
+import MobileSparkline from "../../components/ui/MobileSparkline";
 import { Activity, ArrowRight, Filter, LoaderCircle, Sparkles, TrendingUp } from "lucide-react";
 import {
   CartesianGrid,
@@ -34,6 +35,8 @@ function badgeClasses(isDark, tone = "neutral") {
   return isDark ? "bg-white/5 text-slate-300" : "bg-slate-100 text-slate-700";
 }
 
+// ─── Native Mobile Port (Apple Health Style) ─────────────────────────────────
+
 function TrendsMobile({
   isDark,
   trends,
@@ -50,142 +53,151 @@ function TrendsMobile({
   selectedParameter,
   setSelectedParameter,
 }) {
+  const chartData = activeSeries.map(p => p.value);
+  const isPositive = activeMetric?.direction === 'increasing';
+  const isNegative = activeMetric?.direction === 'decreasing';
+  const strokeColor = isDark ? (isPositive ? '#34d399' : isNegative ? '#fb923c' : '#60a5fa') : (isPositive ? '#16a34a' : isNegative ? '#ea580c' : '#2563eb');
+
   return (
-    <div className="mobile-page-stack">
-      <section className={`mobile-hero-card ${isDark ? "bg-slate-950 text-white" : "bg-white text-slate-950"}`}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className={`text-[0.68rem] font-black uppercase ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
-              Trend Intelligence
-            </div>
-            <h1 className="mt-2">{activeParameter ? formatParameterLabel(activeParameter) : "Trends"}</h1>
-            <p className={isDark ? "text-slate-300" : "text-slate-600"}>{parameterSummary}</p>
-          </div>
-          <div className={`mobile-mini-count ${isDark ? "bg-white/[0.08]" : "bg-slate-100"}`}>
-            <strong>{trends?.reports?.length || 0}</strong>
-            <span>reports</span>
-          </div>
-        </div>
-      </section>
+    <div className={`flex flex-col min-h-[100svh] w-full font-sans antialiased ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'} pb-24`}>
+      <header className="px-4 pt-12 pb-6">
+        <h1 className="text-4xl font-bold tracking-tight">Trends</h1>
+        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          Track your health parameters over time.
+        </p>
+      </header>
 
       {trendsError ? (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+        <div className="mx-4 mb-6 rounded-2xl bg-red-100 p-4 text-sm font-semibold text-red-700">
           {trendsError.message || "Failed to load trends."}
         </div>
       ) : null}
 
-      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-        <div className="mobile-section-title">
-          <Filter size={18} />
-          Marker
-        </div>
-        <div className="mobile-chip-row mt-4">
-          {parameters.map((parameter) => (
-            <button
-              key={parameter}
-              type="button"
-              onClick={() => setSelectedParameter(parameter)}
-              className={`mobile-filter-chip ${
-                (selectedParameter || activeParameter) === parameter
-                  ? "mobile-filter-active"
-                  : isDark
-                    ? "bg-white/[0.05] text-slate-300"
-                    : "bg-slate-100 text-slate-700"
-              }`}
-            >
-              {formatParameterLabel(parameter)}
-            </button>
-          ))}
+      {/* Parameter Selector */}
+      <section className="mb-6">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-2 px-4 hide-scrollbar">
+          {parameters.map((parameter) => {
+            const isActive = selectedParameter === parameter || activeParameter === parameter;
+            return (
+              <button
+                key={parameter}
+                onClick={() => setSelectedParameter(parameter)}
+                style={{ touchAction: 'manipulation' }}
+                className={`shrink-0 snap-center px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                  isActive 
+                    ? (isDark ? 'bg-white text-black' : 'bg-black text-white') 
+                    : (isDark ? 'bg-[#1C1C1E] text-gray-400' : 'bg-[#E5E5EA] text-gray-600')
+                }`}
+              >
+                {formatParameterLabel(parameter)}
+              </button>
+            );
+          })}
         </div>
       </section>
 
       {activeParameter ? (
-        <>
-          <section className="mobile-stat-grid">
-            <div className={`mobile-stat-card ${isDark ? "bg-blue-500/10 text-blue-200" : "bg-blue-50 text-blue-700"}`}>
-              <div className="text-[0.68rem] font-black uppercase opacity-70">Latest</div>
-              <div className="mt-2 text-2xl font-black leading-none">{latestPoint ? `${latestPoint.value} ${latestPoint.unit || ""}` : "--"}</div>
-              <div className="mt-2 text-xs font-semibold opacity-75">{latestPoint?.status || "status pending"}</div>
-            </div>
-            <div className={`mobile-stat-card ${isDark ? "bg-emerald-500/10 text-emerald-200" : "bg-emerald-50 text-emerald-700"}`}>
-              <div className="text-[0.68rem] font-black uppercase opacity-70">Direction</div>
-              <div className="mt-2 text-2xl font-black leading-none">{getTrendArrow(activeMetric?.direction)} {activeMetric?.direction || "--"}</div>
-              <div className="mt-2 text-xs font-semibold opacity-75">{activeMetric?.change || "change pending"}</div>
-            </div>
-            <div className={`mobile-stat-card ${isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-700"}`}>
-              <div className="text-[0.68rem] font-black uppercase opacity-70">Range</div>
-              <div className="mt-2 text-2xl font-black leading-none">{minValue ?? "--"} - {maxValue ?? "--"}</div>
-              <div className="mt-2 text-xs font-semibold opacity-75">recorded values</div>
-            </div>
-            <Link to={`/patient/parameter/${activeParameter}`} className={`mobile-stat-card ${isDark ? "bg-cyan-500/10 text-cyan-200" : "bg-cyan-50 text-cyan-700"}`}>
-              <div className="text-[0.68rem] font-black uppercase opacity-70">Detail</div>
-              <div className="mt-2 flex items-center gap-2 text-2xl font-black leading-none">
-                Open <ArrowRight size={18} />
+        <div className="space-y-6 px-4">
+          
+          {/* Main Chart Card */}
+          <section className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
+            <div className="mb-4">
+              <div className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider">
+                {formatParameterLabel(activeParameter)}
               </div>
-              <div className="mt-2 text-xs font-semibold opacity-75">full history</div>
-            </Link>
+              <div className="text-4xl font-bold tabular-nums mt-1 flex items-baseline gap-1">
+                {latestPoint ? latestPoint.value : "--"}
+                <span className="text-sm font-medium text-gray-500">{latestPoint?.unit || ""}</span>
+              </div>
+              <div className="text-sm font-medium text-gray-500 mt-1">
+                {latestPoint?.date || "No date"}
+              </div>
+            </div>
+
+            <div className="h-40 w-full mt-6">
+              <MobileSparkline 
+                data={chartData} 
+                color={strokeColor} 
+                height={160} 
+                strokeWidth={3}
+              />
+            </div>
+            
+            <div className={`mt-4 pt-4 border-t ${isDark ? 'border-[#38383A]' : 'border-[#E5E5EA]'} grid grid-cols-3 gap-2 text-center`}>
+              <div>
+                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Min</div>
+                <div className="text-lg font-bold mt-1 tabular-nums">{minValue ?? "--"}</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Max</div>
+                <div className="text-lg font-bold mt-1 tabular-nums">{maxValue ?? "--"}</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Trend</div>
+                <div className="text-lg font-bold mt-1 uppercase">{getTrendArrow(activeMetric?.direction)} {activeMetric?.direction || "--"}</div>
+              </div>
+            </div>
           </section>
 
-          <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-            <div className="mobile-section-title">
-              <TrendingUp size={18} />
-              Chart
-            </div>
-            <div className="mt-4 h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trends?.table || []} margin={{ top: 8, right: 8, left: -18, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e293b" : "#e2e8f0"} />
-                  <XAxis dataKey="date" stroke={isDark ? "#94a3b8" : "#64748b"} tick={{ fontSize: 10 }} />
-                  <YAxis stroke={isDark ? "#94a3b8" : "#64748b"} tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey={activeParameter} stroke="#2563eb" strokeWidth={3} dot={{ r: 3 }} connectNulls />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-
-          <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-            <div className="mobile-section-title">
-              <Activity size={18} />
-              Values
-            </div>
-            <div className="mt-4 space-y-3">
-              {activeSeries.map((point, index) => (
-                <div key={`${activeParameter}-${point.date}-${index}`} className={`mobile-timeline-row ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
-                  <div>
-                    <strong>{point.value} {point.unit || ""}</strong>
-                    <span>{point.date}</span>
-                  </div>
-                  <span className="text-xs font-black">{index === activeSeries.length - 1 ? activeMetric?.direction || "latest" : point.status || "history"}</span>
+          {/* AI Insights Card */}
+          {intelligenceBullets.length > 0 && (
+            <section>
+              <h2 className="text-xl font-bold mb-3 px-1">AI Insights</h2>
+              <div className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
+                <div className="space-y-4">
+                  {intelligenceBullets.map((item, index) => (
+                    <div key={index} className="flex gap-3">
+                      <Sparkles size={18} className={`shrink-0 mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
+                      <p className={`text-[15px] leading-snug ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        {item}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+            </section>
+          )}
+
+          {/* History List */}
+          <section>
+            <h2 className="text-xl font-bold mb-3 px-1">History</h2>
+            <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
+              <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
+                {[...activeSeries].reverse().map((point, index) => (
+                  <div key={`${activeParameter}-${point.date}-${index}`} className="p-4 flex justify-between items-center active-feedback">
+                    <div>
+                      <div className="text-[15px] font-bold tabular-nums">
+                        {point.value} <span className="text-xs font-normal text-gray-500">{point.unit || ""}</span>
+                      </div>
+                      <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {point.date}
+                      </div>
+                    </div>
+                    <div className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
+                      point.status === 'low' || point.status === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+                    }`}>
+                      {point.status || 'stable'}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
-        </>
-      ) : null}
 
-      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
-        <div className="mobile-section-title">
-          <Sparkles size={18} />
-          AI Reading
         </div>
-        <div className="mt-4 space-y-3">
-          {intelligenceBullets.length ? (
-            intelligenceBullets.map((item, index) => (
-              <div key={`${item}-${index}`} className={`rounded-2xl px-4 py-3 text-sm leading-6 ${isDark ? "bg-cyan-500/10 text-slate-200" : "bg-blue-50 text-slate-700"}`}>
-                {item}
-              </div>
-            ))
-          ) : (
-            <div className={`${isDark ? "text-slate-500" : "text-slate-400"} text-sm`}>
-              Upload more reports to generate comparative intelligence.
-            </div>
-          )}
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <Activity size={48} className={`mb-4 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
+          <p className={`text-lg font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            No parameter data yet. Upload more reports to see trends.
+          </p>
         </div>
-      </section>
+      )}
     </div>
   );
 }
+
+// ─── Desktop Components ───────────────────────────────────────────────────────
 
 export default function Trends() {
   const { isDark } = useTheme();

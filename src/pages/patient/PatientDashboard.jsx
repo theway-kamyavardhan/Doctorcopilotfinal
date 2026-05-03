@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Activity, ArrowRight, CalendarDays, Download, FileText, LoaderCircle, Microscope, TrendingUp, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
+import MobileSparkline from "../../components/ui/MobileSparkline";
 import HealthBar from "../../components/patient/HealthBar";
 import SignalStream from "../../components/patient/SignalStream";
 import PatientContextPanel from "../../components/patient/PatientContextPanel";
@@ -249,6 +250,13 @@ function PatientDashboardMobile({
                     metric.status === 'low' || metric.status === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
                   }`}>
                     {metric.status || 'stable'}
+                  </div>
+                  <div className="mt-4 mb-1">
+                    <MobileSparkline 
+                      data={metric.history || []} 
+                      color={metric.status === 'low' || metric.status === 'high' ? '#f97316' : '#22c55e'} 
+                      height={32} 
+                    />
                   </div>
                 </div>
               ))}
