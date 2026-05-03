@@ -7,6 +7,8 @@ import ThemeReveal from "./components/ui/ThemeReveal";
 import ThemeToggle from "./components/ui/ThemeToggle";
 import Login from "./components/auth/Login";
 import Landing from "./components/landing/Landing";
+import PublicInfoPage from "./components/landing/PublicInfoPage";
+import SEOManager from "./components/seo/SEOManager";
 import swrConfig from "./lib/swr";
 import useViewport from "./hooks/useViewport";
 
@@ -134,6 +136,10 @@ function AnimatedRoutes() {
         />
 
         <Route path="/register/patient" element={<RegisterPatient />} />
+        <Route path="/privacy" element={<PublicInfoPage type="privacy" />} />
+        <Route path="/terms" element={<PublicInfoPage type="terms" />} />
+        <Route path="/support" element={<PublicInfoPage type="support" />} />
+        <Route path="/hipaa-readiness" element={<PublicInfoPage type="hipaa" />} />
 
         {/* NESTED PATIENT ROUTES */}
         <Route
@@ -206,6 +212,7 @@ export default function App() {
     <ThemeProvider>
       <SWRConfig value={swrConfig}>
         <BrowserRouter>
+          <SEOManager />
           <ScrollToTop />
           <div className="bg-[var(--bg-primary)] min-h-screen text-[var(--text-primary)] font-sans antialiased overflow-x-hidden transition-colors duration-700">
             <ThemeReveal />

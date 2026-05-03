@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Download } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
@@ -108,7 +108,7 @@ function MobileLanding({ onEnter, isDark }) {
           </button>
         </header>
 
-        <main className="flex w-full min-w-0 max-w-full flex-1 flex-col justify-center py-8">
+        <main className="flex w-full min-w-0 max-w-full flex-1 flex-col justify-center py-6">
           <div className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-[0.68rem] font-black uppercase tracking-[0.22em] ${
             isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-100 text-blue-700"
           }`}>
@@ -116,7 +116,7 @@ function MobileLanding({ onEnter, isDark }) {
             Precision Medical AI
           </div>
 
-          <h1 className="mt-6 max-w-[calc(100vw-2rem)] text-[clamp(2.35rem,11.2vw,3.1rem)] font-black leading-[1.02] tracking-normal">
+          <h1 className="mt-5 max-w-[calc(100vw-2rem)] text-[clamp(2.2rem,10.8vw,3rem)] font-black leading-[1.02] tracking-normal">
             <span className="block">Understand</span>
             <span className="block">your health.</span>
             <span className={`mt-3 block ${isDark ? "text-cyan-300" : "text-blue-600"}`}>
@@ -127,11 +127,11 @@ function MobileLanding({ onEnter, isDark }) {
             </span>
           </h1>
 
-          <p className={`mt-6 max-w-sm text-base font-semibold leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-            Upload reports, track trends, and review patient context in a mobile-first clinical workspace.
+          <p className={`mt-5 max-w-sm text-base font-semibold leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            DoctorCopilot helps you upload medical reports, track health trends, and review patient context in a mobile-first clinical workspace.
           </p>
 
-          <div className="mt-8 grid w-[calc(100vw-3rem)] min-w-0 max-w-full gap-3 justify-self-start">
+          <div className="mt-6 grid w-full min-w-0 max-w-full gap-3">
             <button
               type="button"
               onClick={onEnter}
@@ -149,12 +149,31 @@ function MobileLanding({ onEnter, isDark }) {
               ))}
             </div>
           </div>
+
+          <section className={`mt-4 grid w-full max-w-full gap-2 overflow-hidden rounded-2xl border p-3 ${isDark ? "border-white/10 bg-white/[0.04]" : "border-white/70 bg-white/80"}`}>
+            <div className={`text-[0.62rem] font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+              HIPAA-aware roadmap
+            </div>
+            <p className={`text-xs font-semibold leading-5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              Demo data is locked for review. Real PHI requires encryption, audit logs, consent, BAAs, and policy review.
+            </p>
+            <Link to="/hipaa-readiness" className={`text-xs font-black ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+              Read readiness plan
+            </Link>
+          </section>
         </main>
 
-        <footer className={`w-full max-w-full rounded-2xl px-4 py-4 text-center text-[0.62rem] font-black uppercase tracking-[0.22em] ${
+        <footer className={`w-full max-w-full rounded-2xl px-4 py-4 text-center ${
           isDark ? "bg-white/[0.04] text-slate-500" : "bg-white/70 text-slate-400"
         }`}>
-          Clinical intelligence for demo review
+          <div className="text-[0.62rem] font-black uppercase tracking-[0.18em]">
+            Clinical intelligence for demo review
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[0.68rem] font-black uppercase tracking-[0.14em]">
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+            <Link to="/support">Support</Link>
+          </div>
         </footer>
       </div>
     </div>
@@ -344,6 +363,27 @@ export default function Landing() {
               </GlassText>
             </motion.div>
 
+            <motion.section variants={itemVariants} className="w-full max-w-4xl">
+              <GlassText className="!rounded-3xl px-5 py-5 sm:px-8">
+                <div className="grid gap-4 text-left md:grid-cols-3">
+                  {[
+                    ["Medical Report AI", "Extract and organize report findings into readable health context."],
+                    ["Health Trend Timeline", "Track changing markers across stored reports and patient history."],
+                    ["Doctor Review Workflow", "Give clinicians source-linked context before reviewing a case."],
+                  ].map(([title, body]) => (
+                    <div key={title}>
+                      <h2 className={`text-sm font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+                        {title}
+                      </h2>
+                      <p className={`mt-2 text-sm font-semibold leading-6 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                        {body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </GlassText>
+            </motion.section>
+
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-5 pt-4">
               <GlassButton onClick={handleEnter} primary className="px-14 py-5 !rounded-2xl text-base !tracking-wide">
                 Start System
@@ -372,14 +412,19 @@ export default function Landing() {
                 DoctorCopilot © 2026 · <span className={isDark ? "text-[var(--gold-primary)] opacity-60" : ""}>Futuristic Clinical Intelligence</span>
               </span>
               <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8">
-                {["Terms", "Privacy", "Support"].map((item) => (
-                  <a
-                    key={item}
-                    href="#"
+                {[
+                  { label: "Terms", to: "/terms" },
+                  { label: "Privacy", to: "/privacy" },
+                  { label: "Support", to: "/support" },
+                  { label: "HIPAA Readiness", to: "/hipaa-readiness" },
+                ].map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to}
                     className={`text-[0.65rem] font-black uppercase tracking-widest transition-colors ${isDark ? "text-slate-500 hover:text-[var(--cyan-primary)]" : "text-slate-400 hover:text-slate-700"}`}
                   >
-                    {item}
-                  </a>
+                    {item.label}
+                  </Link>
                 ))}
               </div>
             </div>

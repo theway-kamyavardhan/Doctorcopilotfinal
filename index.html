@@ -6,12 +6,32 @@
     <!-- Viewport — safe-area support for iOS notch/Dynamic Island -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- PWA Primary Meta -->
-    <title>DoctorCopilot</title>
-    <meta name="description" content="Precision Medical AI — Transform complex medical reports into actionable health intelligence for patients and clinicians." />
+    <!-- Primary SEO + PWA Meta -->
+    <title>DoctorCopilot | Medical Report AI, Health Trends & Doctor Review</title>
+    <meta name="description" content="DoctorCopilot turns medical reports into patient-friendly health timelines, trend intelligence, and doctor review workflows." />
+    <meta name="keywords" content="DoctorCopilot, doctor copilot, medical report AI, health report analysis, patient health timeline, clinical intelligence, doctor review software, AI medical reports" />
+    <meta name="author" content="DoctorCopilot" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="application-name" content="DoctorCopilot" />
     <meta name="theme-color" content="#02040a" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <link rel="canonical" href="https://doctorcopilot.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="DoctorCopilot | Medical Report AI, Health Trends & Doctor Review" />
+    <meta property="og:description" content="DoctorCopilot turns medical reports into patient-friendly health timelines, trend intelligence, and doctor review workflows." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://doctorcopilot.app/" />
+    <meta property="og:site_name" content="DoctorCopilot" />
+    <meta property="og:image" content="https://doctorcopilot.app/icons/icon-512.png" />
+    <meta property="og:image:alt" content="DoctorCopilot medical AI app icon" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DoctorCopilot | Medical Report AI, Health Trends & Doctor Review" />
+    <meta name="twitter:description" content="DoctorCopilot turns medical reports into patient-friendly health timelines, trend intelligence, and doctor review workflows." />
+    <meta name="twitter:image" content="https://doctorcopilot.app/icons/icon-512.png" />
 
     <!-- PWA Standalone (Android + Desktop Chrome) -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -38,8 +58,41 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "DoctorCopilot",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Web, iOS, Android",
+        "url": "https://doctorcopilot.app/",
+        "description": "DoctorCopilot turns medical reports into patient-friendly health timelines, trend intelligence, and doctor review workflows.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "featureList": [
+          "Medical report intelligence",
+          "Patient health timeline",
+          "Health trend analysis",
+          "Doctor review workflow",
+          "HIPAA-aware architecture roadmap"
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <section>
+        <h1>DoctorCopilot</h1>
+        <p>
+          DoctorCopilot is a medical report AI demo that turns health reports into
+          patient timelines, trend intelligence, and doctor review workflows.
+        </p>
+      </section>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
