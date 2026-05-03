@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Download } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Download, Monitor, Smartphone, Apple, Share, Plus, X, ChevronRight } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import usePWA from "../../hooks/usePWA";
 import GlassSurface from "../ui/GlassSurface";
@@ -96,12 +97,103 @@ function MobileLanding({ onEnter, isDark }) {
 
 // ─── Desktop Components ───────────────────────────────────────────────────────
 
+// ─── Install modal ───────────────────────────────────────────────────────────
+function InstallModal({ isDark, onClose, isInstallable, promptInstall, isIOS }) {
+  const handleInstall = async () => {
+    if (isInstallable) { await promptInstall(); onClose(); }
+  };
+
+  const platforms = [
+    {
+      id: "desktop",
+      label: "Desktop",
+      icon: Monitor,
+      desc: isInstallable ? "Click below — your browser will prompt you to install." : "Open in Chrome or Edge on desktop, then click the install button in the address bar.",
+      action: isInstallable ? handleInstall : null,
+      actionLabel: isInstallable ? "Install Now" : "Open in Chrome / Edge",
+    },
+    {
+      id: "android",
+      label: "Android",
+      icon: Smartphone,
+      desc: "Open in Chrome for Android and tap the banner, or tap ⋮ → 'Add to Home screen'.",
+      steps: ["Open in Chrome for Android", "Tap the ⋮ menu (top right)", "Tap 'Add to Home screen'", "Tap 'Add'"],
+    },
+    {
+      id: "ios",
+      label: "iPhone / iPad",
+      icon: Apple,
+      desc: "Open in Safari, tap the Share icon, then 'Add to Home Screen'.",
+      steps: ["Open in Safari (not Chrome)", "Tap the Share icon (□↑)", "Scroll down and tap 'Add to Home Screen'", "Tap 'Add'"],
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0, y: 20 }}
+        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+        onClick={(e) => e.stopPropagation()}
+        className={`relative w-full max-w-lg rounded-3xl border p-6 ${
+          isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"
+        } shadow-2xl`}
+      >
+        <button onClick={onClose} className={`absolute right-4 top-4 rounded-full p-1.5 ${ isDark ? "text-slate-400 hover:bg-white/10" : "text-slate-400 hover:bg-slate-100"}`}><X size={18}/></button>
+        <div className="flex items-center gap-3 mb-5">
+          <div className={`rounded-2xl p-3 ${ isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-50 text-blue-600"}`}><Download size={20}/></div>
+          <div>
+            <div className={`font-black text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Install DoctorCopilot</div>
+            <div className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>Works on Desktop, Android &amp; iOS</div>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {platforms.map(({ id, label, icon: Icon, desc, steps, action, actionLabel }) => (
+            <div key={id} className={`rounded-2xl border p-4 ${ isDark ? "border-white/8 bg-white/4" : "border-slate-100 bg-slate-50"}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Icon size={16} className={isDark ? "text-cyan-400" : "text-blue-600"}/>
+                <span className={`text-sm font-black ${isDark ? "text-white" : "text-slate-800"}`}>{label}</span>
+              </div>
+              {steps ? (
+                <ol className="space-y-1">
+                  {steps.map((s, i) => (
+                    <li key={i} className={`flex items-start gap-2 text-xs ${ isDark ? "text-slate-300" : "text-slate-600"}`}>
+                      <span className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${ isDark ? "bg-cyan-500/20 text-cyan-300" : "bg-blue-100 text-blue-700"}`}>{i+1}</span>
+                      {s}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className={`text-xs mb-3 ${ isDark ? "text-slate-400" : "text-slate-500"}`}>{desc}</p>
+              )}
+              {action && (
+                <button onClick={action} className={`mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors ${ isDark ? "bg-cyan-500/15 text-cyan-300 hover:bg-cyan-500/25" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+                  <Download size={14}/> {actionLabel}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Landing ──────────────────────────────────────────────────────────────────
 export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  
+  const [showInstall, setShowInstall] = useState(false);
   const { allowFluid } = useAdaptiveVisuals();
-  const { isInstallable, promptInstall } = usePWA();
+  const { isInstallable, promptInstall, isIOS } = usePWA();
 
   const handleEnter = () => {
     navigate("/login");
@@ -306,15 +398,22 @@ export default function Landing() {
                 </svg>
               </GlassButton>
 
-              {isInstallable && (
-                <GlassButton
-                  onClick={promptInstall}
-                  className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
-                >
-                  <Download className="w-5 h-5 inline-block" />
-                  Install App
-                </GlassButton>
-              )}
+              <GlassButton
+                onClick={() => setShowInstall(true)}
+                className="px-10 py-5 !rounded-2xl text-base !tracking-wide"
+              >
+                <Download className="w-5 h-5 inline-block" />
+                Install App
+              </GlassButton>
+            </motion.div>
+
+            {/* Install platform badges */}
+            <motion.div variants={itemVariants} className="flex items-center gap-3 opacity-60">
+              {[{ icon: Monitor, label: "Desktop" }, { icon: Smartphone, label: "Android" }, { icon: Apple, label: "iOS" }].map(({ icon: Icon, label }) => (
+                <button key={label} onClick={() => setShowInstall(true)} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-colors ${ isDark ? "border-white/10 text-slate-400 hover:text-white hover:border-white/20" : "border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300"}`}>
+                  <Icon size={12}/>{label}
+                </button>
+              ))}
             </motion.div>
           </motion.div>
         </main>
@@ -345,6 +444,18 @@ export default function Landing() {
           </GlassText>
         </footer>
       </div>
+
+      <AnimatePresence>
+        {showInstall && (
+          <InstallModal
+            isDark={isDark}
+            onClose={() => setShowInstall(false)}
+            isInstallable={isInstallable}
+            promptInstall={promptInstall}
+            isIOS={isIOS}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
