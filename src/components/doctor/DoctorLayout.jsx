@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Settings,
   Stethoscope,
+  UserRoundSearch,
   X,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
@@ -111,52 +112,73 @@ function DoctorMobileLayout({
   setMobileMenuOpen,
 }) {
   const primaryItems = NAV_ITEMS.slice(0, 4);
+  const activeItem = NAV_ITEMS.find((item) => location.pathname.startsWith(item.path)) || NAV_ITEMS[0];
 
   return (
     <div
       className={`min-h-screen main-mobile ${
         isDark
-          ? "bg-[#07090f] text-white"
-          : "bg-[#f1f4f8] text-slate-900"
+          ? "bg-[#070910] text-white"
+          : "bg-[#f6f7fb] text-slate-950"
       }`}
     >
-      {/* ── Compact header ── */}
       <div
-        className={`sticky top-0 z-40 ${
+        className={`mobile-app-header ${
           isDark
-            ? "bg-[#07090f] border-b border-white/[0.06]"
-            : "bg-[#f1f4f8] border-b border-slate-200/60"
+            ? "bg-[#070910]/88"
+            : "bg-[#f6f7fb]/88"
         }`}
-        style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))`, paddingBottom: "0.75rem", paddingLeft: "1rem", paddingRight: "1rem" }}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={`h-8 w-8 rounded-xl flex items-center justify-center text-white font-black text-sm ${
-                isDark
-                  ? "bg-gradient-to-br from-violet-500 to-indigo-600"
-                  : "bg-gradient-to-br from-violet-500 to-indigo-600"
-              }`}
-            >
-              {doctorName.charAt(0)}
-            </div>
-            <div>
-              <div className={`text-[10px] font-black uppercase tracking-[0.22em] leading-none ${
-                isDark ? "text-violet-400/70" : "text-violet-600/70"
-              }`}>Doctor</div>
-              <div className="text-sm font-black tracking-tight leading-tight truncate max-w-[160px]">{doctorName}</div>
-            </div>
+        <div className="mobile-top-card">
+          <div className="mobile-role-mark bg-gradient-to-br from-violet-500 via-indigo-500 to-blue-600">
+            {React.createElement(activeItem.icon, { size: 19 })}
+          </div>
+          <div className="min-w-0">
+            <span className={`mobile-eyebrow ${
+              isDark ? "text-violet-400/75" : "text-violet-600/75"
+            }`}>Doctor workspace</span>
+            <div className="mobile-title-line">{doctorName}</div>
           </div>
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className={`rounded-full p-2 ${
+            className={`mobile-context-pill inline-flex items-center justify-center ${
               isDark ? "bg-white/8 text-slate-300" : "bg-white text-slate-600 border border-slate-200"
             }`}
             aria-label="Toggle doctor menu"
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
+        </div>
+
+        <div className="mobile-quick-strip">
+          <Link
+            to="/doctor/cases"
+            className={`mobile-quick-action ${
+              isDark ? "bg-violet-400/12 text-violet-200" : "bg-violet-600 text-white"
+            }`}
+          >
+            <UserRoundSearch size={15} />
+            Queue
+          </Link>
+          <Link
+            to="/doctor/chats"
+            className={`mobile-quick-action ${
+              isDark ? "bg-white/7 text-slate-200" : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            <MessageSquare size={15} />
+            Chats
+          </Link>
+          <Link
+            to="/doctor/calendar"
+            className={`mobile-quick-action ${
+              isDark ? "bg-white/7 text-slate-200" : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            <CalendarDays size={15} />
+            Calendar
+          </Link>
         </div>
       </div>
 
@@ -177,12 +199,11 @@ function DoctorMobileLayout({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
-              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-[2rem] ${
+              className={`mobile-menu-sheet ${
                 isDark
-                  ? "bg-[#0f1218] border-t border-white/10"
-                  : "bg-white border-t border-slate-200"
+                  ? "bg-[#10131d] border-t border-white/10 text-white"
+                  : "bg-white border-t border-slate-200 text-slate-950"
               }`}
-              style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
             >
               <div className="flex justify-center pt-3 pb-2">
                 <div className={`h-1 w-10 rounded-full ${isDark ? "bg-white/20" : "bg-slate-300"}`} />
@@ -209,7 +230,7 @@ function DoctorMobileLayout({
                 }`}>Navigate</p>
               </div>
 
-              <nav className="grid grid-cols-2 gap-2.5 px-4 pb-3">
+              <nav className="mobile-menu-grid px-1 pb-3">
                 {NAV_ITEMS.map((item) => {
                   const isActive = location.pathname.startsWith(item.path);
                   const Icon = item.icon;
@@ -218,7 +239,7 @@ function DoctorMobileLayout({
                       key={item.path}
                       to={item.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all ${
+                      className={`mobile-menu-link transition-all ${
                         isActive
                           ? isDark
                             ? "bg-violet-500/15 text-violet-300"
@@ -235,7 +256,7 @@ function DoctorMobileLayout({
                 })}
               </nav>
 
-              <div className="px-4">
+              <div className="px-1">
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -252,22 +273,19 @@ function DoctorMobileLayout({
         )}
       </AnimatePresence>
 
-      {/* ── Page content ── */}
       <main className="px-3 pt-3">
         <AiSessionBanner />
         <Outlet />
       </main>
 
-      {/* ── Bottom tab bar ── */}
       <div
-        className={`fixed-bottom-safe z-40 ${
+        className={`mobile-bottom-tabs ${
           isDark
-            ? "bg-[#07090f]/95 border-t border-white/[0.07]"
+            ? "bg-[#080b13]/92 border-t border-white/[0.07]"
             : "bg-white/95 border-t border-slate-200"
         }`}
-        style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
       >
-        <nav className="relative flex items-stretch px-2" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <nav>
           {primaryItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             const Icon = item.icon;
@@ -275,7 +293,7 @@ function DoctorMobileLayout({
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${
+                className={`mobile-tab-item transition-colors ${
                   isActive
                     ? isDark
                       ? "text-violet-400"
@@ -288,7 +306,7 @@ function DoctorMobileLayout({
                 {isActive && (
                   <motion.div
                     layoutId="mobile-doctor-tab"
-                    className={`absolute top-0 inset-x-2 h-0.5 rounded-full ${
+                    className={`absolute top-1 inset-x-5 h-1 rounded-full ${
                       isDark ? "bg-violet-400" : "bg-violet-500"
                     }`}
                     transition={{ type: "spring", stiffness: 400, damping: 34 }}
@@ -306,7 +324,7 @@ function DoctorMobileLayout({
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${
+            className={`mobile-tab-item transition-colors ${
               mobileMenuOpen
                 ? isDark ? "text-violet-400" : "text-violet-600"
                 : isDark ? "text-slate-500" : "text-slate-400"
@@ -315,7 +333,7 @@ function DoctorMobileLayout({
             {mobileMenuOpen && (
               <motion.div
                 layoutId="mobile-doctor-tab"
-                className={`absolute top-0 inset-x-2 h-0.5 rounded-full ${
+                className={`absolute top-1 inset-x-5 h-1 rounded-full ${
                   isDark ? "bg-violet-400" : "bg-violet-500"
                 }`}
                 transition={{ type: "spring", stiffness: 400, damping: 34 }}

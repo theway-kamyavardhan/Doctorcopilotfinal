@@ -8,6 +8,7 @@ import LiquidEther from "../ui/LiquidEther";
 import RefractionFilter from "../ui/RefractionFilter";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
 import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
+import useViewport from "../../hooks/useViewport";
 
 function GlassButton({ onClick, children, primary = false, className = "" }) {
   const { isDark } = useTheme();
@@ -63,9 +64,107 @@ function GlassText({ children, className = "" }) {
 
 const ease = [0.22, 1, 0.36, 1];
 
+function MobileLanding({ onEnter, isDark }) {
+  return (
+    <div
+      className={`relative min-h-[100svh] w-full max-w-[100vw] overflow-hidden px-4 pb-8 pt-4 ${
+        isDark ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-950"
+      }`}
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isDark
+              ? "radial-gradient(circle at 20% 12%, rgba(34,211,238,0.16), transparent 34%), radial-gradient(circle at 88% 28%, rgba(212,175,55,0.12), transparent 38%)"
+              : "radial-gradient(circle at 20% 12%, rgba(37,99,235,0.14), transparent 34%), radial-gradient(circle at 88% 28%, rgba(124,58,237,0.12), transparent 38%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 flex min-h-[calc(100svh-3rem)] w-full min-w-0 max-w-full flex-col">
+        <header
+          className={`flex w-full max-w-full items-center justify-between gap-3 rounded-[1.35rem] border px-4 py-4 shadow-sm ${
+            isDark
+              ? "border-white/10 bg-white/[0.06]"
+              : "border-white/70 bg-white/80"
+          }`}
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="h-9 w-9 shrink-0 rounded-2xl bg-gradient-to-tr from-blue-500 via-violet-500 to-rose-400" />
+            <div className="min-w-0">
+              <div className="truncate text-lg font-black">DoctorCopilot</div>
+              <div className={`text-[0.62rem] font-black uppercase tracking-[0.18em] ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+                Medical AI
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onEnter}
+            className="hidden shrink-0 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-black text-white min-[420px]:inline-flex"
+          >
+            Login
+          </button>
+        </header>
+
+        <main className="flex w-full min-w-0 max-w-full flex-1 flex-col justify-center py-8">
+          <div className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-[0.68rem] font-black uppercase tracking-[0.22em] ${
+            isDark ? "bg-cyan-500/10 text-cyan-300" : "bg-blue-100 text-blue-700"
+          }`}>
+            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+            Precision Medical AI
+          </div>
+
+          <h1 className="mt-6 max-w-[calc(100vw-2rem)] text-[clamp(2.35rem,11.2vw,3.1rem)] font-black leading-[1.02] tracking-normal">
+            <span className="block">Understand</span>
+            <span className="block">your health.</span>
+            <span className={`mt-3 block ${isDark ? "text-cyan-300" : "text-blue-600"}`}>
+              Not just your
+            </span>
+            <span className={`block ${isDark ? "text-cyan-300" : "text-blue-600"}`}>
+              reports.
+            </span>
+          </h1>
+
+          <p className={`mt-6 max-w-sm text-base font-semibold leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            Upload reports, track trends, and review patient context in a mobile-first clinical workspace.
+          </p>
+
+          <div className="mt-8 grid w-[calc(100vw-3rem)] min-w-0 max-w-full gap-3 justify-self-start">
+            <button
+              type="button"
+              onClick={onEnter}
+              className="flex min-h-14 w-full max-w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-4 text-base font-black text-white shadow-[0_18px_42px_rgba(37,99,235,0.28)]"
+            >
+              Start System
+            </button>
+            <div className={`grid w-full min-w-0 max-w-full grid-cols-2 gap-2 text-center text-[0.72rem] font-black ${
+              isDark ? "text-slate-300" : "text-slate-600"
+            }`}>
+              {["Reports", "Trends"].map((item) => (
+                <div key={item} className={`min-w-0 truncate rounded-2xl px-2 py-3 ${isDark ? "bg-white/[0.06]" : "bg-white"}`}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        <footer className={`w-full max-w-full rounded-2xl px-4 py-4 text-center text-[0.62rem] font-black uppercase tracking-[0.22em] ${
+          isDark ? "bg-white/[0.04] text-slate-500" : "bg-white/70 text-slate-400"
+        }`}>
+          Clinical intelligence for demo review
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const { isMobile } = useViewport();
   const { allowFluid } = useAdaptiveVisuals();
   const { isInstallable, promptInstall } = usePWA();
 
@@ -94,6 +193,10 @@ export default function Landing() {
   const etherColors = isDark
     ? ["#aa771c", "#d4af37", "#f3e5ab", "#bf953f"]
     : ["#bfdbfe", "#ddd6fe", "#fbcfe8", "#ffffff"];
+
+  if (isMobile) {
+    return <MobileLanding onEnter={handleEnter} isDark={isDark} />;
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-700">

@@ -13,6 +13,7 @@ import {
   Search,
   Settings,
   TrendingUp,
+  Upload,
   X,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
@@ -360,37 +361,67 @@ function PatientMobileLayout({
     <div
       className={`min-h-screen main-mobile ${
         isDark
-          ? "bg-[#080c18] text-white"
-          : "bg-[#f2f5f9] text-slate-900"
+          ? "bg-[#070b14] text-white"
+          : "bg-[#f5f7fb] text-slate-950"
       }`}
     >
-      {/* ── Compact native-style header ── */}
       <div
-        className={`sticky top-0 z-40 flex items-center justify-between px-4 pt-safe ${
+        className={`mobile-app-header ${
           isDark
-            ? "bg-[#080c18] border-b border-white/[0.06]"
-            : "bg-[#f2f5f9] border-b border-slate-200/60"
+            ? "bg-[#070b14]/88"
+            : "bg-[#f5f7fb]/88"
         }`}
-        style={{ paddingTop: `max(0.75rem, env(safe-area-inset-top))`, paddingBottom: "0.75rem" }}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="mobile-top-card">
           <div
-            className={`h-7 w-7 rounded-xl ${
+            className={`mobile-role-mark ${
               isDark
-                ? "bg-gradient-to-br from-cyan-500 to-blue-600"
+                ? "bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600"
                 : "bg-gradient-to-br from-blue-500 to-violet-500"
             }`}
-          />
-          <div>
-            <div className={`text-[10px] font-black uppercase tracking-[0.22em] leading-none ${
-              isDark ? "text-cyan-400/70" : "text-blue-600/70"
-            }`}>Patient</div>
-            <div className="text-base font-black tracking-tight leading-tight">DoctorCopilot</div>
+          >
+            {React.createElement(activeLink.icon, { size: 19 })}
           </div>
+          <div className="min-w-0">
+            <span className={`mobile-eyebrow ${
+              isDark ? "text-cyan-400/70" : "text-blue-600/70"
+            }`}>Patient workspace</span>
+            <div className="mobile-title-line">DoctorCopilot</div>
+          </div>
+          <div className={`mobile-context-pill ${
+            isDark ? "bg-white/8 text-slate-300" : "border border-slate-200 bg-white text-slate-600"
+          }`}>{activeLink.name}</div>
         </div>
-        <div className={`rounded-full px-3 py-1 text-[11px] font-bold ${
-          isDark ? "bg-white/8 text-slate-300" : "bg-white text-slate-600 border border-slate-200"
-        }`}>{activeLink.name}</div>
+
+        <div className="mobile-quick-strip">
+          <NavLink
+            to="/patient/reports"
+            className={`mobile-quick-action ${
+              isDark ? "bg-cyan-400/10 text-cyan-200" : "bg-blue-600 text-white"
+            }`}
+          >
+            <Upload size={15} />
+            Upload
+          </NavLink>
+          <NavLink
+            to="/patient/trends"
+            className={`mobile-quick-action ${
+              isDark ? "bg-white/7 text-slate-200" : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            <TrendingUp size={15} />
+            Trends
+          </NavLink>
+          <NavLink
+            to="/patient/chats"
+            className={`mobile-quick-action ${
+              isDark ? "bg-white/7 text-slate-200" : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            <MessageSquare size={15} />
+            Chats
+          </NavLink>
+        </div>
       </div>
 
       {/* ── Slide-up full-screen drawer ── */}
@@ -410,12 +441,11 @@ function PatientMobileLayout({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
-              className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-[2rem] ${
+              className={`mobile-menu-sheet ${
                 isDark
-                  ? "bg-[#0f1420] border-t border-white/10"
-                  : "bg-white border-t border-slate-200"
+                  ? "bg-[#101725] border-t border-white/10 text-white"
+                  : "bg-white border-t border-slate-200 text-slate-950"
               }`}
-              style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
             >
               {/* Handle */}
               <div className="flex justify-center pt-3 pb-2">
@@ -430,7 +460,7 @@ function PatientMobileLayout({
                 }`}>Navigate</p>
               </div>
 
-              <nav className="grid grid-cols-2 gap-2.5 px-4 pb-3">
+              <nav className="mobile-menu-grid px-1 pb-3">
                 {navLinks.map((link) => {
                   const isActive = location.pathname === link.path;
                   const Icon = link.icon;
@@ -439,7 +469,7 @@ function PatientMobileLayout({
                       key={link.name}
                       to={link.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all ${
+                      className={`mobile-menu-link transition-all ${
                         isActive
                           ? isDark
                             ? "bg-cyan-500/15 text-cyan-300"
@@ -456,7 +486,7 @@ function PatientMobileLayout({
                 })}
               </nav>
 
-              <div className="px-4">
+              <div className="px-1">
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -473,22 +503,19 @@ function PatientMobileLayout({
         )}
       </AnimatePresence>
 
-      {/* ── Page content ── */}
       <main className="px-3 pt-3">
         <AiSessionBanner />
         <Outlet />
       </main>
 
-      {/* ── Minimal solid bottom tab bar ── */}
       <div
-        className={`fixed-bottom-safe z-40 ${
+        className={`mobile-bottom-tabs ${
           isDark
-            ? "bg-[#0c1120]/95 border-t border-white/[0.07]"
+            ? "bg-[#0b111d]/92 border-t border-white/[0.07]"
             : "bg-white/95 border-t border-slate-200"
         }`}
-        style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
       >
-        <nav className="relative flex items-stretch px-2" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <nav>
           {primaryMobileLinks.map((link) => {
             const isActive = location.pathname === link.path;
             const Icon = link.icon;
@@ -496,7 +523,7 @@ function PatientMobileLayout({
               <NavLink
                 key={link.path}
                 to={link.path}
-                className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${
+                className={`mobile-tab-item transition-colors ${
                   isActive
                     ? isDark
                       ? "text-cyan-400"
@@ -509,7 +536,7 @@ function PatientMobileLayout({
                 {isActive && (
                   <motion.div
                     layoutId="mobile-patient-tab"
-                    className={`absolute top-0 inset-x-2 h-0.5 rounded-full ${
+                    className={`absolute top-1 inset-x-5 h-1 rounded-full ${
                       isDark ? "bg-cyan-400" : "bg-blue-500"
                     }`}
                     transition={{ type: "spring", stiffness: 400, damping: 34 }}
@@ -527,7 +554,7 @@ function PatientMobileLayout({
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className={`relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${
+            className={`mobile-tab-item transition-colors ${
               mobileMenuOpen
                 ? isDark ? "text-cyan-400" : "text-blue-600"
                 : isDark ? "text-slate-500" : "text-slate-400"
@@ -536,7 +563,7 @@ function PatientMobileLayout({
             {mobileMenuOpen && (
               <motion.div
                 layoutId="mobile-patient-tab"
-                className={`absolute top-0 inset-x-2 h-0.5 rounded-full ${
+                className={`absolute top-1 inset-x-5 h-1 rounded-full ${
                   isDark ? "bg-cyan-400" : "bg-blue-500"
                 }`}
                 transition={{ type: "spring", stiffness: 400, damping: 34 }}

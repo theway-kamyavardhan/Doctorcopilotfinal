@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Download, LoaderCircle, Microscope, TrendingUp } from "lucide-react";
+import { Activity, ArrowRight, CalendarDays, Download, FileText, LoaderCircle, Microscope, TrendingUp, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
 import HealthBar from "../../components/patient/HealthBar";
@@ -12,11 +12,13 @@ import SystemPanel from "../../components/patient/SystemPanel";
 import {
   buildAlertItems,
   calculateHealthScore,
+  formatParameterLabel,
   getLatestParameter,
   getLatestReport,
 } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
 import usePatientDashboardData from "../../hooks/usePatientDashboardData";
+import useViewport from "../../hooks/useViewport";
 
 function HeroAction({ to, icon: Icon, label, isDark }) {
   return (
@@ -127,8 +129,221 @@ function buildSubsystemStats(reports, fallbackScore) {
   ];
 }
 
+function MobileMetric({ label, value, note, tone = "blue", isDark }) {
+  const toneClasses = {
+    blue: isDark ? "bg-blue-500/10 text-blue-200" : "bg-blue-50 text-blue-700",
+    emerald: isDark ? "bg-emerald-500/10 text-emerald-200" : "bg-emerald-50 text-emerald-700",
+    amber: isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-700",
+    rose: isDark ? "bg-rose-500/10 text-rose-200" : "bg-rose-50 text-rose-700",
+  };
+
+  return (
+    <div className={`mobile-stat-card ${toneClasses[tone]}`}>
+      <div className="text-[0.68rem] font-black uppercase opacity-70">{label}</div>
+      <div className="mt-2 text-2xl font-black leading-none">{value}</div>
+      {note ? <div className="mt-2 text-xs font-semibold opacity-75">{note}</div> : null}
+    </div>
+  );
+}
+
+function MobileSignalRow({ item, isDark }) {
+  return (
+    <div className={`mobile-signal-row ${isDark ? "bg-white/[0.05] text-slate-200" : "bg-slate-50 text-slate-700"}`}>
+      <div className={`mobile-dot ${item.severity === "critical" ? "bg-red-500" : item.severity === "warning" ? "bg-amber-500" : "bg-emerald-500"}`} />
+      <div>
+        <div className="text-sm font-black">{item.title || item.label || "Clinical signal"}</div>
+        <div className={`mt-1 text-xs leading-5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          {item.message || item.description || "Latest patient context is available for review."}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PatientDashboardMobile({
+  profile,
+  reports,
+  trends,
+  healthScore,
+  subsystemStats,
+  alerts,
+  anomalies,
+  activeCase,
+  abnormalParameterCount,
+  categoryCount,
+  upcomingAppointments,
+  overallTrendDirection,
+  stripMetrics,
+  isNewUser,
+  exportError,
+  dashboardError,
+  exporting,
+  onExport,
+  onUpload,
+  isDark,
+}) {
+  const latestReport = getLatestReport(reports);
+  const focusSignals = [...alerts, ...anomalies].slice(0, 4);
+  const patientBits = [
+    profile?.age ? `${profile.age}y` : null,
+    profile?.gender,
+    profile?.blood_group,
+  ].filter(Boolean);
+
+  return (
+    <div className="mobile-page-stack">
+      <section className={`mobile-hero-card ${isDark ? "bg-slate-950 text-white" : "bg-white text-slate-950"}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className={`text-[0.68rem] font-black uppercase ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+              Health Dashboard
+            </div>
+            <h1 className="mt-2">{profile?.user?.full_name || "Your health space"}</h1>
+            <p className={isDark ? "text-slate-300" : "text-slate-600"}>
+              {latestReport
+                ? `${reports.length} reports tracked. Latest: ${latestReport.report_type || latestReport.file_name || "Clinical report"}.`
+                : "Start with one upload and your timeline will become active."}
+            </p>
+          </div>
+          <div className={`mobile-score-ring ${healthScore.score < 55 ? "mobile-score-risk" : ""}`}>
+            <span>{healthScore.score}</span>
+            <small>{healthScore.status}</small>
+          </div>
+        </div>
+
+        <div className="mobile-action-row mt-4">
+          <button type="button" onClick={onUpload} className="mobile-primary-button">
+            <Upload size={16} />
+            Upload
+          </button>
+          <button type="button" onClick={onExport} disabled={exporting} className={`mobile-soft-button ${isDark ? "bg-white/[0.08] text-slate-100" : "bg-slate-100 text-slate-800"}`}>
+            {exporting ? <LoaderCircle size={16} className="animate-spin" /> : <Download size={16} />}
+            {exporting ? "PDF" : "Summary"}
+          </button>
+        </div>
+      </section>
+
+      {exportError || dashboardError ? (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+          {exportError || dashboardError?.message || "Failed to load your health system."}
+        </div>
+      ) : null}
+
+      {isNewUser ? (
+        <section className={`mobile-card ${isDark ? "bg-blue-500/10 text-blue-100" : "bg-blue-50 text-blue-800"}`}>
+          <div className="flex items-start gap-3">
+            <Microscope size={22} />
+            <div>
+              <h3>Activate timeline</h3>
+              <p className="mt-2 opacity-80">Upload your first report to unlock health score, trends, and AI summary.</p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="mobile-stat-grid">
+        <MobileMetric label="Reports" value={reports.length} note={`${categoryCount || 0} categories`} tone="blue" isDark={isDark} />
+        <MobileMetric label="Signals" value={alerts.length} note={`${abnormalParameterCount} abnormal`} tone={alerts.length ? "amber" : "emerald"} isDark={isDark} />
+        <MobileMetric label="Trend" value={overallTrendDirection} note="overall movement" tone="emerald" isDark={isDark} />
+        <MobileMetric label="Case" value={activeCase ? "Active" : "Clear"} note={activeCase?.status || "no live case"} tone={activeCase ? "rose" : "emerald"} isDark={isDark} />
+      </section>
+
+      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+        <div className="mobile-section-title">
+          <Activity size={18} />
+          Patient Context
+        </div>
+        <div className="mobile-context-grid mt-4">
+          <div>
+            <span>Profile</span>
+            <strong>{patientBits.join(" / ") || "Not filled"}</strong>
+          </div>
+          <div>
+            <span>Latest lab</span>
+            <strong>{latestReport?.lab_name || "Pending"}</strong>
+          </div>
+          <div>
+            <span>Latest report</span>
+            <strong>{latestReport?.report_type || latestReport?.file_name || "No report"}</strong>
+          </div>
+          <div>
+            <span>Next visit</span>
+            <strong>{upcomingAppointments[0] ? new Date(upcomingAppointments[0].date_time).toLocaleDateString() : "None"}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+        <div className="mobile-section-title">
+          <TrendingUp size={18} />
+          Trend Snapshot
+        </div>
+        <div className="mobile-horizontal-row mt-4">
+          {stripMetrics.length ? (
+            stripMetrics.map((metric) => (
+              <Link
+                key={metric.name}
+                to={`/patient/parameter/${metric.name}`}
+                className={`mobile-metric-chip ${isDark ? "bg-white/[0.05] text-slate-100" : "bg-slate-50 text-slate-800"}`}
+              >
+                <span>{formatParameterLabel(metric.name)}</span>
+                <strong>{metric.value} {metric.unit || ""}</strong>
+                <small>{metric.direction || metric.status || "stable"}</small>
+              </Link>
+            ))
+          ) : (
+            <div className={`rounded-2xl px-4 py-5 text-sm ${isDark ? "bg-white/[0.05] text-slate-400" : "bg-slate-50 text-slate-500"}`}>
+              Trend cards appear after report extraction.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+        <div className="mobile-section-title">
+          <FileText size={18} />
+          Priority Signals
+        </div>
+        <div className="mt-4 space-y-3">
+          {focusSignals.length ? (
+            focusSignals.map((item, index) => <MobileSignalRow key={`${item.title || item.message || index}-${index}`} item={item} isDark={isDark} />)
+          ) : (
+            <div className={`rounded-2xl px-4 py-5 text-sm ${isDark ? "bg-white/[0.05] text-slate-400" : "bg-slate-50 text-slate-500"}`}>
+              No priority clinical signals found right now.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+        <div className="mobile-section-title">
+          <CalendarDays size={18} />
+          Recent Timeline
+        </div>
+        <div className="mt-4 space-y-3">
+          {reports.slice(0, 4).map((report) => (
+            <div key={report.id} className={`mobile-timeline-row ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
+              <div>
+                <strong>{report.report_type || report.file_name || "Clinical report"}</strong>
+                <span>{report.report_date || report.created_at ? new Date(report.report_date || report.created_at).toLocaleDateString() : "Date pending"}</span>
+              </div>
+              <Link to="/patient/reports">View</Link>
+            </div>
+          ))}
+          {!reports.length ? (
+            <div className={`rounded-2xl px-4 py-5 text-sm ${isDark ? "bg-white/[0.05] text-slate-400" : "bg-slate-50 text-slate-500"}`}>
+              No reports in timeline yet.
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function PatientDashboard() {
   const { isDark } = useTheme();
+  const { isMobile } = useViewport();
   const navigate = useNavigate();
   const [exportError, setExportError] = useState("");
   const [exporting, setExporting] = useState(false);
@@ -242,6 +457,33 @@ export default function PatientDashboard() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoaderCircle size={28} className="animate-spin text-blue-500" />
       </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <PatientDashboardMobile
+        profile={profile}
+        reports={reports}
+        trends={trends}
+        healthScore={healthScore}
+        subsystemStats={subsystemStats}
+        alerts={alerts}
+        anomalies={anomalies}
+        activeCase={activeCase}
+        abnormalParameterCount={abnormalParameterCount}
+        categoryCount={categoryCount}
+        upcomingAppointments={upcomingAppointments}
+        overallTrendDirection={overallTrendDirection}
+        stripMetrics={stripMetrics}
+        isNewUser={isNewUser}
+        exportError={exportError}
+        dashboardError={dashboardError}
+        exporting={exporting}
+        onExport={handleExport}
+        onUpload={() => navigate("/patient/reports")}
+        isDark={isDark}
+      />
     );
   }
 

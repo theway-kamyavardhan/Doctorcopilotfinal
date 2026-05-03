@@ -11,12 +11,14 @@ import {
   FileText,
   LoaderCircle,
   RefreshCcw,
+  TrendingUp,
   Upload,
   XCircle,
 } from "lucide-react";
 import { formatParameterLabel, isAbnormalStatus } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
 import systemService from "../../services/system.service";
+import useViewport from "../../hooks/useViewport";
 
 const CATEGORY_TABS = [
   { key: "all", label: "All" },
@@ -125,8 +127,276 @@ function buildCategoryCounts(reports) {
   return counts;
 }
 
+function ReportsMobile({
+  isDark,
+  fileInputRef,
+  queue,
+  reports,
+  filteredReports,
+  categoryCounts,
+  activeCategory,
+  searchQuery,
+  uploading,
+  loading,
+  dragActive,
+  error,
+  aiStatus,
+  workflowReady,
+  reportPendingDelete,
+  deleteConfirmationText,
+  isDeleting,
+  onFileChange,
+  onPushFiles,
+  onUpload,
+  onRefresh,
+  onCategory,
+  onSearch,
+  onDeleteOpen,
+  onDeleteClose,
+  onDeleteConfirm,
+  onDeleteText,
+  navigate,
+}) {
+  return (
+    <div className="mobile-page-stack">
+      <section className={`mobile-hero-card ${isDark ? "bg-slate-950 text-white" : "bg-white text-slate-950"}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className={`text-[0.68rem] font-black uppercase ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+              Report Vault
+            </div>
+            <h1 className="mt-2">Reports</h1>
+            <p className={isDark ? "text-slate-300" : "text-slate-600"}>
+              Upload, search, and review your clinical documents from one mobile workspace.
+            </p>
+          </div>
+          <div className={`mobile-mini-count ${isDark ? "bg-white/[0.08]" : "bg-slate-100"}`}>
+            <strong>{reports.length}</strong>
+            <span>stored</span>
+          </div>
+        </div>
+        <div className="mobile-action-row mt-4">
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="mobile-primary-button">
+            <Upload size={16} />
+            Select
+          </button>
+          <button type="button" onClick={() => navigate("/patient/trends")} className={`mobile-soft-button ${isDark ? "bg-white/[0.08] text-slate-100" : "bg-slate-100 text-slate-800"}`}>
+            <TrendingUp size={16} />
+            Trends
+          </button>
+        </div>
+      </section>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".pdf,image/*"
+        className="hidden"
+        onChange={onFileChange}
+      />
+
+      <section
+        role="button"
+        tabIndex={0}
+        onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
+        onDragOver={(event) => {
+          event.preventDefault();
+          onPushFiles(null, true);
+        }}
+        onDragLeave={(event) => {
+          event.preventDefault();
+          onPushFiles(null, false);
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          onPushFiles(event.dataTransfer.files, false);
+        }}
+        className={`mobile-upload-card ${dragActive ? "mobile-upload-active" : ""} ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}
+      >
+        <div className="mobile-upload-icon">
+          <Upload size={24} />
+        </div>
+        <h3>Drop or tap to add reports</h3>
+        <p className={isDark ? "text-slate-400" : "text-slate-500"}>PDF and images are accepted. Multiple files can sit in the queue.</p>
+        {aiStatus?.demo_mode ? <div className="mt-3 text-xs font-bold text-amber-500">Demo AI mode is active for extraction.</div> : null}
+      </section>
+
+      {queue.length || error ? (
+        <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="mobile-section-title">
+              <Clock3 size={18} />
+              Upload Queue
+            </div>
+            <button type="button" onClick={onUpload} disabled={!queue.length || uploading} className="mobile-primary-button mobile-small-button">
+              {uploading ? "Processing" : "Upload"}
+            </button>
+          </div>
+          <div className="mt-4 space-y-3">
+            {queue.map((item) => (
+              <div key={item.id} className={`mobile-signal-row ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
+                <FileText size={18} className={isDark ? "text-slate-400" : "text-slate-500"} />
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-black">{item.file.name}</div>
+                  <div className={`mt-1 flex items-center gap-2 text-xs font-bold ${statusStyles(item.status)}`}>
+                    <StatusIcon status={item.status} />
+                    {item.message}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {error ? <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">{error}</div> : null}
+          </div>
+        </section>
+      ) : null}
+
+      <section className={`mobile-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+        <div className="mobile-section-title">
+          <Search size={18} />
+          Stored Reports
+        </div>
+        <div className={`mt-4 flex items-center gap-2 rounded-2xl px-4 py-3 ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
+          <Search size={16} className={isDark ? "text-slate-400" : "text-slate-500"} />
+          <input
+            value={searchQuery}
+            onChange={(event) => onSearch(event.target.value)}
+            placeholder="Search b12, anemia, platelet..."
+            className="bg-transparent outline-none"
+          />
+        </div>
+        <div className="mobile-chip-row mt-4">
+          {CATEGORY_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => onCategory(tab.key)}
+              className={`mobile-filter-chip ${
+                activeCategory === tab.key
+                  ? "mobile-filter-active"
+                  : isDark
+                    ? "bg-white/[0.05] text-slate-300"
+                    : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              {tab.label}
+              <span>{categoryCounts[tab.key] || 0}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <LoaderCircle size={24} className="animate-spin text-blue-500" />
+        </div>
+      ) : filteredReports.length ? (
+        <div className="space-y-3">
+          {filteredReports.map((report) => {
+            const abnormalTags = (report.parameters || [])
+              .filter((item) => isAbnormalStatus(item.status || item.interpretation))
+              .slice(0, 2)
+              .map((item) => `${formatParameterLabel(item.name)} ${item.status || item.interpretation}`);
+            const tags = [...(report.report_keywords || []), ...abnormalTags].slice(0, 4);
+
+            return (
+              <article key={report.id} className={`mobile-report-card ${isDark ? "bg-slate-900/80 text-white" : "bg-white text-slate-950"}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className={`text-[0.68rem] font-black uppercase ${isDark ? "text-cyan-300" : "text-blue-700"}`}>
+                      {report.report_category || "other"}
+                    </div>
+                    <h3 className="mt-2 truncate">{report.report_type || report.file_name}</h3>
+                    <p className={isDark ? "text-slate-400" : "text-slate-500"}>
+                      {formatDate(report.report_date || report.created_at)} {report.lab_name ? ` | ${report.lab_name}` : ""}
+                    </p>
+                  </div>
+                  <span className={`mobile-status-pill ${report.status === "processed" ? "text-emerald-500 bg-emerald-500/10" : "text-amber-500 bg-amber-500/10"}`}>
+                    {report.status || "stored"}
+                  </span>
+                </div>
+                <p className={`mt-3 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                  {report.summary || "Structured report stored and ready for timeline intelligence."}
+                </p>
+                {tags.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <span key={`${report.id}-${tag}`} className={`rounded-full border px-3 py-1 text-xs font-bold ${getTagClasses(tag, isDark)}`}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="mobile-action-row mt-4">
+                  <button type="button" onClick={() => navigate("/patient/timeline")} className={`mobile-soft-button ${isDark ? "bg-white/[0.06] text-slate-100" : "bg-slate-100 text-slate-800"}`}>
+                    Journey
+                  </button>
+                  <button type="button" onClick={() => ExportService.exportSingleReportPdf(report.id, "ai")} className={`mobile-soft-button ${isDark ? "bg-white/[0.06] text-slate-100" : "bg-slate-100 text-slate-800"}`}>
+                    <Download size={15} />
+                    Export
+                  </button>
+                </div>
+                <button type="button" onClick={() => onDeleteOpen(report)} className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-red-500">
+                  <Trash2 size={14} />
+                  Delete report
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className={`rounded-2xl border border-dashed px-4 py-8 text-center ${isDark ? "border-white/10 text-slate-500" : "border-slate-200 text-slate-400"}`}>
+          No reports match this search.
+        </div>
+      )}
+
+      {workflowReady ? (
+        <div className={`rounded-2xl px-4 py-3 text-sm font-bold ${isDark ? "bg-blue-500/10 text-blue-300" : "bg-blue-50 text-blue-700"}`}>
+          Reports here feed AI extraction, categorization, patient insights, and trends.
+        </div>
+      ) : null}
+
+      {reportPendingDelete ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 px-3">
+          <div className={`mobile-menu-sheet ${isDark ? "bg-slate-950 text-white" : "bg-white text-slate-950"}`}>
+            <h3>Delete report</h3>
+            <p className={isDark ? "text-slate-400" : "text-slate-500"}>
+              Type confirm to remove this report and recompute the remaining timeline.
+            </p>
+            <div className={`mt-4 rounded-2xl px-4 py-4 ${isDark ? "bg-white/[0.05]" : "bg-slate-50"}`}>
+              <div className="font-black">{reportPendingDelete.file_name}</div>
+              <div className="mt-1 text-sm opacity-70">{formatDate(reportPendingDelete.report_date || reportPendingDelete.created_at)}</div>
+            </div>
+            <input
+              value={deleteConfirmationText}
+              onChange={(event) => onDeleteText(event.target.value)}
+              placeholder="Type confirm"
+              className={`mt-4 w-full rounded-2xl border px-4 py-4 outline-none ${isDark ? "border-white/10 bg-white/[0.05] text-white" : "border-slate-200 bg-slate-50 text-slate-950"}`}
+            />
+            <div className="mobile-action-row mt-4">
+              <button type="button" onClick={onDeleteClose} disabled={isDeleting} className={`mobile-soft-button ${isDark ? "bg-white/[0.06] text-slate-100" : "bg-slate-100 text-slate-800"}`}>
+                Cancel
+              </button>
+              <button type="button" onClick={onDeleteConfirm} disabled={isDeleting || deleteConfirmationText.trim().toLowerCase() !== "confirm"} className="mobile-danger-button">
+                {isDeleting ? "Deleting" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function Reports() {
   const { isDark } = useTheme();
+  const { isMobile } = useViewport();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [queue, setQueue] = useState([]);
@@ -194,6 +464,13 @@ export default function Reports() {
     if (!fileList?.length) return;
     setQueue((current) => mergeQueue(current, Array.from(fileList)));
     setError("");
+  };
+
+  const handleMobileDropState = (fileList, nextDragState) => {
+    setDragActive(Boolean(nextDragState));
+    if (fileList) {
+      pushFiles(fileList);
+    }
   };
 
   const updateQueueItem = (id, patch) => {
@@ -275,6 +552,41 @@ export default function Reports() {
       setIsDeleting(false);
     }
   };
+
+  if (isMobile) {
+    return (
+      <ReportsMobile
+        isDark={isDark}
+        fileInputRef={fileInputRef}
+        queue={queue}
+        reports={reports}
+        filteredReports={filteredReports}
+        categoryCounts={categoryCounts}
+        activeCategory={activeCategory}
+        searchQuery={searchQuery}
+        uploading={uploading}
+        loading={loading}
+        dragActive={dragActive}
+        error={error}
+        aiStatus={aiStatus}
+        workflowReady={workflowReady}
+        reportPendingDelete={reportPendingDelete}
+        deleteConfirmationText={deleteConfirmationText}
+        isDeleting={isDeleting}
+        onFileChange={handleFileChange}
+        onPushFiles={handleMobileDropState}
+        onUpload={handleUpload}
+        onRefresh={refreshWorkflow}
+        onCategory={setActiveCategory}
+        onSearch={setSearchQuery}
+        onDeleteOpen={openDeleteDialog}
+        onDeleteClose={closeDeleteDialog}
+        onDeleteConfirm={handleDeleteReport}
+        onDeleteText={setDeleteConfirmationText}
+        navigate={navigate}
+      />
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 px-4 md:px-0">

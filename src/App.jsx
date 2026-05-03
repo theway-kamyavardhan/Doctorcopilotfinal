@@ -55,6 +55,20 @@ function ScrollToTop() {
   return null;
 }
 
+function RouteAwareInstallPWA() {
+  const { pathname } = useLocation();
+  const isPublicEntry =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname.startsWith("/register");
+
+  if (isPublicEntry) {
+    return null;
+  }
+
+  return <InstallPWA />;
+}
+
 function ProtectedRoute({ children, roleRequired = null }) {
   if (!authService.hasToken()) {
     return <Navigate to="/login" replace />;
@@ -201,7 +215,7 @@ export default function App() {
             {!isMobile ? <ParticleTransition /> : null}
 
             {/* PWA INSTALL PROMPT */}
-            <InstallPWA />
+            <RouteAwareInstallPWA />
 
             <Suspense fallback={<RouteLoader />}>
               <AnimatedRoutes />
