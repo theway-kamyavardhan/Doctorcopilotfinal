@@ -155,7 +155,7 @@ export default function LiquidEther({
         this.listenerTarget.addEventListener('mousemove', this._onMouseMove);
         this.listenerTarget.addEventListener('touchstart', this._onTouchStart, { passive: true });
         this.listenerTarget.addEventListener('touchmove', this._onTouchMove, { passive: true });
-        this.listenerTarget.addEventListener('touchend', this._onTouchEnd);
+        this.listenerTarget.addEventListener('touchend', this._onTouchEnd, { passive: true });
         if (this.docTarget) {
           this.docTarget.addEventListener('mouseleave', this._onDocumentLeave);
         }

@@ -57,8 +57,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  /* Prevent iOS rubber-band bounce (keeps feel native) */
-  overscroll-behavior: none;
+  touch-action: pan-y;
+  /* Remove overscroll block so scroll always works bounce (keeps feel native) */
   /* Safe area insets for iOS notch / Dynamic Island */
   padding-top: env(safe-area-inset-top);
   transition: background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1), color 0.8s cubic-bezier(0.22, 1, 0.36, 1);
@@ -67,6 +67,8 @@ body {
 html {
   /* Smooth momentum scrolling on iOS */
   -webkit-overflow-scrolling: touch;
+  /* Allow one-finger vertical scroll on mobile */
+  touch-action: pan-y;
   height: 100%;
   height: -webkit-fill-available;
 }

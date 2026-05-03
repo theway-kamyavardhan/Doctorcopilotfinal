@@ -151,7 +151,7 @@ function PatientDesktopLayout({
   etherColors,
 }) {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[var(--bg-primary)] font-sans text-[var(--text-primary)] transition-colors duration-700">
+    <div className="relative min-h-screen w-full bg-[var(--bg-primary)] font-sans text-[var(--text-primary)] transition-colors duration-700" style={{ touchAction: 'pan-y' }}>
       <RefractionFilter />
       <div className="fixed inset-0 z-0 pointer-events-none select-none">
         <AmbientBackdrop palette={etherColors} opacity={isDark ? 0.38 : 0.26} className={isDark ? "mix-blend-screen" : "mix-blend-multiply"} />
