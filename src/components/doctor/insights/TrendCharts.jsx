@@ -82,37 +82,39 @@ export default function TrendCharts({ trends, isDark }) {
         })}
       </div>
 
-      <div className={`h-[22rem] rounded-[1.8rem] border p-4 ${isDark ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white"}`}>
-        {chartData.length ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 12, right: 18, bottom: 0, left: -16 }}>
-              <CartesianGrid stroke={isDark ? "rgba(148,163,184,0.12)" : "rgba(148,163,184,0.18)"} vertical={false} />
-              <XAxis dataKey="label" tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} width={52} />
-              <Tooltip content={<InsightTooltip isDark={isDark} />} />
-              {selectedParameters.map((parameter) => {
-                const meta = getParameterMeta(parameter);
-                return (
-                  <Line
-                    key={parameter}
-                    type="monotone"
-                    dataKey={parameter}
-                    name={meta.label}
-                    stroke={meta.color}
-                    strokeWidth={2.5}
-                    dot={buildAnomalyDotRenderer(parameter, trends)}
-                    activeDot={{ r: 5 }}
-                    connectNulls
-                  />
-                );
-              })}
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className={`flex h-full items-center justify-center text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-            No longitudinal trend data is available yet.
-          </div>
-        )}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        <div className={`h-[22rem] min-w-[320px] rounded-[1.8rem] border p-4 ${isDark ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white"}`}>
+          {chartData.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 12, right: 18, bottom: 0, left: -16 }}>
+                <CartesianGrid stroke={isDark ? "rgba(148,163,184,0.12)" : "rgba(148,163,184,0.18)"} vertical={false} />
+                <XAxis dataKey="label" tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} width={52} />
+                <Tooltip content={<InsightTooltip isDark={isDark} />} />
+                {selectedParameters.map((parameter) => {
+                  const meta = getParameterMeta(parameter);
+                  return (
+                    <Line
+                      key={parameter}
+                      type="monotone"
+                      dataKey={parameter}
+                      name={meta.label}
+                      stroke={meta.color}
+                      strokeWidth={2.5}
+                      dot={buildAnomalyDotRenderer(parameter, trends)}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className={`flex h-full items-center justify-center text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              No longitudinal trend data is available yet.
+            </div>
+          )}
+        </div>
       </div>
 
       <AnomalyMarkers trends={trends} selectedParameters={selectedParameters} isDark={isDark} />

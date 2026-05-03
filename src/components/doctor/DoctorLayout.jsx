@@ -81,18 +81,59 @@ export default function DoctorLayout() {
   
 
   return (
-    <div
-      className={`min-h-screen px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 ${
-        isDark
-          ? "bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.12),transparent_20%),linear-gradient(180deg,#030712,#0b1120_60%,#030712)]"
-          : "bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.12),transparent_18%),linear-gradient(180deg,#f8fbff,#edf4fb_60%,#f8fbff)]"
-      }`}
-    >
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-5">
-        <GlossyHeader {...sharedProps} />
-        <GlossyMain isDark={isDark} location={location} />
+    <>
+      <div
+        className={`min-h-screen px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 pb-24 md:pb-5 ${
+          isDark
+            ? "bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.12),transparent_20%),linear-gradient(180deg,#030712,#0b1120_60%,#030712)]"
+            : "bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.12),transparent_18%),linear-gradient(180deg,#f8fbff,#edf4fb_60%,#f8fbff)]"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-5">
+          <GlossyHeader {...sharedProps} />
+          <GlossyMain isDark={isDark} location={location} />
+        </div>
       </div>
-    </div>
+
+      {/* ── iOS-style bottom tab bar (mobile only) ── */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,16px)] pt-3 backdrop-blur-2xl border-t transition-colors duration-300 ${
+        isDark
+          ? "bg-[#0a0d1a]/90 border-white/[0.08]"
+          : "bg-white/90 border-slate-200"
+      }`}>
+        {PRIMARY_TABS.map((item) => {
+          const isActive = location.pathname.startsWith(item.path);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              className={`flex flex-col items-center gap-1 px-3 min-w-[60px] transition-colors ${
+                isActive
+                  ? isDark ? 'text-violet-300' : 'text-violet-600'
+                  : isDark ? 'text-slate-500' : 'text-slate-400'
+              }`}
+            >
+              <Icon size={24} strokeWidth={isActive ? 2.5 : 1.8} />
+              <span className="text-[10px] font-bold tracking-tight">{item.name}</span>
+            </Link>
+          );
+        })}
+        <Link
+          to="/doctor/settings"
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          className={`flex flex-col items-center gap-1 px-3 min-w-[60px] transition-colors ${
+            location.pathname.includes('/settings')
+              ? isDark ? 'text-violet-300' : 'text-violet-600'
+              : isDark ? 'text-slate-500' : 'text-slate-400'
+          }`}
+        >
+          <Settings size={24} strokeWidth={location.pathname.includes('/settings') ? 2.5 : 1.8} />
+          <span className="text-[10px] font-bold tracking-tight">Settings</span>
+        </Link>
+      </nav>
+    </>
   );
 }
 

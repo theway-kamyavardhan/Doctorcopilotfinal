@@ -103,7 +103,7 @@ export default function ParameterDetail() {
       <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
         <div className={`rounded-[2rem] border p-6 ${isDark ? "bg-slate-900 border-white/10" : "bg-white border-slate-100"}`}>
           {series.length ? (
-            <div className="h-96">
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0"><div className="h-56 md:h-96 min-w-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={series}>
                   <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e293b" : "#e2e8f0"} />
@@ -113,7 +113,7 @@ export default function ParameterDetail() {
                   <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
+            </div></div>
           ) : (
             <div className={`rounded-2xl px-4 py-8 text-sm ${isDark ? "bg-white/5 text-slate-400" : "bg-slate-50 text-slate-500"}`}>
               No stored history is available for this parameter yet.

@@ -187,7 +187,7 @@ export default function Trends() {
           ) : null}
 
           {(viewMode === "chart" || viewMode === "both") && activeParameter ? (
-            <div className="h-80">
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0"><div className="h-64 md:h-80 min-w-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trends?.table || []}>
                   <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e293b" : "#e2e8f0"} />
@@ -204,7 +204,7 @@ export default function Trends() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
+            </div></div>
           ) : null}
 
           {(viewMode === "table" || viewMode === "both") && activeParameter ? (

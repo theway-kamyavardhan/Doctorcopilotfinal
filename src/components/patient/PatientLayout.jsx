@@ -19,6 +19,7 @@ import {
 
 import { useTheme } from "../../context/ThemeContext";
 import { authService } from "../../services/auth.service";
+import useViewport from "../../hooks/useViewport";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
@@ -68,15 +69,20 @@ export default function PatientLayout() {
     handleLogout,
   };
 
-  
+  const { isMobile } = useViewport();
+
+  const etherColors = isDark
+    ? ["#020617", "#0f172a", "#1e1b4b", "#06b6d4", "#2563eb", "#000000"]
+    : ["#f8fafc", "#f1f5f9", "#e2e8f0", "#bfdbfe", "#ddd6fe", "#ffffff"];
+
+  if (isMobile) {
+    return <PatientMobileLayout isDark={isDark} location={location} primaryMobileLinks={PRIMARY_TABS} handleLogout={handleLogout} />;
+  }
+
   return (
     <PatientDesktopLayout
       {...sharedProps}
-      etherColors={
-        isDark
-          ? ["#020617", "#0f172a", "#1e1b4b", "#06b6d4", "#2563eb", "#000000"]
-          : ["#f8fafc", "#f1f5f9", "#e2e8f0", "#bfdbfe", "#ddd6fe", "#ffffff"]
-      }
+      etherColors={etherColors}
     />
   );
 }
