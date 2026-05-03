@@ -153,7 +153,7 @@ function PatientDashboardMobile({
   return (
     <div className={`px-4 pt-12 pb-6 min-h-screen ${isDark ? "bg-black text-white" : "bg-[#F2F2F7] text-black"}`}>
       <header className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">Summary</h1>
+        <h1 className="text-4xl font-bold tabular-nums tracking-tight">Summary</h1>
         <p className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           {profile?.user?.full_name ? `Welcome back, ${profile.user.full_name}` : "Welcome to your health space"}
         </p>
@@ -174,23 +174,23 @@ function PatientDashboardMobile({
           </div>
           <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
             {/* Health Score Tile */}
-            <div className={`shrink-0 snap-center min-w-[160px] p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+            <div className={`shrink-0 snap-center min-w-[160px] p-5 active-feedback rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
               <div className="text-sm font-semibold text-blue-500">Health Score</div>
-              <div className="mt-1 text-4xl font-bold">{healthScore.score}</div>
+              <div className="mt-1 text-4xl font-bold tabular-nums">{healthScore.score}</div>
               <div className={`mt-1 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{healthScore.status}</div>
             </div>
 
             {/* Reports Tile */}
-            <div className={`shrink-0 snap-center min-w-[160px] p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+            <div className={`shrink-0 snap-center min-w-[160px] p-5 active-feedback rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
               <div className="text-sm font-semibold text-purple-500">Records</div>
-              <div className="mt-1 text-4xl font-bold">{reports.length}</div>
+              <div className="mt-1 text-4xl font-bold tabular-nums">{reports.length}</div>
               <div className={`mt-1 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>Uploaded reports</div>
             </div>
 
             {/* Upload Tile */}
             <div 
               onClick={onUpload}
-              className={`shrink-0 snap-center min-w-[160px] p-5 rounded-3xl flex flex-col justify-center items-center ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}
+              className={`shrink-0 snap-center min-w-[160px] p-5 active-feedback rounded-3xl flex flex-col justify-center items-center ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}
               style={{ touchAction: 'manipulation' }}
             >
               <div className="h-10 w-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-2">
@@ -209,7 +209,7 @@ function PatientDashboardMobile({
           </div>
           <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
             {focusSignals.length ? (
-              <div className="divide-y divide-gray-200 dark:divide-gray-800">
+              <div className="divide-y divide-gray-200 dark:divide-gray-800 content-visibility-auto">
                 {focusSignals.map((item, index) => (
                   <div key={index} className="p-4 flex gap-3">
                     <div className={`h-3 w-3 rounded-full mt-1.5 shrink-0 ${item.severity === "critical" ? "bg-red-500" : "bg-orange-500"}`} />
@@ -238,7 +238,7 @@ function PatientDashboardMobile({
             </div>
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
               {stripMetrics.map((metric) => (
-                <div key={metric.name} className={`shrink-0 snap-center min-w-[150px] p-5 rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
+                <div key={metric.name} className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-3xl ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
                   <div className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
                     {formatParameterLabel(metric.name)}
                   </div>

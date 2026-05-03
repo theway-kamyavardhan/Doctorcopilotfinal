@@ -112,7 +112,7 @@ function PatientMobileLayout({
               key={link.name}
               to={link.path}
               style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-              className={`flex flex-col items-center gap-1.5 px-3 min-w-[64px] transition-colors ${
+              className={`touch-target active-feedback flex flex-col items-center gap-1.5 px-3 min-w-[64px] transition-colors ${
                 isActive
                   ? (isDark ? "text-[#0A84FF]" : "text-[#007AFF]")
                   : (isDark ? "text-[#98989D]" : "text-[#8E8E93]")
@@ -127,7 +127,7 @@ function PatientMobileLayout({
         <NavLink
           to="/patient/settings"
           style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-          className={`flex flex-col items-center gap-1.5 px-3 min-w-[64px] transition-colors ${
+          className={`touch-target active-feedback flex flex-col items-center gap-1.5 px-3 min-w-[64px] transition-colors ${
             location.pathname.includes('/settings')
               ? (isDark ? "text-[#0A84FF]" : "text-[#007AFF]")
               : (isDark ? "text-[#98989D]" : "text-[#8E8E93]")

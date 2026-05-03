@@ -287,7 +287,7 @@ function DoctorDashboardMobile({
     <div className={`px-4 pt-12 pb-6 min-h-screen ${isDark ? "bg-black text-white" : "bg-[#F2F2F7] text-black"}`}>
       <header className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Workspace</h1>
+          <h1 className="text-4xl font-bold tabular-nums tracking-tight">Workspace</h1>
           <p className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             {profile?.user?.full_name ? `Dr. ${profile.user.full_name}` : "Doctor Dashboard"}
           </p>
@@ -316,7 +316,7 @@ function DoctorDashboardMobile({
               <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
                 <Stethoscope size={16} />
               </div>
-              <div className="text-3xl font-bold">{dashboard?.total_cases ?? "--"}</div>
+              <div className="text-3xl font-bold tabular-nums">{dashboard?.total_cases ?? "--"}</div>
               <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Total Cases</div>
             </div>
 
@@ -325,7 +325,7 @@ function DoctorDashboardMobile({
               <div className="h-8 w-8 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center mb-3">
                 <ShieldAlert size={16} />
               </div>
-              <div className="text-3xl font-bold">{pendingCases.length ?? "--"}</div>
+              <div className="text-3xl font-bold tabular-nums">{pendingCases.length ?? "--"}</div>
               <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pending Review</div>
             </div>
             
@@ -334,7 +334,7 @@ function DoctorDashboardMobile({
               <div className="h-8 w-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mb-3">
                 <CheckCircle2 size={16} />
               </div>
-              <div className="text-3xl font-bold">{activeCases.filter((item) => item.status === "open").length ?? "--"}</div>
+              <div className="text-3xl font-bold tabular-nums">{activeCases.filter((item) => item.status === "open").length ?? "--"}</div>
               <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Open Cases</div>
             </div>
 
@@ -343,7 +343,7 @@ function DoctorDashboardMobile({
               <div className="h-8 w-8 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-3">
                 <FileHeart size={16} />
               </div>
-              <div className="text-3xl font-bold">{dashboard?.recent_report_count ?? "--"}</div>
+              <div className="text-3xl font-bold tabular-nums">{dashboard?.recent_report_count ?? "--"}</div>
               <div className={`mt-1 text-xs font-semibold ${isDark ? "text-gray-400" : "text-gray-500"}`}>Linked Reports</div>
             </div>
           </div>
@@ -356,7 +356,7 @@ function DoctorDashboardMobile({
           </div>
           <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
             {pendingCases.length ? (
-              <div className="divide-y divide-gray-200 dark:divide-gray-800">
+              <div className="divide-y divide-gray-200 dark:divide-gray-800 content-visibility-auto">
                 {pendingCases.map((caseItem) => (
                   <div key={caseItem.id} className="p-4 flex justify-between items-center">
                     <div>
@@ -390,7 +390,7 @@ function DoctorDashboardMobile({
           </div>
           <div className={`rounded-3xl overflow-hidden ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
             {upcomingAppointments.length ? (
-              <div className="divide-y divide-gray-200 dark:divide-gray-800">
+              <div className="divide-y divide-gray-200 dark:divide-gray-800 content-visibility-auto">
                 {upcomingAppointments.map((appointment) => (
                   <div key={appointment.id} className="p-4 flex justify-between items-start">
                     <div>
@@ -583,7 +583,7 @@ export default function DoctorDashboard() {
           <div className={`text-[11px] font-black uppercase tracking-[0.24em] ${isDark ? "text-cyan-200/75" : "text-blue-700/75"}`}>
             Dashboard
           </div>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight">
+          <h2 className="mt-2 text-3xl font-bold tabular-nums tracking-tight">
             Welcome, {profile?.user?.full_name || "Doctor"}
           </h2>
           <p className={`mt-3 max-w-3xl text-sm leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>

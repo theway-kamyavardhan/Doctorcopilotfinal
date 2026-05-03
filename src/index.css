@@ -1034,3 +1034,52 @@ video {
     padding: 0.6rem !important;
   }
 }
+
+
+/* ─── Mobile-First UX Foundations ─── */
+:root {
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); /* 16px - 18px */
+  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 1vw, 1.875rem);
+  --text-2xl: clamp(1.5rem, 1.25rem + 1.5vw, 2.25rem);
+}
+
+.fluid-base { font-size: var(--text-base); }
+.fluid-lg { font-size: var(--text-lg); }
+.fluid-xl { font-size: var(--text-xl); }
+.fluid-2xl { font-size: var(--text-2xl); }
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-feedback {
+  transition: transform 0.15s ease-out, opacity 0.15s ease-out !important;
+}
+
+@media (hover: none) {
+  .active-feedback:active {
+    transform: scale(0.96) !important;
+    opacity: 0.75 !important;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.content-visibility-auto {
+  content-visibility: auto;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
