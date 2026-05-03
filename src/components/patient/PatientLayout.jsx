@@ -37,8 +37,14 @@ const NAV_LINKS = [
   { name: "Settings",  path: "/patient/settings",  icon: Settings       },
 ];
 
-// Bottom-tab primary links (shown always in mobile bar)
-const PRIMARY_TABS = [NAV_LINKS[0], NAV_LINKS[1], NAV_LINKS[2], NAV_LINKS[4]];
+// Bottom-tab primary links (all 6 key sections)
+const PRIMARY_TABS = [
+  NAV_LINKS[0], // Summary
+  NAV_LINKS[3], // Reports
+  NAV_LINKS[1], // Timeline
+  NAV_LINKS[2], // Trends
+  NAV_LINKS[4], // Cases
+];
 
 // ─── Root layout ─────────────────────────────────────────────────────────────
 
@@ -103,42 +109,47 @@ function PatientMobileLayout({
         <Outlet />
       </main>
 
-      {/* Fixed Bottom Tab Bar - Native iOS Style */}
-      <nav className={`fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom,20px)] pt-3 backdrop-blur-2xl border-t transition-colors duration-300 ${
-        isDark ? "bg-[#1C1C1E]/85 border-[#38383A]" : "bg-[#F9F9F9]/85 border-[#E5E5EA]"
-      }`}>
-        {primaryMobileLinks.map((link) => {
-          const isActive = location.pathname.startsWith(link.path);
-          const Icon = link.icon;
-          return (
-            <NavLink
-              key={link.name}
-              to={link.path}
-              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-              className={`touch-target active-feedback flex flex-col items-center gap-1.5 px-3 min-w-[64px] transition-colors ${
-                isActive
-                  ? (isDark ? "text-[#0A84FF]" : "text-[#007AFF]")
-                  : (isDark ? "text-[#98989D]" : "text-[#8E8E93]")
-              }`}
-            >
-              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "scale-105" : ""} />
-              <span className="text-[10px] font-bold tracking-tight">{link.name}</span>
-            </NavLink>
-          );
-        })}
-        {/* Profile/Menu Tab */}
-        <NavLink
-          to="/patient/settings"
-          style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-          className={`touch-target active-feedback flex flex-col items-center gap-1.5 px-3 min-w-[64px] transition-colors ${
-            location.pathname.includes('/settings')
-              ? (isDark ? "text-[#0A84FF]" : "text-[#007AFF]")
-              : (isDark ? "text-[#98989D]" : "text-[#8E8E93]")
-          }`}
-        >
-          <User size={24} strokeWidth={location.pathname.includes('/settings') ? 2.5 : 2} />
-          <span className="text-[10px] font-bold tracking-tight">Profile</span>
-        </NavLink>
+      {/* Fixed Bottom Tab Bar - Native iOS Style, scrollable so all tabs fit */}
+      <nav className={`fixed bottom-0 left-0 right-0 z-50 backdrop-blur-2xl border-t transition-colors duration-300 ${
+        isDark ? "bg-[#111114]/90 border-white/[0.08]" : "bg-white/90 border-slate-200"
+      }`} style={{ paddingBottom: "env(safe-area-inset-bottom, 12px)" }}>
+        <div className="flex items-stretch overflow-x-auto scrollbar-none px-1 pt-2 pb-1">
+          {primaryMobileLinks.map((link) => {
+            const isActive = location.pathname.startsWith(link.path);
+            const Icon = link.icon;
+            return (
+              <NavLink
+                key={link.name}
+                to={link.path}
+                style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+                className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-[60px] py-1 px-1 rounded-xl transition-colors ${
+                  isActive
+                    ? isDark ? "text-[#0A84FF]" : "text-[#007AFF]"
+                    : isDark ? "text-[#636366]" : "text-[#8E8E93]"
+                }`}
+              >
+                {isActive && (
+                  <div className={`absolute top-0 w-8 h-[3px] rounded-full ${isDark ? "bg-[#0A84FF]" : "bg-[#007AFF]"}`} style={{ position: "static", width: 28, height: 3, borderRadius: 99, marginBottom: -4, marginTop: 0, alignSelf: "center", background: isDark ? "#0A84FF" : "#007AFF" }} />
+                )}
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                <span className="text-[10px] font-semibold tracking-tight">{link.name}</span>
+              </NavLink>
+            );
+          })}
+          {/* Profile tab */}
+          <NavLink
+            to="/patient/settings"
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-[60px] py-1 px-1 rounded-xl transition-colors ${
+              location.pathname.includes("/settings")
+                ? isDark ? "text-[#0A84FF]" : "text-[#007AFF]"
+                : isDark ? "text-[#636366]" : "text-[#8E8E93]"
+            }`}
+          >
+            <User size={22} strokeWidth={location.pathname.includes("/settings") ? 2.5 : 1.8} />
+            <span className="text-[10px] font-semibold tracking-tight">Profile</span>
+          </NavLink>
+        </div>
       </nav>
     </div>
   );
