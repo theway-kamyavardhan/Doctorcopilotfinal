@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
-import MobileSparkline from "../../components/ui/MobileSparkline";
+
 import { Activity, ArrowRight, Filter, LoaderCircle, Sparkles, TrendingUp } from "lucide-react";
 import {
   CartesianGrid,
@@ -14,7 +14,6 @@ import {
 } from "recharts";
 import { formatParameterLabel, getTrendArrow } from "../../utils/patientIntelligence";
 import usePatientTrendsData from "../../hooks/usePatientTrendsData";
-import useViewport from "../../hooks/useViewport";
 
 const PRIORITY_PARAMETERS = ["hemoglobin", "platelets", "vitamin_b12"];
 
@@ -35,174 +34,9 @@ function badgeClasses(isDark, tone = "neutral") {
   return isDark ? "bg-white/5 text-slate-300" : "bg-slate-100 text-slate-700";
 }
 
-// ─── Native Mobile Port (Apple Health Style) ─────────────────────────────────
-
-function TrendsMobile({
-  isDark,
-  trends,
-  trendsError,
-  parameters,
-  activeParameter,
-  activeSeries,
-  activeMetric,
-  latestPoint,
-  minValue,
-  maxValue,
-  parameterSummary,
-  intelligenceBullets,
-  selectedParameter,
-  setSelectedParameter,
-}) {
-  const chartData = activeSeries.map(p => p.value);
-  const isPositive = activeMetric?.direction === 'increasing';
-  const isNegative = activeMetric?.direction === 'decreasing';
-  const strokeColor = isDark ? (isPositive ? '#34d399' : isNegative ? '#fb923c' : '#60a5fa') : (isPositive ? '#16a34a' : isNegative ? '#ea580c' : '#2563eb');
-
-  return (
-    <div className={`flex flex-col min-h-[100svh] w-full font-sans antialiased ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'} pb-24`}>
-      <header className="px-4 pt-12 pb-6">
-        <h1 className="text-4xl font-bold tracking-tight">Trends</h1>
-        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Track your health parameters over time.
-        </p>
-      </header>
-
-      {trendsError ? (
-        <div className="mx-4 mb-6 rounded-2xl bg-red-100 p-4 text-sm font-semibold text-red-700">
-          {trendsError.message || "Failed to load trends."}
-        </div>
-      ) : null}
-
-      {/* Parameter Selector */}
-      <section className="mb-6">
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-2 px-4 hide-scrollbar">
-          {parameters.map((parameter) => {
-            const isActive = selectedParameter === parameter || activeParameter === parameter;
-            return (
-              <button
-                key={parameter}
-                onClick={() => setSelectedParameter(parameter)}
-                style={{ touchAction: 'manipulation' }}
-                className={`shrink-0 snap-center px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  isActive 
-                    ? (isDark ? 'bg-white text-black' : 'bg-black text-white') 
-                    : (isDark ? 'bg-[#1C1C1E] text-gray-400' : 'bg-[#E5E5EA] text-gray-600')
-                }`}
-              >
-                {formatParameterLabel(parameter)}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {activeParameter ? (
-        <div className="space-y-6 px-4">
-          
-          {/* Main Chart Card */}
-          <section className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-            <div className="mb-4">
-              <div className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider">
-                {formatParameterLabel(activeParameter)}
-              </div>
-              <div className="text-4xl font-bold tabular-nums mt-1 flex items-baseline gap-1">
-                {latestPoint ? latestPoint.value : "--"}
-                <span className="text-sm font-medium text-gray-500">{latestPoint?.unit || ""}</span>
-              </div>
-              <div className="text-sm font-medium text-gray-500 mt-1">
-                {latestPoint?.date || "No date"}
-              </div>
-            </div>
-
-            <div className="h-40 w-full mt-6">
-              <MobileSparkline 
-                data={chartData} 
-                color={strokeColor} 
-                height={160} 
-                strokeWidth={3}
-              />
-            </div>
-            
-            <div className={`mt-4 pt-4 border-t ${isDark ? 'border-[#38383A]' : 'border-[#E5E5EA]'} grid grid-cols-3 gap-2 text-center`}>
-              <div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Min</div>
-                <div className="text-lg font-bold mt-1 tabular-nums">{minValue ?? "--"}</div>
-              </div>
-              <div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Max</div>
-                <div className="text-lg font-bold mt-1 tabular-nums">{maxValue ?? "--"}</div>
-              </div>
-              <div>
-                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Trend</div>
-                <div className="text-lg font-bold mt-1 uppercase">{getTrendArrow(activeMetric?.direction)} {activeMetric?.direction || "--"}</div>
-              </div>
-            </div>
-          </section>
-
-          {/* AI Insights Card */}
-          {intelligenceBullets.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold mb-3 px-1">AI Insights</h2>
-              <div className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-                <div className="space-y-4">
-                  {intelligenceBullets.map((item, index) => (
-                    <div key={index} className="flex gap-3">
-                      <Sparkles size={18} className={`shrink-0 mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
-                      <p className={`text-[15px] leading-snug ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                        {item}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* History List */}
-          <section>
-            <h2 className="text-xl font-bold mb-3 px-1">History</h2>
-            <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-              <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
-                {[...activeSeries].reverse().map((point, index) => (
-                  <div key={`${activeParameter}-${point.date}-${index}`} className="p-4 flex justify-between items-center active-feedback">
-                    <div>
-                      <div className="text-[15px] font-bold tabular-nums">
-                        {point.value} <span className="text-xs font-normal text-gray-500">{point.unit || ""}</span>
-                      </div>
-                      <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {point.date}
-                      </div>
-                    </div>
-                    <div className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
-                      point.status === 'low' || point.status === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
-                    }`}>
-                      {point.status || 'stable'}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-        </div>
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <Activity size={48} className={`mb-4 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
-          <p className={`text-lg font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            No parameter data yet. Upload more reports to see trends.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Desktop Components ───────────────────────────────────────────────────────
-
 export default function Trends() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
-  const [selectedParameter, setSelectedParameter] = useState("");
+    const [selectedParameter, setSelectedParameter] = useState("");
   const [viewMode, setViewMode] = useState("both");
   const { data, error: trendsError, isLoading: loading } = usePatientTrendsData();
   const trends = data?.trends || null;
@@ -241,27 +75,7 @@ export default function Trends() {
     );
   }
 
-  if (isMobile) {
-    return (
-      <TrendsMobile
-        isDark={isDark}
-        trends={trends}
-        trendsError={trendsError}
-        parameters={parameters}
-        activeParameter={activeParameter}
-        activeSeries={activeSeries}
-        activeMetric={activeMetric}
-        latestPoint={latestPoint}
-        minValue={minValue}
-        maxValue={maxValue}
-        parameterSummary={parameterSummary}
-        intelligenceBullets={intelligenceBullets}
-        selectedParameter={selectedParameter}
-        setSelectedParameter={setSelectedParameter}
-      />
-    );
-  }
-
+  
   return (
     <div className="max-w-6xl mx-auto space-y-8 px-4 md:px-0">
       <section className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">

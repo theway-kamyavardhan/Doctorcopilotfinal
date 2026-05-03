@@ -1,0 +1,146 @@
+# DoctorCopilot: System Blueprint & UX Audit
+
+## 1. Product Overview
+
+DoctorCopilot is an advanced, dual-sided healthcare intelligence platform designed to bridge the gap between patient data and clinical analysis. It leverages AI to transform complex medical reports and longitudinal health data into actionable, easy-to-understand insights.
+
+**Core Audiences:**
+*   **Patients:** Individuals seeking to understand their health trajectory, manage medical records, and communicate effectively with their healthcare providers.
+*   **Doctors:** Clinical professionals needing rapid, AI-assisted digestion of patient history, anomaly detection, and streamlined case management.
+
+**Core Purpose:**
+To remove friction from the healthcare data experience. For patients, it democratizes their own data. For doctors, it acts as a "copilot," surfacing critical clinical alerts and trends instantly so they can focus on treatment rather than paperwork.
+
+---
+
+## 2. System Architecture
+
+DoctorCopilot employs a modern, highly optimized React-based architecture with a strict separation of concerns regarding device rendering.
+
+*   **Desktop vs. Mobile Rendering Separation:** The application does not rely solely on CSS media queries for responsiveness. Instead, it utilizes a `useViewport` hook to fundamentally branch the React render tree. Desktop users receive heavy, cinematic components (`LiquidEther`, WebGL canvas rendering, complex CSS glassmorphism), while mobile users receive entirely separate, lightweight components (`MobileSparkline`, native-feeling swipe carousels). This guarantees that mobile devices do not pay the computational cost for desktop visual fidelity.
+*   **Key Technologies:** React, Vite, Tailwind CSS, Framer Motion (for layout and micro-animations), Recharts (Desktop exclusively), and custom SVG engines (Mobile exclusively).
+*   **Performance Philosophy:** "60fps everywhere." Heavy computations and DOM-heavy libraries are strictly gated behind viewport checks. Mobile leans entirely on `content-visibility: auto`, `tabular-nums`, and pure SVG curves to guarantee native-app performance even on low-tier devices.
+
+---
+
+## 3. User Flows (End-to-End)
+
+### Patient Flow
+1.  **Landing:** Cinematic introduction to the platform's capabilities.
+2.  **Login:** Authentication gate, routing the user to the patient workspace.
+3.  **Patient Dashboard:** The central hub showing the overall Health Score, active clinical signals (anomalies), and a horizontal carousel of key parameter trends (e.g., Hemoglobin, Fasting Sugar).
+4.  **Reports / Timeline:** Uploading new medical PDFs and viewing the chronological history of health events and extractions.
+5.  **Parameter Detail:** Tapping a trend expands into a full historical view with AI-driven clinical interpretation of the specific biomarker.
+6.  **Chats:** Conversational AI interface for querying their own medical data.
+
+### Doctor Flow
+1.  **Landing:** Unified landing page.
+2.  **Login:** Authentication gate, routing to the clinical workspace.
+3.  **Doctor Dashboard:** Clinical triage view displaying KPI cards (Total Cases, Open Cases, Pending Review, Alerts) and lists of patients requiring immediate attention.
+4.  **Cases / Case Insights:** Deep dive into a specific patient. Doctors view `DoctorCaseInsights` to see AI-generated summaries, clinical alerts, and historical trend matrices.
+5.  **Calendar:** Appointment scheduling and management.
+6.  **Chats:** Secure communication channel or AI assistance for clinical queries.
+
+---
+
+## 4. Desktop Experience (Reference Only)
+
+The desktop experience is the flagship visual showcase of DoctorCopilot. 
+
+It utilizes a premium, "glassmorphic" aesthetic heavily inspired by cinematic sci-fi interfaces. It relies on complex CSS back-drop filters, dynamic WebGL background effects (`LiquidEther`), and high-density data grids. 
+
+**Why it works well:** Desktop screens have the real estate to handle high information density. Mouse interactions (hover states, complex tooltips via `recharts`) allow for deep data exploration without overwhelming the primary view. The computational power of desktop machines easily handles the rendering overhead, resulting in a premium, immersive environment.
+
+*(Note: The desktop UI is considered complete and must remain unmodified.)*
+
+---
+
+## 5. Mobile Experience (Current State)
+
+While functionally robust and architecturally sound (utilizing lightweight SVG sparklines instead of heavy charts), the mobile experience currently lacks the cohesive emotional resonance of top-tier native applications like Apple Health.
+
+### Landing (Mobile)
+*   **Looks like:** A stacked, responsive version of the desktop site.
+*   **Works:** Information is accessible and scrollable.
+*   **Missing:** The cinematic impact of the desktop doesn't translate perfectly. It feels slightly cramped and lacks the punchy, full-screen native app onboarding feel.
+
+### Login (Mobile)
+*   **Usability:** Functional and secure.
+*   **Flow issues:** Standard web-form behavior. Lacks the seamless biometric/native integration feel (e.g., FaceID prompts, bottom-sheet style presentation).
+*   **Visual quality:** Clean, but generic web aesthetics.
+
+### Patient Dashboard (Mobile)
+*   **Charts:** Currently utilizing custom, performant `MobileSparkline` SVGs. They render fast but lack visual depth (flat strokes, no area fills).
+*   **Metrics:** Arranged in horizontal snap-scroll carousels. Information is present but visual hierarchy is sometimes flat (labels compete with values).
+*   **Layout behavior:** Native-like `snap-x` scrolling is implemented, but micro-interactions (press states, haptic feedback simulation) feel slightly rigid.
+
+### Doctor Dashboard (Mobile)
+*   **KPI display:** Horizontal scroll of metric cards (Total Cases, Pending, etc.). 
+*   **Case handling UX:** Lists are functional but dense. The urgency of "Alerts" doesn't emotionally differentiate from standard cases due to uniform styling and lack of spatial emphasis.
+
+---
+
+## 6. Core Problems (CRITICAL SECTION)
+
+Despite its architectural brilliance, the mobile presentation currently suffers from the following critical issues:
+
+1.  **Feels Like a Responsive Web App:** Despite using custom mobile components, the spacing, typography scaling, and interaction models (lack of deep routing transitions) still hint at a browser-based origin rather than a native iOS/Android application.
+2.  **Weak Visual Hierarchy:** On metric cards, the supporting labels, trend indicators, and the background sparklines often carry too much visual weight, competing with the primary numerical value. Users cannot process the most critical data in under 1 second.
+3.  **Charts Lack Delight:** The `MobileSparkline` is technically excellent (fast, SVG-only, bezier smoothed) but visually austere. It lacks the "premium" finishing touches—gradient strokes, soft area fills, glowing current-value indicators, and fluid draw-in animations.
+4.  **Limited Interaction Depth:** Tapping elements often results in standard web page loads rather than fluid, spatial transitions (e.g., a card expanding into a full-screen modal). Press states (`.active-feedback`) exist but lack the "spring" physics expected in modern apps.
+5.  **Deficient Emotional Design:** Healthcare data is inherently stressful. The mobile UI currently feels like a clinical dashboard rather than a calming, trustworthy consumer health companion. It lacks the soft neutrals, pure surfaces, and generous breathing room required to instill trust and calmness.
+
+---
+
+## 7. UX & Design Gaps
+
+*   **Attention Flow Issues:** The eye is not naturally guided from the most critical piece of information (the metric) to the supporting context (the trend).
+*   **Missing Micro-interactions:** Lack of count-up animations on KPIs, missing spring-physics on card releases, and absence of smooth list-staggering entry animations.
+*   **Information Prioritization:** Clinical alerts and stable metrics share too much of the same visual language. Critical items do not adequately break the established grid to demand attention.
+*   **Lack of Mobile-Native Patterns:** Relying on top-level navigation instead of bottom-sheet modals for deep-dives. Lack of swipe-to-dismiss or pull-to-refresh paradigms.
+
+---
+
+## 8. What Already Works Well
+
+*   **Performance:** The strict branching of the render tree means the mobile site is exceptionally fast. `content-visibility: auto` ensures long lists don't drop frames.
+*   **Architecture Separation:** The foundational codebase is perfectly set up to redesign mobile without touching a single line of desktop code.
+*   **SVG Charts Direction:** Moving away from `recharts` to `MobileSparkline` was the correct technical decision; it just needs visual polishing.
+*   **Clean Layout Foundation:** The transition to `snap-x` horizontal carousels and fixed bottom navigation provides the perfect skeleton for a native feel.
+
+---
+
+## 9. Redesign Opportunities
+
+*   **Chart Experience:** Elevate `MobileSparkline` with CSS-driven draw animations, soft gradient area fills, and a pulsing "current value" dot to make data feel alive.
+*   **Card Hierarchy:** Radically alter metric cards. Force the primary value to be massive (`tabular-nums`, high contrast). Subdue everything else. The sparkline should be a subtle background element, not a foreground competitor.
+*   **Navigation Patterns:** Implement fluid spatial transitions. When a user taps a dashboard sparkline, the card should visually expand into the `ParameterDetail` screen, maintaining context.
+*   **Interaction Depth:** Overhaul `.active-feedback` to use scale + opacity drops with a spring-return feel.
+*   **Emotional Design:** Shift the color palette toward soft neutrals. Remove stark borders. Increase vertical rhythm and padding to create a sense of calm and clinical trust.
+
+---
+
+## 10. Design Philosophy Going Forward
+
+To achieve the Apple Health / Samsung Health tier, all future mobile development must adhere to these rules:
+
+*   **Mobile-First Thinking:** Design for the thumb. Do not attempt to fit a desktop feature onto a phone; redesign the feature's core intent for the phone.
+*   **Native Feel Over Visual Complexity:** Reject complex backgrounds, blur effects, or heavy shadows on mobile. Rely on pure surfaces, clean typography, and fluid motion.
+*   **Performance Over Decoration:** Animations must be CSS-driven or extremely lightweight. 60fps is non-negotiable.
+*   **Clarity Over Density:** A user should understand a screen in 1 second. If they cannot, there is too much information on the screen. Use pagination, carousels, or drill-downs instead of cramming data.
+
+---
+
+## 11. Priority Action Plan
+
+### High Priority (Immediate Execution)
+*   **Chart Delight Upgrade:** Inject gradients, area fills, and draw-animations into `MobileSparkline.jsx`.
+*   **Card Hierarchy Overhaul:** Redesign the HTML structure of the metric cards in `PatientDashboard` and `DoctorDashboard` to enforce the Value > Label > Trend > Chart hierarchy.
+
+### Medium Priority (Next Sprint)
+*   **Spatial Transitions:** Implement Framer Motion `layoutId` or similar transition patterns so tapping a dashboard card seamlessly expands into the detail view.
+*   **Micro-interactions:** Add load-staggering to lists and count-up animations to KPIs.
+
+### Low Priority (Polish)
+*   **Emotional Re-skinning:** Audit all mobile specific color tokens to ensure they utilize soft neutrals and calming blues/greens, fully removing any lingering harshness from the initial web-port.
+*   **Typography Polish:** Ensure `clamp()` functions perfectly scale all text, enforcing the 16px minimum for inputs to prevent iOS auto-zooming.

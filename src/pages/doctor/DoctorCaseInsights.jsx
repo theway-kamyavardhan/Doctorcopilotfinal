@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AlertTriangle, ChevronLeft, LoaderCircle, TrendingUp } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import useViewport from "../../hooks/useViewport";
-import MobileSparkline from "../../components/ui/MobileSparkline";
+
 import { getDoctorCase } from "../../services/doctor.service";
 import usePatientInsightsBundle from "../../components/doctor/insights/usePatientInsightsBundle";
 import TrendCharts from "../../components/doctor/insights/TrendCharts";
@@ -28,75 +27,9 @@ function SectionCard({ title, icon: Icon, isDark, children }) {
 }
 
 
-// ─── Native Mobile Port ───────────────────────────────────────────────────────
-function DoctorCaseInsightsMobile({ caseItem, trends, insights, isDark, loading, error, insightsLoading, insightsError }) {
-  if (loading || insightsLoading) {
-    return (
-      <div className="flex flex-col min-h-[100svh] items-center justify-center pb-24">
-        <LoaderCircle size={28} className="animate-spin text-blue-500" />
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex flex-col min-h-[100svh] w-full font-sans antialiased ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'} pb-24`}>
-      <header className="px-4 pt-12 pb-6">
-        <Link to={`/doctor/case/${caseItem?.id}`} className="text-blue-500 font-bold mb-2 inline-flex items-center gap-1 active-feedback touch-target"><ChevronLeft size={20}/> Back</Link>
-        <h1 className="text-4xl font-bold tracking-tight">{caseItem?.patient?.full_name}</h1>
-        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Patient Insights
-        </p>
-      </header>
-      
-      <main className="px-4 space-y-6">
-        <section className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-          <h2 className="text-xl font-bold mb-3">Clinical Alerts</h2>
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 -mx-5 px-5 hide-scrollbar">
-             {(trends?.anomalies || []).length > 0 ? (trends?.anomalies || []).slice(0, 6).map((anomaly, idx) => (
-                <div key={idx} className={`shrink-0 snap-center min-w-[200px] p-4 rounded-2xl ${anomaly.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
-                  <AlertTriangle size={24} className="mb-2" />
-                  <p className="text-sm font-semibold">{anomaly.message}</p>
-                </div>
-             )) : <div className="text-gray-500">No alerts</div>}
-          </div>
-        </section>
-        
-        <section>
-          <h2 className="text-xl font-bold mb-3 px-1">Trend Quick View</h2>
-          <div className="space-y-4">
-             {Object.keys(trends?.series || {}).slice(0,4).map(param => {
-               const data = trends.series[param] || [];
-               const latest = data.length ? data[data.length-1] : null;
-               const metric = trends.metrics?.[param];
-               const statusColor = (latest?.status === 'low' || latest?.status === 'high') ? 'text-orange-500' : 'text-emerald-500';
-               const strokeColor = (latest?.status === 'low' || latest?.status === 'high') ? '#f97316' : '#10b981';
-               
-               return (
-                 <Link to={`/doctor/case/${caseItem?.id}`} key={param} className={`block rounded-[1.5rem] p-5 active-feedback transition-all ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-                   <div className="text-[32px] leading-none font-bold tabular-nums flex items-baseline gap-1">
-                     {latest ? latest.value : '--'} <span className="text-xs font-normal text-gray-400">{latest?.unit || ''}</span>
-                   </div>
-                   <div className="text-[13px] font-semibold text-gray-500 mt-2 capitalize">{param.replace('_', ' ')}</div>
-                   <div className={`mt-1.5 text-[12px] font-bold flex items-center gap-1 ${statusColor}`}>
-                      {(latest?.status === 'low' || latest?.status === 'high') ? '↓ ' : '↑ '}
-                      {latest?.status || 'stable'}
-                   </div>
-                   <div className="h-20 mt-4 -mx-1 opacity-80">
-                     <MobileSparkline data={data.map(d=>d.value)} color={strokeColor} height={80} strokeWidth={3} />
-                   </div>
-                 </Link>
-               )
-             })}
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-}
-
 export default function DoctorCaseInsights() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
+  
   const { id } = useParams();
   const [caseItem, setCaseItem] = useState(null);
   const [loading, setLoading] = useState(true);

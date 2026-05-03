@@ -18,7 +18,7 @@ import { authService } from "../../services/auth.service";
 import { getDoctorProfile } from "../../services/doctor.service";
 import GlassSurface from "../ui/GlassSurface";
 import AiSessionBanner from "../ui/AiSessionBanner";
-import useViewport from "../../hooks/useViewport";
+
 
 // ─── Nav configuration ───────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ const PRIMARY_TABS = NAV_ITEMS.slice(0, 4);
 // ─── Root layout ─────────────────────────────────────────────────────────────
 
 export default function DoctorLayout() {
-  const { isMobile } = useViewport();
+  
   const { isDark } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();

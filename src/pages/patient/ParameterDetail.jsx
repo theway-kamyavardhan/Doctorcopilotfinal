@@ -11,8 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { useTheme } from "../../context/ThemeContext";
-import useViewport from "../../hooks/useViewport";
-import MobileSparkline from "../../components/ui/MobileSparkline";
+
 import reportService from "../../services/report.service";
 import {
   formatParameterLabel,
@@ -21,144 +20,9 @@ import {
 } from "../../utils/patientIntelligence";
 
 
-// ─── Native Mobile Port ───────────────────────────────────────────────────────
-function ParameterDetailMobile({ isDark, name, series, metric, minValue, maxValue, latestPoint, explanation, linkedSummary, loading, error }) {
-  
-  if (isMobile) {
-    return <ParameterDetailMobile isDark={isDark} name={name} series={series} metric={metric} minValue={minValue} maxValue={maxValue} latestPoint={latestPoint} explanation={explanation} linkedSummary={linkedSummary} loading={loading} error={error} />;
-  }
-
-if (loading) {
-    return (
-      <div className="flex flex-col min-h-[100svh] items-center justify-center pb-24">
-        <LoaderCircle size={28} className="animate-spin text-blue-500" />
-      </div>
-    );
-  }
-
-  const chartData = series.map(p => p.value);
-  const isPositive = metric?.direction === 'increasing';
-  const isNegative = metric?.direction === 'decreasing';
-  const strokeColor = isDark ? (isPositive ? '#34d399' : isNegative ? '#fb923c' : '#60a5fa') : (isPositive ? '#16a34a' : isNegative ? '#ea580c' : '#2563eb');
-
-  return (
-    <div className={`flex flex-col min-h-[100svh] w-full font-sans antialiased ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'} pb-24`}>
-      <header className="px-4 pt-12 pb-6">
-        <Link to="/patient/trends" className="text-blue-500 font-bold mb-2 inline-flex items-center gap-1 active-feedback touch-target"><ArrowLeft size={20}/> Trends</Link>
-        <h1 className="text-4xl font-bold tracking-tight">{formatParameterLabel(name)}</h1>
-        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Historical detail and clinical interpretation.
-        </p>
-      </header>
-
-      {error ? (
-        <div className="mx-4 mb-6 rounded-2xl bg-red-100 p-4 text-sm font-semibold text-red-700">
-          {error}
-        </div>
-      ) : null}
-
-      <main className="px-4 space-y-6">
-        {series.length ? (
-          <>
-            <section className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-              <div className="text-4xl font-bold tabular-nums flex items-baseline gap-1">
-                {latestPoint ? latestPoint.value : "--"}
-                <span className="text-sm font-medium text-gray-500">{latestPoint?.unit || ""}</span>
-              </div>
-              <div className="text-sm font-medium text-gray-500 mt-1">
-                {latestPoint?.date || "No date"}
-              </div>
-
-              <div className="h-48 w-full mt-6">
-                <MobileSparkline 
-                  data={chartData} 
-                  color={strokeColor} 
-                  height={192} 
-                  strokeWidth={3}
-                />
-              </div>
-
-              <div className={`mt-4 pt-4 border-t ${isDark ? 'border-[#38383A]' : 'border-[#E5E5EA]'} grid grid-cols-3 gap-2 text-center`}>
-                <div>
-                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Min</div>
-                  <div className="text-lg font-bold mt-1 tabular-nums">{minValue ?? "--"}</div>
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Max</div>
-                  <div className="text-lg font-bold mt-1 tabular-nums">{maxValue ?? "--"}</div>
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Change</div>
-                  <div className="text-lg font-bold mt-1">{metric?.change || "--"}</div>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold mb-3 px-1">Normal Range</h2>
-              <div className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-                <p className={`text-[15px] leading-snug ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {explanation}
-                </p>
-              </div>
-            </section>
-
-            {linkedSummary.length > 0 && (
-              <section>
-                <h2 className="text-xl font-bold mb-3 px-1">Clinical Insights</h2>
-                <div className={`rounded-3xl p-5 ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-                  <div className="space-y-4">
-                    {linkedSummary.map((item, idx) => (
-                      <p key={idx} className={`text-[15px] leading-snug ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                        {item}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
-
-            <section>
-              <h2 className="text-xl font-bold mb-3 px-1">History</h2>
-              <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-                <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
-                  {[...series].reverse().map((point, index) => (
-                    <div key={`${point.date}-${index}`} className="p-4 flex justify-between items-center active-feedback">
-                      <div>
-                        <div className="text-[15px] font-bold tabular-nums">
-                          {point.value} <span className="text-xs font-normal text-gray-500">{point.unit || ""}</span>
-                        </div>
-                        <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {point.date}
-                        </div>
-                      </div>
-                      <div className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
-                        point.status === 'low' || point.status === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {point.status || 'stable'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12">
-            <Activity size={48} className={`mb-4 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
-            <p className={`text-lg font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-              No stored history is available for this parameter yet.
-            </p>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
-
 export default function ParameterDetail() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
+  
   const { name } = useParams();
   const [trends, setTrends] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -22,7 +22,6 @@ import { authService } from "../../services/auth.service";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
 import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
-import useViewport from "../../hooks/useViewport";
 
 // ─── Nav configuration ──────────────────────────────────────────────────────
 
@@ -43,8 +42,7 @@ const PRIMARY_TABS = [NAV_LINKS[0], NAV_LINKS[1], NAV_LINKS[2], NAV_LINKS[4]];
 // ─── Root layout ─────────────────────────────────────────────────────────────
 
 export default function PatientLayout() {
-  const { isMobile } = useViewport();
-  const { isDark } = useTheme();
+    const { isDark } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

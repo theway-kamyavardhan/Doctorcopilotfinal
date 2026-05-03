@@ -1,0 +1,216 @@
+# DoctorCopilot: Execution Blueprint & UI System (v2)
+
+This document serves as the absolute source of truth for the mobile implementation of DoctorCopilot. It removes all ambiguity, defining the exact UI decisions, component structures, and interaction patterns required to achieve a premium, Apple Health-tier native experience.
+
+---
+
+## 1. Product Overview
+
+DoctorCopilot is an advanced, dual-sided healthcare intelligence platform designed to bridge the gap between patient data and clinical analysis. It leverages AI to transform complex medical reports and longitudinal health data into actionable, easy-to-understand insights.
+
+**Core Audiences:**
+*   **Patients:** Individuals seeking to understand their health trajectory, manage medical records, and communicate effectively with their healthcare providers.
+*   **Doctors:** Clinical professionals needing rapid, AI-assisted digestion of patient history, anomaly detection, and streamlined case management.
+
+---
+
+## 2. System Architecture
+
+*   **Desktop vs. Mobile Rendering Separation:** Strict branching via `useViewport` hook. Desktop receives `LiquidEther`, WebGL, and `recharts`. Mobile receives `MobileSparkline` and native swipe carousels.
+*   **Key Technologies:** React, Vite, Tailwind CSS, Framer Motion (micro-animations), custom SVG engines.
+*   **Performance Philosophy:** "60fps everywhere." Mobile leans entirely on `content-visibility: auto`, `tabular-nums`, and pure SVG curves.
+
+---
+
+## 3. User Flows (End-to-End)
+
+### Patient Flow
+1.  **Landing:** Cinematic introduction.
+2.  **Login:** Authentication gate.
+3.  **Patient Dashboard:** Central hub (Health Score, Anomalies, Trend Carousel).
+4.  **Reports / Timeline:** PDF upload and chronological history.
+5.  **Parameter Detail:** Full historical view via tap-to-expand.
+6.  **Chats:** AI medical query interface.
+
+### Doctor Flow
+1.  **Landing:** Unified landing page.
+2.  **Login:** Authentication gate.
+3.  **Doctor Dashboard:** Clinical triage view (KPIs, Cases, Alerts).
+4.  **Cases / Case Insights:** Deep dive patient intelligence.
+5.  **Calendar:** Appointment scheduling.
+6.  **Chats:** Clinical AI assistance.
+
+---
+
+## 4. Desktop Experience (Reference Only)
+
+The desktop experience utilizes a premium, "glassmorphic" aesthetic heavily inspired by cinematic sci-fi interfaces with complex CSS back-drop filters and dynamic WebGL. **DO NOT MODIFY.**
+
+---
+
+## 5. Mobile Experience (Current State)
+
+*   **Landing / Login:** Functional, but lacks seamless biometric/native integration feel.
+*   **Patient Dashboard:** Uses `MobileSparkline` SVGs. Metrics arranged in horizontal snap-scroll carousels.
+*   **Doctor Dashboard:** Horizontal scroll of KPI cards. Case lists are functional but dense.
+
+---
+
+## 6. Core Problems
+
+1.  **Responsive Web Feel:** Spacing and interaction models hint at a browser-based origin.
+2.  **Weak Visual Hierarchy:** Supporting labels previously competed with primary numerical values.
+3.  **Flat Charts:** SVGs lacked gradient depth and draw-in animations.
+4.  **Limited Interaction Depth:** Press states lacked "spring" physics.
+5.  **Deficient Emotional Design:** Lacked soft neutrals and pure surfaces needed to instill clinical trust.
+
+---
+
+## 7. UX & Design Gaps
+*   Missing count-up animations and spring-physics on release.
+*   Lack of fluid spatial transitions (card to full-screen modal).
+*   Clinical alerts and stable metrics shared too much visual language.
+
+---
+
+## 8. What Already Works Well
+*   Strict render branching guarantees 60fps performance.
+*   Transition from `recharts` to `MobileSparkline` ensures no viewport overflow.
+
+---
+
+## 9. Redesign Opportunities
+*   Inject CSS-driven draw animations and gradient fills into sparklines.
+*   Enforce Value > Label > Trend > Chart hierarchy on cards.
+*   Implement spatial transitions and spring-based micro-interactions.
+
+---
+
+## 10. Design Philosophy Going Forward
+
+*   **Mobile-First Thinking:** Design for the thumb. Redesign core intents for the phone.
+*   **Native Feel Over Visual Complexity:** Reject complex backgrounds or blurs. Rely on pure surfaces and fluid motion.
+*   **Performance Over Decoration:** 60fps is non-negotiable.
+*   **Clarity Over Density:** A user should understand a screen in < 1 second.
+
+---
+
+## 11. Priority Action Plan
+
+### High Priority
+*   Deploy gradient area fills, draw-animations, and glowing indicators to `MobileSparkline.jsx`.
+*   Redesign metric cards to enforce strict visual hierarchy.
+
+### Medium Priority
+*   Implement Framer Motion `layoutId` spatial transitions.
+
+### Low Priority
+*   Audit color tokens for soft neutrals and calming tones.
+
+---
+
+# 🔧 EXECUTION BLUEPRINT
+
+The following sections define the exact UI decisions, component structures, and interaction patterns required to execute the redesign.
+
+---
+
+## 12. Screen Blueprints (CRITICAL)
+
+### Landing (Mobile)
+*   **Layout Structure:** Full-screen Hero → Value Props → Sticky Footer.
+*   **Spacing:** Generous top padding (`pt-16`). `p-6` for internal text blocks.
+*   **CTA Placement:** Fixed at the bottom safe-area (`pb-[env(safe-area-inset-bottom)]`). Always accessible without scrolling.
+*   **Visual Hierarchy:** Large H1 (`text-4xl`, tracking-tight) > Muted Subtitle > Primary Action Button.
+
+### Login (Mobile)
+*   **Input Layout:** Stacked inputs with 16px font size (prevents iOS auto-zoom). Soft gray backgrounds (`bg-[#E5E5EA]` or dark equivalent) with no heavy borders.
+*   **Role Selection UI:** Horizontal segmented control (Apple style) instead of dropdowns or radio buttons.
+*   **Button Placement:** Sticky bottom or immediately below inputs with `mt-8`.
+
+### Patient Dashboard (Mobile)
+*   **Order of Sections:** Header (Greeting) → Key Metrics (Health Score) → Priority Signals (Alerts) → Trends Carousel.
+*   **Card Layout Structure:** `flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar`.
+*   **Chart Placement:** Bottom 40% of the metric card, overflowing the card padding slightly (`-mx-1`) for a seamless bleed effect.
+
+### Doctor Dashboard (Mobile)
+*   **KPI Arrangement:** Horizontal snap-scroll carousel. Order: Total Cases → Open Cases → Pending Review → Alerts.
+*   **Alert Priority Layout:** Red/Orange tinted cards placed immediately below KPIs. "Needs Review" list items feature a prominent right-aligned notification dot.
+*   **Case List Structure:** Clean list with `divide-y`. High contrast patient name, muted subtext for last updated time.
+
+---
+
+## 13. Component System
+
+### Metric Card
+*   **Layout Structure:** Stacked. Value (Top) → Label (Middle) → Trend Arrow (Middle-right) → Sparkline (Bottom).
+*   **Typography Sizes:**
+    *   Primary Value: `text-[32px] leading-none font-bold tabular-nums`.
+    *   Label: `text-[13px] font-semibold text-gray-500`.
+    *   Trend Indicator: `text-[12px] font-bold`.
+*   **Spacing Rules:** `p-5` padding. `rounded-[1.5rem]` (24px) border radius.
+
+### Sparkline (`MobileSparkline.jsx`)
+*   **Stroke Style:** Linear gradient (left-to-right). Opacity 0.5 → 1.0. `strokeWidth={2.5}` or `3`.
+*   **Fill Style:** Linear gradient (top-to-bottom). Opacity 0.25 → 0.0.
+*   **Animation Behavior:** 
+    *   Path drawing: CSS `@keyframes` on `stroke-dashoffset` over 800ms `ease-out`.
+    *   Glowing dot: Pulses radius and opacity infinitely over a 2s duration.
+
+### Section Container
+*   **Padding:** Section container margins `mb-8`. Internal padding `px-4`.
+*   **Header Style:** `text-xl font-bold mb-3 px-1`.
+
+---
+
+## 14. Interaction Map
+
+*   **Tap Sparkline Card:** Executes `<Link>` routing. UI should trigger `.active-feedback` (scale down) before navigating to the full-screen `ParameterDetail` view.
+*   **Navigation Transitions:** Immediate route transition. Future state: Implement `framer-motion` `layoutId` for the card to expand into the screen header.
+*   **Modal Behavior:** Bottom-sheet slides up from the bottom edge (`translateY(100%)` to `0`) with a visible drag-handle.
+*   **Gesture Interactions:** Horizontal swipe on trend carousels uses native CSS scroll snapping (`snap-mandatory snap-center`).
+
+---
+
+## 15. Motion System
+
+*   **Tap Feedback (`.active-feedback`):** Duration `150ms`. Easing `ease-out`. Scale to `0.96`. Opacity to `0.8`.
+*   **Sparkline Entry:** Duration `800ms`. Easing `ease-out` (mimicking a physical draw).
+*   **Page Transitions:** Fade in duration `300ms`.
+*   **List Staggering:** Delay children by `50ms` each on initial mount.
+
+---
+
+## 16. Visual System
+
+*   **Color Palette (Tone Direction):** 
+    *   Backgrounds: Pure `#F2F2F7` (Light) or `#000000` (Dark).
+    *   Surfaces: Pure `#FFFFFF` (Light) or `#1C1C1E` (Dark).
+    *   Accents: Soft Emerald (`#10b981`) for positive, Soft Orange (`#f97316`) for alerts. Avoid pure `#FF0000` or `#00FF00`.
+*   **Typography Scale:** 
+    *   Value: 32px
+    *   H1: 36px (tracking-tight)
+    *   H2: 20px
+    *   Body: 16px (strict minimum for inputs)
+    *   Muted: 13px
+*   **Spacing Scale:** Base 4px. Standard gap is 16px (`gap-4`). Section padding is 24px (`pb-6`).
+
+---
+
+## 17. UX Emotion Mapping
+
+### Landing & Login
+*   **Feeling:** Secure, Professional, Effortless.
+*   **UI Support:** Minimalist layout, high-contrast typography, zero visual clutter. Familiar, standard input fields.
+
+### Patient Dashboard
+*   **Feeling:** Calm, Empowered, Reassured.
+*   **UI Support:** Flowing, animated bezier curves. Soft green accents. Stable, non-jumping numbers (`tabular-nums`). Soft, rounded card corners (`24px`).
+
+### Parameter Detail
+*   **Feeling:** Informed, Deep Context.
+*   **UI Support:** Massive screen-width sparklines. Clear, human-readable clinical interpretations. Clean historical lists.
+
+### Doctor Dashboard
+*   **Feeling:** In Control, Focused, Efficient.
+*   **UI Support:** Urgent alerts immediately break the visual hierarchy. KPI numbers are dominant, allowing rapid triage at a single glance.

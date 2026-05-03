@@ -7,7 +7,7 @@ import GlassSurface from "../ui/GlassSurface";
 import RefractionFilter from "../ui/RefractionFilter";
 import AmbientBackdrop from "../ui/AmbientBackdrop";
 import useAdaptiveVisuals from "../../hooks/useAdaptiveVisuals";
-import useViewport from "../../hooks/useViewport";
+
 import { User, Stethoscope, ShieldCheck, ArrowRight, Mail, Lock, PlusCircle } from "lucide-react";
 import { authService } from "../../services/auth.service";
 
@@ -48,7 +48,7 @@ export default function Login() {
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const { allowFluid } = useAdaptiveVisuals({ preferPerformance: true });
-  const { isMobile } = useViewport();
+  
   const [role, setRole] = useState('patient');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');

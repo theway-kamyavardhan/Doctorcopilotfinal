@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Activity, ArrowRight, CalendarDays, Download, FileText, LoaderCircle, Microscope, TrendingUp, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
-import MobileSparkline from "../../components/ui/MobileSparkline";
+
 import HealthBar from "../../components/patient/HealthBar";
 import SignalStream from "../../components/patient/SignalStream";
 import PatientContextPanel from "../../components/patient/PatientContextPanel";
@@ -19,7 +19,7 @@ import {
 } from "../../utils/patientIntelligence";
 import ExportService from "../../services/ExportService";
 import usePatientDashboardData from "../../hooks/usePatientDashboardData";
-import useViewport from "../../hooks/useViewport";
+
 
 function HeroAction({ to, icon: Icon, label, isDark }) {
   return (
@@ -283,7 +283,7 @@ function PatientDashboardMobile({
 
 export default function PatientDashboard() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
+  
   const navigate = useNavigate();
   const [exportError, setExportError] = useState("");
   const [exporting, setExporting] = useState(false);

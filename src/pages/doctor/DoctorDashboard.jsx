@@ -16,7 +16,7 @@ import {
 import { useTheme } from "../../context/ThemeContext";
 import { getDoctorDemoDashboardSeed } from "../../lib/demoData";
 import appointmentService from "../../services/appointment.service";
-import useViewport from "../../hooks/useViewport";
+
 import {
   acceptDoctorCase,
   getDoctorCase,
@@ -273,102 +273,9 @@ function OverviewModal({
 
 // ─── Native Mobile Port (Apple Health Style) ─────────────────────────────────
 
-// ─── Native Mobile Port ───────────────────────────────────────────────────────
-function DoctorDashboardMobile({ isDark, activeCases, pendingCases, reviewRequiredCases }) {
-  return (
-    <div className={`flex flex-col min-h-[100svh] w-full font-sans antialiased ${isDark ? 'bg-black text-white' : 'bg-[#F2F2F7] text-black'} pb-24`}>
-      <header className="px-4 pt-12 pb-6">
-        <h1 className="text-4xl font-bold tracking-tight">Overview</h1>
-        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          Your clinical workspace
-        </p>
-      </header>
-
-      <main className="px-4 space-y-6">
-        <section>
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
-            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="text-[32px] leading-none font-bold tabular-nums text-blue-500">{activeCases.length + pendingCases.length}</div>
-              <div className="text-[13px] font-semibold text-gray-500 mt-2">Total Cases</div>
-              <div className="mt-1.5 text-[12px] font-bold text-gray-400 flex items-center gap-1">All active</div>
-            </div>
-            
-            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="text-[32px] leading-none font-bold tabular-nums text-emerald-500">{activeCases.length}</div>
-              <div className="text-[13px] font-semibold text-gray-500 mt-2">Open Cases</div>
-              <div className="mt-1.5 text-[12px] font-bold text-gray-400 flex items-center gap-1">Currently treating</div>
-            </div>
-
-            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="text-[32px] leading-none font-bold tabular-nums text-orange-500">{pendingCases.length}</div>
-              <div className="text-[13px] font-semibold text-gray-500 mt-2">Pending Review</div>
-              <div className="mt-1.5 text-[12px] font-bold text-orange-500 flex items-center gap-1">Needs attention</div>
-            </div>
-            
-            <div className={`shrink-0 snap-center min-w-[150px] p-5 active-feedback rounded-[1.5rem] transition-all ${isDark ? "bg-[#1C1C1E]" : "bg-white shadow-sm"}`}>
-              <div className="text-[32px] leading-none font-bold tabular-nums text-purple-500">{reviewRequiredCases.length}</div>
-              <div className="text-[13px] font-semibold text-gray-500 mt-2">Alerts</div>
-              <div className="mt-1.5 text-[12px] font-bold text-gray-400 flex items-center gap-1">Anomalies</div>
-            </div>
-          </div>
-        </section>
-
-        {reviewRequiredCases.length > 0 && (
-          <section>
-            <h2 className="text-xl font-bold mb-3 px-1">Needs Review</h2>
-            <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-              <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
-                {reviewRequiredCases.map((c) => (
-                  <Link to={`/doctor/case/${c.id}`} key={c.id} className="block p-4 active-feedback transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-[15px]">{c.patient?.full_name || "Unknown Patient"}</div>
-                        <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {c.reports?.length || 0} recent reports
-                        </div>
-                      </div>
-                      <div className="h-2 w-2 rounded-full bg-orange-500"></div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section>
-          <h2 className="text-xl font-bold mb-3 px-1">Active Cases</h2>
-          <div className={`rounded-3xl overflow-hidden content-visibility-auto ${isDark ? 'bg-[#1C1C1E]' : 'bg-white shadow-sm'}`}>
-            <div className="divide-y divide-gray-200 dark:divide-[#38383A]">
-              {activeCases.map((c) => (
-                <Link to={`/doctor/case/${c.id}`} key={c.id} className="block p-4 active-feedback transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-semibold text-[15px]">{c.patient?.full_name || "Unknown Patient"}</div>
-                      <div className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Updated recently
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className={`${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-                  </div>
-                </Link>
-              ))}
-              {!activeCases.length && (
-                <div className="p-4 text-center text-sm text-gray-500">No active cases</div>
-              )}
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-}
-
-// ─── Desktop Components ───────────────────────────────────────────────────────
-
 export default function DoctorDashboard() {
   const { isDark } = useTheme();
-  const { isMobile } = useViewport();
+  
   const [demoSeed] = useState(() => getDoctorDemoDashboardSeed());
   const [profile, setProfile] = useState(() => demoSeed?.profile || null);
   const [dashboard, setDashboard] = useState(() => demoSeed?.dashboard || null);
